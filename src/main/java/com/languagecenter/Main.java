@@ -9,10 +9,15 @@ public class Main {
     public static void main(String[] args) {
         try {
             EntityManager em = Jpa.em();
-            Object result = em.createNativeQuery("SELECT COUNT(*) FROM students")
-                    .getSingleResult();
+//            Object result = em.createNativeQuery("SELECT COUNT(*) FROM students")
+//                    .getSingleResult();
+//
+//            System.out.println("Total students: " + result.toString());
 
-            System.out.println("Total students: " + result.toString());
+
+
+
+
             em.close();
             Jpa.shutdown();
         } catch (Exception e) {
