@@ -1,4 +1,7 @@
 package com.languagecenter.db;
 
-public class JpaWork {
+import jakarta.persistence.EntityManager;
+@FunctionalInterface
+public interface JpaWork<T> {
+    T execute(EntityManager em) throws Exception;
 }
