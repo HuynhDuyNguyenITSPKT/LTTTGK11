@@ -15,12 +15,14 @@ public class StudentTableModel extends AbstractTableModel {
     private List<Student> data = new ArrayList<>();
 
     public void setData(List<Student> data){
+
         this.data = data;
+
         fireTableDataChanged();
     }
 
-    public Student getAt(int row){
-        if(row < 0 || row >= data.size()) return null;
+    public Student getStudent(int row){
+
         return data.get(row);
     }
 
@@ -44,15 +46,15 @@ public class StudentTableModel extends AbstractTableModel {
 
         Student s = data.get(row);
 
-        switch(col){
-            case 0: return s.getId();
-            case 1: return s.getFullName();
-            case 2: return s.getGender();
-            case 3: return s.getPhone();
-            case 4: return s.getEmail();
-            case 5: return s.getStatus();
-        }
+        return switch (col){
 
-        return "";
+            case 0 -> s.getId();
+            case 1 -> s.getFullName();
+            case 2 -> s.getGender();
+            case 3 -> s.getPhone();
+            case 4 -> s.getEmail();
+            case 5 -> s.getStatus();
+            default -> "";
+        };
     }
 }

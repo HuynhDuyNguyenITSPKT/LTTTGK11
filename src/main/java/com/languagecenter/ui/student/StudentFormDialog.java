@@ -1,153 +1,186 @@
-package com.languagecenter.ui.student;
+    package com.languagecenter.ui.student;
 
-import com.languagecenter.model.Student;
-import com.languagecenter.model.enums.Gender;
-import com.languagecenter.model.enums.StudentStatus;
+    import com.languagecenter.model.Student;
+    import com.languagecenter.model.enums.Gender;
+    import com.languagecenter.model.enums.StudentStatus;
 
-import javax.swing.*;
-import java.awt.*;
+    import javax.swing.*;
+    import java.awt.*;
 
-public class StudentFormDialog extends JDialog {
+    public class StudentFormDialog extends JDialog {
 
-    private final JTextField txtName = new JTextField(25);
-    private final JTextField txtPhone = new JTextField(15);
-    private final JTextField txtEmail = new JTextField(20);
+        private final JTextField txtName = new JTextField(25);
+        private final JTextField txtPhone = new JTextField(15);
+        private final JTextField txtEmail = new JTextField(20);
+        private final JTextField txtUsername = new JTextField(20);
+        private final JPasswordField txtPassword = new JPasswordField(20);
+        private final JComboBox<Gender> cboGender =
+                new JComboBox<>(Gender.values());
 
-    private final JComboBox<Gender> cboGender =
-            new JComboBox<>(Gender.values());
+        private final JComboBox<StudentStatus> cboStatus =
+                new JComboBox<>(StudentStatus.values());
 
-    private final JComboBox<StudentStatus> cboStatus =
-            new JComboBox<>(StudentStatus.values());
+        private boolean saved=false;
 
-    private boolean saved=false;
+        private Student student;
 
-    private Student student;
+        public StudentFormDialog(Frame owner,
+                                 String title,
+                                 Student existing,
+                                 String username){
 
-    public StudentFormDialog(Frame owner,String title,Student existing){
+            super(owner,title,true);
 
-        super(owner,title,true);
+            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            buildUI();
 
-        buildUI();
+            if(existing!=null){
 
-        if(existing!=null){
+                txtName.setText(existing.getFullName());
+                txtPhone.setText(existing.getPhone());
+                txtEmail.setText(existing.getEmail());
 
-            txtName.setText(existing.getFullName());
-            txtPhone.setText(existing.getPhone());
-            txtEmail.setText(existing.getEmail());
+                cboGender.setSelectedItem(existing.getGender());
+                cboStatus.setSelectedItem(existing.getStatus());
+                txtUsername.setText(username);
+                student = existing;
 
-            cboGender.setSelectedItem(existing.getGender());
-            cboStatus.setSelectedItem(existing.getStatus());
+            }else{
 
-            student = existing;
+                student = new Student();
+            }
 
-        }else{
-
-            student = new Student();
+            pack();
+            setLocationRelativeTo(owner);
         }
 
-        pack();
-        setLocationRelativeTo(owner);
-    }
+        private void buildUI(){
 
-    private void buildUI(){
+            JPanel form = new JPanel(new GridBagLayout());
+            GridBagConstraints g = new GridBagConstraints();
 
-        JPanel form = new JPanel(new GridBagLayout());
-        GridBagConstraints g = new GridBagConstraints();
+            g.insets = new Insets(6,6,6,6);
+            g.anchor = GridBagConstraints.WEST;
 
-        g.insets = new Insets(6,6,6,6);
-        g.anchor = GridBagConstraints.WEST;
+            int r=0;
 
-        int r=0;
+            g.gridx=0; g.gridy=r;
+            form.add(new JLabel("Name"),g);
 
-        g.gridx=0; g.gridy=r;
-        form.add(new JLabel("Name"),g);
+            g.gridx=1;
+            form.add(txtName,g);
 
-        g.gridx=1;
-        form.add(txtName,g);
+            r++;
 
-        r++;
+            g.gridx=0; g.gridy=r;
+            form.add(new JLabel("Phone"),g);
 
-        g.gridx=0; g.gridy=r;
-        form.add(new JLabel("Phone"),g);
+            g.gridx=1;
+            form.add(txtPhone,g);
 
-        g.gridx=1;
-        form.add(txtPhone,g);
+            r++;
 
-        r++;
+            g.gridx=0; g.gridy=r;
+            form.add(new JLabel("Email"),g);
 
-        g.gridx=0; g.gridy=r;
-        form.add(new JLabel("Email"),g);
+            g.gridx=1;
+            form.add(txtEmail,g);
 
-        g.gridx=1;
-        form.add(txtEmail,g);
+            r++;
 
-        r++;
+            g.gridx=0; g.gridy=r;
+            form.add(new JLabel("Gender"),g);
 
-        g.gridx=0; g.gridy=r;
-        form.add(new JLabel("Gender"),g);
+            g.gridx=1;
+            form.add(cboGender,g);
 
-        g.gridx=1;
-        form.add(cboGender,g);
+            r++;
 
-        r++;
+            g.gridx=0; g.gridy=r;
+            form.add(new JLabel("Status"),g);
 
-        g.gridx=0; g.gridy=r;
-        form.add(new JLabel("Status"),g);
+            g.gridx=1;
+            form.add(cboStatus,g);
 
-        g.gridx=1;
-        form.add(cboStatus,g);
+            r++;
 
-        JButton btnSave = new JButton("Save");
-        JButton btnCancel = new JButton("Cancel");
+            g.gridx=0; g.gridy=r;
+            form.add(new JLabel("Username"),g);
 
-        btnSave.addActionListener(e->onSave());
-        btnCancel.addActionListener(e->dispose());
+            g.gridx=1;
+            form.add(txtUsername,g);
 
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        actions.add(btnSave);
-        actions.add(btnCancel);
+            r++;
 
-        getContentPane().setLayout(new BorderLayout(10,10));
-        getContentPane().add(form,BorderLayout.CENTER);
-        getContentPane().add(actions,BorderLayout.SOUTH);
-    }
+            g.gridx=0; g.gridy=r;
+            form.add(new JLabel("Password"),g);
 
-    private void onSave(){
+            g.gridx=1;
+            form.add(txtPassword,g);
 
-        try{
+            JButton btnSave = new JButton("Save");
+            JButton btnCancel = new JButton("Cancel");
 
-            String name = txtName.getText().trim();
+            btnSave.addActionListener(e->onSave());
+            btnCancel.addActionListener(e->dispose());
 
-            if(name.isEmpty())
-                throw new IllegalArgumentException("Name required");
+            JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            actions.add(btnSave);
+            actions.add(btnCancel);
 
-            student.setFullName(name);
-            student.setPhone(txtPhone.getText());
-            student.setEmail(txtEmail.getText());
-            student.setGender((Gender)cboGender.getSelectedItem());
-            student.setStatus((StudentStatus)cboStatus.getSelectedItem());
+            getContentPane().setLayout(new BorderLayout(10,10));
+            getContentPane().add(form,BorderLayout.CENTER);
+            getContentPane().add(actions,BorderLayout.SOUTH);
+        }
 
-            saved=true;
-            dispose();
+        private void onSave(){
 
-        }catch(Exception ex){
+            try{
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    ex.getMessage(),
-                    "Validation",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                String name = txtName.getText().trim();
+
+                if(name.isEmpty())
+                    throw new IllegalArgumentException("Name required");
+
+                String username = txtUsername.getText().trim();
+
+                if(username.isEmpty())
+                    throw new IllegalArgumentException("Username required");
+
+                student.setFullName(name);
+                student.setPhone(txtPhone.getText());
+                student.setEmail(txtEmail.getText());
+                student.setGender((Gender)cboGender.getSelectedItem());
+                student.setStatus((StudentStatus)cboStatus.getSelectedItem());
+
+                saved=true;
+                dispose();
+
+            }catch(Exception ex){
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        ex.getMessage(),
+                        "Validation",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+
+        public boolean isSaved(){
+            return saved;
+        }
+
+        public Student getStudent(){
+            return student;
+        }
+
+        public String getUsername(){
+            return txtUsername.getText();
+        }
+
+        public String getPassword(){
+            return new String(txtPassword.getPassword());
         }
     }
-
-    public boolean isSaved(){
-        return saved;
-    }
-
-    public Student getStudent(){
-        return student;
-    }
-}
