@@ -1,4 +1,4 @@
-package com.languagecenter.model.Enum;
+package com.languagecenter.model.enums;
 
 public enum StudentStatus {
     Active,
