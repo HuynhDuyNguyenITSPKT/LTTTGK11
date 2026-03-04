@@ -1,6 +1,6 @@
 package com.languagecenter.model.enums;
 
-public enum TeacherStatus {
+public enum RoomStatus {
     Active,
     Inactive
 }
