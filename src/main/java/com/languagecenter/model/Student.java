@@ -1,21 +1,24 @@
 package com.languagecenter.model;
 
+import com.languagecenter.model.Enum.Gender;
+import com.languagecenter.model.Enum.StudentStatus;
 import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "students",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uq_students_email", columnNames = "email"),
-                @UniqueConstraint(name = "uq_students_phone", columnNames = "phone")
-        })
+@Table(name = "students")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Student {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_id")
-    private Long studentId;
+    private Long id;
 
     @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
@@ -27,122 +30,42 @@ public class Student {
     @Column(name = "gender")
     private Gender gender;
 
-    @Column(name = "phone", length = 20, unique = true)
+    @Column(length = 20, unique = true)
     private String phone;
 
-    @Column(name = "email", length = 150, unique = true)
+    @Column(length = 150, unique = true)
     private String email;
 
-    @Column(name = "address", length = 255)
+    @Column(length = 255)
     private String address;
 
-    @Column(name = "registration_date", nullable = false)
+    @Column(name = "registration_date")
     private LocalDate registrationDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private Status status;
+    @Column(nullable = false)
+    private StudentStatus status;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // ================= ENUM =================
-    public enum Gender {
-        Male, Female, Other
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        if (this.registrationDate == null) {
+            this.registrationDate = LocalDate.now();
+        }
+        if (this.status == null) {
+            this.status = StudentStatus.Active;
+        }
     }
 
-    public enum Status {
-        Active, Inactive
-    }
-
-    // ================= CONSTRUCTOR =================
-    public Student() {
-    }
-
-    public Student(String fullName, LocalDate dateOfBirth, Gender gender, String phone, String email, String address, LocalDate registrationDate, Status status) {
-        this.fullName = fullName;
-        this.dateOfBirth = dateOfBirth;
-        this.gender = gender;
-        this.phone = phone;
-        this.email = email;
-        this.address = address;
-        this.registrationDate = registrationDate;
-        this.status = status;
-    }
-
-    // ================= GETTER & SETTER =================
-    public Long getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(Long studentId) {
-        this.studentId = studentId;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public LocalDate getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public void setGender(Gender gender) {
-        this.gender = gender;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public LocalDate getRegistrationDate() {
-        return registrationDate;
-    }
-
-    public void setRegistrationDate(LocalDate registrationDate) {
-        this.registrationDate = registrationDate;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
