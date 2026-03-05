@@ -3,11 +3,14 @@ package com.languagecenter;
 import com.languagecenter.db.TransactionManager;
 import com.languagecenter.init.AppInitializer;
 import com.languagecenter.repo.StudentRepository;
+import com.languagecenter.repo.TeacherRepository;
 import com.languagecenter.repo.UserAccountRepository;
 import com.languagecenter.repo.jpa.JpaStudentRepository;
+import com.languagecenter.repo.jpa.JpaTeacherRepository;
 import com.languagecenter.repo.jpa.JpaUserAccountRepository;
 import com.languagecenter.service.AuthService;
 import com.languagecenter.service.StudentService;
+import com.languagecenter.service.TeacherService;
 import com.languagecenter.ui.LoginFrame;
 import com.languagecenter.ui.UI;
 
@@ -21,31 +24,28 @@ public class Main {
 
         TransactionManager tx = new TransactionManager();
 
-        StudentRepository studentRepo =
-                new JpaStudentRepository();
+        StudentRepository studentRepo = new JpaStudentRepository();
 
-        UserAccountRepository userRepo =
-                new JpaUserAccountRepository();
+        TeacherRepository teacherRepo = new JpaTeacherRepository();
 
-        StudentService studentService =
-                new StudentService(studentRepo,userRepo,tx);
+        UserAccountRepository userRepo = new JpaUserAccountRepository();
 
-        AuthService authService =
-                new AuthService(userRepo,tx);
+        StudentService studentService = new StudentService(studentRepo,userRepo,tx);
+
+        TeacherService teacherService = new TeacherService(teacherRepo,userRepo,tx);
+
+        AuthService authService = new AuthService(userRepo,tx);
 
         try {
             // tạo admin nếu chưa có
             AppInitializer.initAdmin(tx,userRepo);
-
         }catch(Exception ex){
             ex.printStackTrace();
         }
 
         SwingUtilities.invokeLater(() -> {
-
             LoginFrame login =
-                    new LoginFrame(authService,studentService);
-
+                    new LoginFrame(authService,studentService,teacherService);
             login.setVisible(true);
         });
     }

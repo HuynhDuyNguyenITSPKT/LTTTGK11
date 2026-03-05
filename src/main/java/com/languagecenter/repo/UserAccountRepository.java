@@ -8,4 +8,5 @@ public interface UserAccountRepository {
     void save(EntityManager em,UserAccount user) throws Exception;
     UserAccount findByStudentId(EntityManager em, Long studentId);
     void delete(EntityManager em, Long id);
+    UserAccount findByTeacherId(EntityManager em, Long id);
 }

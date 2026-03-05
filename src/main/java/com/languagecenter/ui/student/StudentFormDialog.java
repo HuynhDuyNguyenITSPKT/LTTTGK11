@@ -148,6 +148,11 @@
                 if(username.isEmpty())
                     throw new IllegalArgumentException("Username required");
 
+                String password = new String(txtPassword.getPassword());
+
+                if(password.isBlank())
+                    throw new IllegalArgumentException("Password required");
+
                 student.setFullName(name);
                 student.setPhone(txtPhone.getText());
                 student.setEmail(txtEmail.getText());

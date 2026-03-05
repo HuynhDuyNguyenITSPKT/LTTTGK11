@@ -43,4 +43,16 @@ public class JpaUserAccountRepository implements UserAccountRepository {
             em.remove(acc);
         }
     }
+
+    @Override
+    public UserAccount findByTeacherId(EntityManager em, Long id) {
+        return em.createQuery(
+                        "select u from UserAccount u where u.teacher.id = :sid",
+                        UserAccount.class
+                )
+                .setParameter("sid", id)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
 }

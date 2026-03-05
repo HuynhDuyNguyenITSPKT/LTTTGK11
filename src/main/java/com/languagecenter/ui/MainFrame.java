@@ -1,14 +1,16 @@
 package com.languagecenter.ui;
 
 import com.languagecenter.service.StudentService;
+import com.languagecenter.service.TeacherService;
 import com.languagecenter.ui.student.StudentPanel;
+import com.languagecenter.ui.teacher.TeacherPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class MainFrame extends JFrame {
 
-    public MainFrame(StudentService studentService) {
+    public MainFrame(StudentService studentService, TeacherService teacherService) {
 
         super("Language Center Management");
 
@@ -21,7 +23,8 @@ public class MainFrame extends JFrame {
         tabs.add("Students",
                 new StudentPanel(studentService));
 
-        tabs.add("Teachers", new JPanel());
+        tabs.add("Teachers",
+                new TeacherPanel(teacherService));
 
         tabs.add("Courses", new JPanel());
 
