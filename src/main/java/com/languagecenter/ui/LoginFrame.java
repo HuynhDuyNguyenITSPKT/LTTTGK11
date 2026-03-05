@@ -3,6 +3,7 @@ package com.languagecenter.ui;
 import com.languagecenter.model.UserAccount;
 import com.languagecenter.model.enums.UserRole;
 import com.languagecenter.service.AuthService;
+import com.languagecenter.service.CourseService;
 import com.languagecenter.service.StudentService;
 import com.languagecenter.service.TeacherService;
 
@@ -18,13 +19,15 @@ public class LoginFrame extends JFrame {
     private final AuthService authService;
     private final StudentService studentService;
     private final TeacherService teacherService;
+    private final CourseService courseService;
 
-    public LoginFrame(AuthService authService, StudentService studentService, TeacherService teacherService){
+    public LoginFrame(AuthService authService, StudentService studentService, TeacherService teacherService, CourseService courseService) {
         super("Language Center Management - Login");
 
         this.authService = authService;
         this.studentService = studentService;
         this.teacherService = teacherService;
+        this.courseService = courseService;
 
         // Giữ nguyên giao diện hệ điều hành
         try {
@@ -158,7 +161,7 @@ public class LoginFrame extends JFrame {
             dispose();
 
             if(acc.getRole() == UserRole.Admin){
-                new MainFrame(studentService,teacherService).setVisible(true);
+                new MainFrame(studentService,teacherService,courseService).setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(null, "UI for this role is not yet implemented.", "Information", JOptionPane.INFORMATION_MESSAGE);
             }

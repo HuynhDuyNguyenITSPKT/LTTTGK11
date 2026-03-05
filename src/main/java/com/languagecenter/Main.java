@@ -2,13 +2,16 @@ package com.languagecenter;
 
 import com.languagecenter.db.TransactionManager;
 import com.languagecenter.init.AppInitializer;
+import com.languagecenter.repo.CourseRepository;
 import com.languagecenter.repo.StudentRepository;
 import com.languagecenter.repo.TeacherRepository;
 import com.languagecenter.repo.UserAccountRepository;
+import com.languagecenter.repo.jpa.JpaCourseRepository;
 import com.languagecenter.repo.jpa.JpaStudentRepository;
 import com.languagecenter.repo.jpa.JpaTeacherRepository;
 import com.languagecenter.repo.jpa.JpaUserAccountRepository;
 import com.languagecenter.service.AuthService;
+import com.languagecenter.service.CourseService;
 import com.languagecenter.service.StudentService;
 import com.languagecenter.service.TeacherService;
 import com.languagecenter.ui.LoginFrame;
@@ -28,11 +31,15 @@ public class Main {
 
         TeacherRepository teacherRepo = new JpaTeacherRepository();
 
+        CourseRepository courseRepo = new JpaCourseRepository();
+
         UserAccountRepository userRepo = new JpaUserAccountRepository();
 
         StudentService studentService = new StudentService(studentRepo,userRepo,tx);
 
         TeacherService teacherService = new TeacherService(teacherRepo,userRepo,tx);
+
+        CourseService courseService = new CourseService(courseRepo,tx);
 
         AuthService authService = new AuthService(userRepo,tx);
 
@@ -45,7 +52,7 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             LoginFrame login =
-                    new LoginFrame(authService,studentService,teacherService);
+                    new LoginFrame(authService,studentService,teacherService,courseService);
             login.setVisible(true);
         });
     }
