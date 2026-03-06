@@ -1,243 +1,181 @@
 package com.languagecenter.ui.teacher;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import com.languagecenter.model.Teacher;
 import com.languagecenter.model.UserAccount;
 import com.languagecenter.model.enums.TeacherStatus;
 import com.languagecenter.service.TeacherService;
 import com.languagecenter.stream.TeacherStreamQueries;
-
+import com.languagecenter.ui.CustomTableRenderer;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class TeacherPanel extends JPanel {
-
     private final TeacherService teacherService;
+    private final JTextField txtSearch = new JTextField();
 
-    private final JTextField txtSearch = new JTextField(15);
+    // Khôi phục ComboBox trạng thái
+    private final JComboBox<TeacherStatus> cboStatus = new JComboBox<>(TeacherStatus.values());
 
-    private final JComboBox<TeacherStatus> cboStatus =
-            new JComboBox<>(TeacherStatus.values());
+    private final TeacherTableModel tableModel = new TeacherTableModel();
+    private final JTable table = new JTable(tableModel);
 
-    private final TeacherTableModel tableModel =
-            new TeacherTableModel();
-
-    private final JTable table =
-            new JTable(tableModel);
-
-    private List<Teacher> cachedTeachers = new ArrayList<>();
-
-    public TeacherPanel(TeacherService teacherService){
-
+    public TeacherPanel(TeacherService teacherService) {
         this.teacherService = teacherService;
+        setLayout(new BorderLayout(0, 15));
+        setBorder(new EmptyBorder(20, 25, 20, 25));
 
-        setLayout(new BorderLayout());
+        // Thêm mục "All Status" vào combo nếu cần (tùy thuộc vào enum của bạn)
+        // cboStatus.insertAt(null, 0);
 
         buildUI();
-
-        reloadAll();
+        reload();
     }
 
-    private void buildUI(){
+    private void buildUI() {
+        // --- TOP: TITLE & SEARCH & STATUS ---
+        JPanel topBar = new JPanel(new GridBagLayout());
+        topBar.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
 
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel lblTitle = new JLabel("Teacher Directory");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
 
-        top.add(new JLabel("Search"));
-        top.add(txtSearch);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 1.0; gbc.anchor = GridBagConstraints.WEST;
+        topBar.add(lblTitle, gbc);
 
-        top.add(new JLabel("Status"));
-        top.add(cboStatus);
+        // Group Search và Combo Trạng thái bên phải
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        filterPanel.setOpaque(false);
 
-        JButton btnSearch = new JButton("Search");
+        txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search name...");
+        txtSearch.setPreferredSize(new Dimension(250, 38));
 
-        JButton btnAdd = new JButton("Add");
-        JButton btnEdit = new JButton("Edit");
-        JButton btnDelete = new JButton("Delete");
-        JButton btnRefresh = new JButton("Refresh");
+        cboStatus.setPreferredSize(new Dimension(150, 38));
 
-        top.add(btnSearch);
-        top.add(btnAdd);
-        top.add(btnEdit);
-        top.add(btnDelete);
-        top.add(btnRefresh);
+        filterPanel.add(new JLabel("Status:"));
+        filterPanel.add(cboStatus);
+        filterPanel.add(txtSearch);
 
-        add(top,BorderLayout.NORTH);
+        gbc.gridx = 1; gbc.weightx = 0; gbc.anchor = GridBagConstraints.EAST;
+        topBar.add(filterPanel, gbc);
 
-        add(new JScrollPane(table),BorderLayout.CENTER);
+        // --- MIDDLE: ACTION BUTTONS ---
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+        toolBar.setOpaque(false);
 
-        btnSearch.addActionListener(e->runFilter());
-        cboStatus.addActionListener(e->runFilter());
+        Dimension btnSize = new Dimension(120, 40);
+        JButton btnAdd = createBtn("Add New", "#27ae60", btnSize);
+        JButton btnEdit = createBtn("Edit", "#2980b9", btnSize);
+        JButton btnDelete = createBtn("Delete", "#e74c3c", btnSize);
+        JButton btnRefresh = createBtn("Refresh", "#7f8c8d", btnSize);
 
-        btnRefresh.addActionListener(e->reloadAll());
+        toolBar.add(btnAdd);
+        toolBar.add(Box.createHorizontalStrut(10));
+        toolBar.add(btnEdit);
+        toolBar.add(Box.createHorizontalStrut(10));
+        toolBar.add(btnDelete);
+        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(btnRefresh);
 
-        btnAdd.addActionListener(e->onAdd());
-        btnEdit.addActionListener(e->onEdit());
-        btnDelete.addActionListener(e->onDelete());
-    }
-
-    private void reloadAll(){
-
-        try{
-
-            cachedTeachers =
-                    teacherService.getAll();
-
-            tableModel.setData(cachedTeachers);
-
-        }catch(Exception ex){
-
-            showError(ex);
+        // --- TABLE SETUP ---
+        table.setRowHeight(40);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        CustomTableRenderer renderer = new CustomTableRenderer();
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
+
+        JPanel northPanel = new JPanel(new GridLayout(2, 1, 0, 10));
+        northPanel.setOpaque(false);
+        northPanel.add(topBar);
+        northPanel.add(toolBar);
+
+        add(northPanel, BorderLayout.NORTH);
+        add(new JScrollPane(table), BorderLayout.CENTER);
+
+        // --- EVENT LISTENERS ---
+        btnAdd.addActionListener(e -> onAdd());
+        btnEdit.addActionListener(e -> onEdit());
+        btnDelete.addActionListener(e -> onDelete());
+        btnRefresh.addActionListener(e -> reload());
+
+        // Search khi nhấn Enter hoặc đổi Trạng thái
+        txtSearch.addActionListener(e -> reload());
+        cboStatus.addActionListener(e -> reload());
     }
 
-    private void runFilter(){
+    private JButton createBtn(String text, String color, Dimension size) {
+        JButton btn = new JButton(text);
+        btn.setPreferredSize(size);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.putClientProperty(FlatClientProperties.STYLE, "background:" + color + "; foreground:#fff");
+        return btn;
+    }
 
-        try{
+    private void reload() {
+        try {
+            String keyword = txtSearch.getText().trim();
+            TeacherStatus status = (TeacherStatus) cboStatus.getSelectedItem();
 
-            List<Teacher> result = cachedTeachers;
+            List<Teacher> list = teacherService.getAll();
 
-            String keyword = txtSearch.getText();
-
-            if(keyword!=null && !keyword.isBlank()){
-
-                result = TeacherStreamQueries
-                        .searchByName(result,keyword);
+            // Lọc theo tên
+            if (!keyword.isEmpty()) {
+                list = TeacherStreamQueries.searchByName(list, keyword);
             }
 
-            TeacherStatus status =
-                    (TeacherStatus)cboStatus.getSelectedItem();
-
-            if(status!=null){
-
-                result = TeacherStreamQueries
-                        .filterByStatus(result,status);
+            // Lọc theo trạng thái
+            if (status != null) {
+                list = TeacherStreamQueries.filterByStatus(list, status);
             }
 
-            tableModel.setData(result);
-
-        }catch(Exception ex){
-
-            showError(ex);
+            tableModel.setData(list);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
-    private void onAdd(){
-
-        TeacherFormDialog dlg =
-                new TeacherFormDialog(
-                        (Frame)SwingUtilities.getWindowAncestor(this),
-                        "Add Teacher",
-                        null,
-                        null
-                );
-
-        dlg.setVisible(true);
-
-        if(!dlg.isSaved()) return;
-
-        try{
-
-            teacherService.create(
-                    dlg.getTeacher(),
-                    dlg.getUsername(),
-                    dlg.getPassword()
-            );
-
-            reloadAll();
-
-        }catch(Exception ex){
-
-            showError(ex);
-        }
-    }
-
-    private void onEdit(){
-
+    private void onEdit() {
         int row = table.getSelectedRow();
-
-        if(row<0){
-            JOptionPane.showMessageDialog(this,"Select teacher");
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Select a teacher!");
             return;
         }
-
         Teacher t = tableModel.getTeacher(row);
-
-        try{
-
-            UserAccount acc =
-                    teacherService.findAccountByTeacherId(t.getId());
-
-            String username =
-                    acc!=null ? acc.getUsername() : "";
-
-            TeacherFormDialog dlg =
-                    new TeacherFormDialog(
-                            (Frame)SwingUtilities.getWindowAncestor(this),
-                            "Edit Teacher",
-                            t,
-                            username
-                    );
-
+        try {
+            UserAccount acc = teacherService.findAccountByTeacherId(t.getId());
+            TeacherFormDialog dlg = new TeacherFormDialog((Frame) SwingUtilities.getWindowAncestor(this), "Edit Teacher", t, acc != null ? acc.getUsername() : "");
             dlg.setVisible(true);
-
-            if(!dlg.isSaved()) return;
-
-            teacherService.update(
-                    dlg.getTeacher(),
-                    dlg.getUsername(),
-                    dlg.getPassword()
-            );
-
-            reloadAll();
-
-        }catch(Exception ex){
-
-            showError(ex);
-        }
+            if (dlg.isSaved()) {
+                teacherService.update(dlg.getTeacher(), dlg.getUsername(), dlg.getPassword());
+                reload();
+            }
+        } catch (Exception ex) { JOptionPane.showMessageDialog(this, ex.getMessage()); }
     }
 
-    private void onDelete(){
-
+    private void onDelete() {
         int row = table.getSelectedRow();
-
-        if(row<0){
-            JOptionPane.showMessageDialog(this,"Select teacher");
-            return;
-        }
-
-        Teacher t = tableModel.getTeacher(row);
-
-        int ok = JOptionPane.showConfirmDialog(
-                this,
-                "Delete teacher?",
-                "Confirm",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if(ok!=JOptionPane.YES_OPTION) return;
-
-        try{
-
-            teacherService.delete(t.getId());
-
-            reloadAll();
-
-        }catch(Exception ex){
-
-            showError(ex);
+        if (row < 0) return;
+        if (JOptionPane.showConfirmDialog(this, "Delete teacher?", "Confirm", 0) == 0) {
+            try {
+                teacherService.delete(tableModel.getTeacher(row).getId());
+                reload();
+            } catch (Exception ex) { JOptionPane.showMessageDialog(this, ex.getMessage()); }
         }
     }
 
-    private void showError(Exception ex){
-
-        ex.printStackTrace();
-
-        JOptionPane.showMessageDialog(
-                this,
-                ex.getMessage(),
-                "Error",
-                JOptionPane.ERROR_MESSAGE
-        );
+    private void onAdd() {
+        TeacherFormDialog dlg = new TeacherFormDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add Teacher", null, null);
+        dlg.setVisible(true);
+        if (dlg.isSaved()) {
+            try {
+                teacherService.create(dlg.getTeacher(), dlg.getUsername(), dlg.getPassword());
+                reload();
+            } catch (Exception ex) { JOptionPane.showMessageDialog(this, ex.getMessage()); }
+        }
     }
 }

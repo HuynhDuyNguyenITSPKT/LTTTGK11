@@ -1,173 +1,113 @@
 package com.languagecenter.ui;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import com.languagecenter.model.UserAccount;
 import com.languagecenter.model.enums.UserRole;
-import com.languagecenter.service.AuthService;
-import com.languagecenter.service.CourseService;
-import com.languagecenter.service.StudentService;
-import com.languagecenter.service.TeacherService;
+import com.languagecenter.service.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class LoginFrame extends JFrame {
-
     private final JTextField txtUser = new JTextField();
     private final JPasswordField txtPass = new JPasswordField();
-
     private final AuthService authService;
     private final StudentService studentService;
     private final TeacherService teacherService;
     private final CourseService courseService;
 
-    public LoginFrame(AuthService authService, StudentService studentService, TeacherService teacherService, CourseService courseService) {
-        super("Language Center Management - Login");
-
+    public LoginFrame(AuthService authService, StudentService studentService,
+                      TeacherService teacherService, CourseService courseService) {
+        super("Language Center Management System");
         this.authService = authService;
         this.studentService = studentService;
         this.teacherService = teacherService;
         this.courseService = courseService;
 
-        // Giữ nguyên giao diện hệ điều hành
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         buildUI();
 
-        // Tăng chiều cao lên một chút để form không bị ép
-        setSize(450, 320);
+        setSize(850, 500); // Tăng chiều rộng để chứa ảnh
         setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
-    private void buildUI(){
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(Color.WHITE);
-        mainPanel.setBorder(new EmptyBorder(20, 30, 20, 30));
+    private void buildUI() {
+        JPanel container = new JPanel(new BorderLayout());
+        container.setBackground(Color.WHITE);
 
-        /* --- 1. HEADER (LOGO & TITLE IN ENGLISH) --- */
-        JPanel headerPanel = new JPanel(new BorderLayout(15, 0));
-        headerPanel.setBackground(Color.WHITE);
-        headerPanel.setBorder(new EmptyBorder(0, 0, 20, 0));
+        // --- BÊN TRÁI: HÌNH ẢNH MINH HỌA ---
+        JPanel imagePanel = new JPanel(new BorderLayout());
+        imagePanel.setPreferredSize(new Dimension(400, 0));
+        imagePanel.setBackground(new Color(41, 128, 185));
 
+        // Tải ảnh từ resource (đảm bảo file tồn tại trong src/main/resources/images/login_bg.png)
+        JLabel lblImage = new JLabel();
         java.net.URL imgURL = getClass().getResource("/images/logo.png");
-        ImageIcon logoIcon;
         if (imgURL != null) {
-            ImageIcon originalIcon = new ImageIcon(imgURL);
-            Image img = originalIcon.getImage();
-            Image resizedImg = img.getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH);
-            logoIcon = new ImageIcon(resizedImg);
+            ImageIcon icon = new ImageIcon(new ImageIcon(imgURL).getImage().getScaledInstance(400, 500, Image.SCALE_SMOOTH));
+            lblImage.setIcon(icon);
         } else {
-            logoIcon = new ImageIcon();
+            lblImage.setText("<html><div style='color:white; text-align:center;'><h2>LANGUAGE CENTER</h2><br>Management System</div></html>");
+            lblImage.setHorizontalAlignment(SwingConstants.CENTER);
         }
+        imagePanel.add(lblImage);
 
-        JLabel lblLogo = new JLabel(logoIcon);
-
-        // Cập nhật tiêu đề tiếng Anh
-        JLabel lblTitle = new JLabel("<html><div style='text-align: center;'><b style='font-size:16px; color:#2980b9;'>Language Center</b><br><span style='font-size:12px; color:#7f8c8d;'>Management System</span></div></html>");
-
-        headerPanel.add(lblLogo, BorderLayout.WEST);
-        headerPanel.add(lblTitle, BorderLayout.CENTER);
-
-        /* --- 2. FORM (USERNAME & PASSWORD) --- */
+        // --- BÊN PHẢI: FORM ĐĂNG NHẬP ---
         JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(Color.WHITE);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
+        formPanel.setOpaque(false);
+        formPanel.setBorder(new EmptyBorder(0, 50, 0, 50));
 
-        Font fontLabel = new Font("Segoe UI", Font.BOLD, 14);
-        Font fontField = new Font("Segoe UI", Font.PLAIN, 14);
-        Color textColor = new Color(50, 50, 50);
+        GridBagConstraints g = new GridBagConstraints();
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.gridx = 0;
 
-        JLabel lblUser = new JLabel("Username:");
-        lblUser.setFont(fontLabel);
-        lblUser.setForeground(textColor);
+        JLabel lblWelcome = new JLabel("Welcome Back!");
+        lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        g.gridy = 0; g.insets = new Insets(0, 0, 30, 0);
+        formPanel.add(lblWelcome, g);
 
-        txtUser.setFont(fontField);
-        txtUser.setForeground(textColor);
-        // FIX: Cố định kích thước để ô không bị xẹp
-        txtUser.setPreferredSize(new Dimension(200, 35));
+        // Styling input fields to
+        Font inputFont = new Font("Segoe UI", Font.PLAIN, 16);
+        txtUser.setFont(inputFont);
+        txtUser.setPreferredSize(new Dimension(300, 45));
+        txtUser.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Username");
 
-        JLabel lblPass = new JLabel("Password:");
-        lblPass.setFont(fontLabel);
-        lblPass.setForeground(textColor);
+        txtPass.setFont(inputFont);
+        txtPass.setPreferredSize(new Dimension(300, 45));
+        txtPass.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Password");
+        txtPass.putClientProperty(FlatClientProperties.STYLE, "showRevealButton:true");
 
-        txtPass.setFont(fontField);
-        txtPass.setForeground(textColor);
-        // FIX: Cố định kích thước để ô không bị xẹp
-        txtPass.setPreferredSize(new Dimension(200, 35));
+        g.insets = new Insets(0, 0, 20, 0);
+        g.gridy = 1; formPanel.add(txtUser, g);
+        g.gridy = 2; formPanel.add(txtPass, g);
 
-        // Row 1
-        gbc.gridx = 0; gbc.gridy = 0;
-        gbc.weightx = 0.0; // Label không giãn
-        formPanel.add(lblUser, gbc);
+        JButton btnLogin = new JButton("LOGIN");
+        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btnLogin.setPreferredSize(new Dimension(0, 50));
+        btnLogin.putClientProperty(FlatClientProperties.STYLE, "background:#2980b9; foreground:#ffffff");
 
-        gbc.gridx = 1; gbc.gridy = 0;
-        gbc.weightx = 1.0; // Text field tự động giãn
-        formPanel.add(txtUser, gbc);
+        g.gridy = 3; g.insets = new Insets(10, 0, 0, 0);
+        formPanel.add(btnLogin, g);
 
-        // Row 2
-        gbc.gridx = 0; gbc.gridy = 1;
-        gbc.weightx = 0.0;
-        formPanel.add(lblPass, gbc);
-
-        gbc.gridx = 1; gbc.gridy = 1;
-        gbc.weightx = 1.0;
-        formPanel.add(txtPass, gbc);
-
-        /* --- 3. BUTTON PANEL --- */
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        bottomPanel.setBackground(Color.WHITE);
-
-        JButton btnLogin = new JButton("Login");
-        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnLogin.setPreferredSize(new Dimension(200, 40));
-        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        // FIX: Xử lý triệt để lỗi màu nút bấm trên Windows
-        btnLogin.setBackground(new Color(41, 128, 185));
-        btnLogin.setForeground(Color.WHITE);
-        btnLogin.setContentAreaFilled(false); // Ép Windows không vẽ nền mặc định
-        btnLogin.setOpaque(true);             // Cho phép vẽ màu nền xanh của chúng ta
+        container.add(imagePanel, BorderLayout.WEST);
+        container.add(formPanel, BorderLayout.CENTER);
 
         btnLogin.addActionListener(e -> login());
         getRootPane().setDefaultButton(btnLogin);
-        bottomPanel.add(btnLogin);
-
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
-        mainPanel.add(formPanel, BorderLayout.CENTER);
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        setContentPane(mainPanel);
+        setContentPane(container);
     }
 
-    private void login(){
-        try{
-            String user = txtUser.getText();
-            String pass = new String(txtPass.getPassword());
-
-            if (user.trim().isEmpty() || pass.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please enter both Username and Password!", "Warning", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            UserAccount acc = authService.login(user, pass);
+    private void login() {
+        try {
+            UserAccount acc = authService.login(txtUser.getText(), new String(txtPass.getPassword()));
             dispose();
-
-            if(acc.getRole() == UserRole.Admin){
-                new MainFrame(studentService,teacherService,courseService).setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(null, "UI for this role is not yet implemented.", "Information", JOptionPane.INFORMATION_MESSAGE);
+            if (acc.getRole() == UserRole.Admin) {
+                new MainFrame(studentService, teacherService, courseService).setVisible(true);
             }
-
-        }catch(Exception ex){
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Login Failed", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Login Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

@@ -1,191 +1,111 @@
-    package com.languagecenter.ui.student;
+package com.languagecenter.ui.student;
 
-    import com.languagecenter.model.Student;
-    import com.languagecenter.model.enums.Gender;
-    import com.languagecenter.model.enums.StudentStatus;
+import com.formdev.flatlaf.FlatClientProperties;
+import com.languagecenter.model.Student;
+import com.languagecenter.model.enums.Gender;
+import com.languagecenter.model.enums.StudentStatus;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
-    import javax.swing.*;
-    import java.awt.*;
+public class StudentFormDialog extends JDialog {
+    private final JTextField txtName = new JTextField(20);
+    private final JTextField txtPhone = new JTextField(20);
+    private final JTextField txtEmail = new JTextField(20);
+    private final JTextField txtUsername = new JTextField(20);
+    private final JPasswordField txtPass = new JPasswordField(20);
+    private final JComboBox<Gender> cboGender = new JComboBox<>(Gender.values());
+    private final JComboBox<StudentStatus> cboStatus = new JComboBox<>(StudentStatus.values());
 
-    public class StudentFormDialog extends JDialog {
+    private boolean saved = false;
+    private Student student;
 
-        private final JTextField txtName = new JTextField(25);
-        private final JTextField txtPhone = new JTextField(15);
-        private final JTextField txtEmail = new JTextField(20);
-        private final JTextField txtUsername = new JTextField(20);
-        private final JPasswordField txtPassword = new JPasswordField(20);
-        private final JComboBox<Gender> cboGender =
-                new JComboBox<>(Gender.values());
+    public StudentFormDialog(Frame owner, String title, Student existing, String username) {
+        super(owner, title, true);
+        this.student = (existing != null) ? existing : new Student();
 
-        private final JComboBox<StudentStatus> cboStatus =
-                new JComboBox<>(StudentStatus.values());
+        buildUI();
 
-        private boolean saved=false;
-
-        private Student student;
-
-        public StudentFormDialog(Frame owner,
-                                 String title,
-                                 Student existing,
-                                 String username){
-
-            super(owner,title,true);
-
-            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
-            buildUI();
-
-            if(existing!=null){
-
-                txtName.setText(existing.getFullName());
-                txtPhone.setText(existing.getPhone());
-                txtEmail.setText(existing.getEmail());
-
-                cboGender.setSelectedItem(existing.getGender());
-                cboStatus.setSelectedItem(existing.getStatus());
-                txtUsername.setText(username);
-                student = existing;
-
-            }else{
-
-                student = new Student();
-            }
-
-            pack();
-            setLocationRelativeTo(owner);
+        if (existing != null) {
+            txtName.setText(existing.getFullName());
+            txtPhone.setText(existing.getPhone());
+            txtEmail.setText(existing.getEmail());
+            cboGender.setSelectedItem(existing.getGender());
+            cboStatus.setSelectedItem(existing.getStatus());
+            txtUsername.setText(username);
         }
 
-        private void buildUI(){
+        pack();
+        setLocationRelativeTo(owner);
+    }
 
-            JPanel form = new JPanel(new GridBagLayout());
-            GridBagConstraints g = new GridBagConstraints();
+    private void buildUI() {
+        JPanel container = new JPanel(new BorderLayout(15, 15));
+        container.setBorder(new EmptyBorder(20, 25, 20, 25));
 
-            g.insets = new Insets(6,6,6,6);
-            g.anchor = GridBagConstraints.WEST;
+        // Form fields setup
+        JPanel form = new JPanel(new GridBagLayout());
+        GridBagConstraints g = new GridBagConstraints();
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.insets = new Insets(8, 5, 8, 5);
 
-            int r=0;
+        Font labelFont = new Font("Segoe UI", Font.BOLD, 14);
+        Font inputFont = new Font("Segoe UI", Font.PLAIN, 14);
 
-            g.gridx=0; g.gridy=r;
-            form.add(new JLabel("Name"),g);
+        String[] labels = {"Full Name:", "Phone Number:", "Email Address:", "Gender:", "Status:", "Username:", "Password:"};
+        JComponent[] fields = {txtName, txtPhone, txtEmail, cboGender, cboStatus, txtUsername, txtPass};
 
-            g.gridx=1;
-            form.add(txtName,g);
+        for (int i = 0; i < labels.length; i++) {
+            JLabel lbl = new JLabel(labels[i]);
+            lbl.setFont(labelFont);
+            g.gridx = 0; g.gridy = i; g.weightx = 0;
+            form.add(lbl, g);
 
-            r++;
-
-            g.gridx=0; g.gridy=r;
-            form.add(new JLabel("Phone"),g);
-
-            g.gridx=1;
-            form.add(txtPhone,g);
-
-            r++;
-
-            g.gridx=0; g.gridy=r;
-            form.add(new JLabel("Email"),g);
-
-            g.gridx=1;
-            form.add(txtEmail,g);
-
-            r++;
-
-            g.gridx=0; g.gridy=r;
-            form.add(new JLabel("Gender"),g);
-
-            g.gridx=1;
-            form.add(cboGender,g);
-
-            r++;
-
-            g.gridx=0; g.gridy=r;
-            form.add(new JLabel("Status"),g);
-
-            g.gridx=1;
-            form.add(cboStatus,g);
-
-            r++;
-
-            g.gridx=0; g.gridy=r;
-            form.add(new JLabel("Username"),g);
-
-            g.gridx=1;
-            form.add(txtUsername,g);
-
-            r++;
-
-            g.gridx=0; g.gridy=r;
-            form.add(new JLabel("Password"),g);
-
-            g.gridx=1;
-            form.add(txtPassword,g);
-
-            JButton btnSave = new JButton("Save");
-            JButton btnCancel = new JButton("Cancel");
-
-            btnSave.addActionListener(e->onSave());
-            btnCancel.addActionListener(e->dispose());
-
-            JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            actions.add(btnSave);
-            actions.add(btnCancel);
-
-            getContentPane().setLayout(new BorderLayout(10,10));
-            getContentPane().add(form,BorderLayout.CENTER);
-            getContentPane().add(actions,BorderLayout.SOUTH);
+            fields[i].setFont(inputFont);
+            fields[i].setPreferredSize(new Dimension(250, 35));
+            g.gridx = 1; g.weightx = 1.0;
+            form.add(fields[i], g);
         }
 
-        private void onSave(){
+        // Actions
+        JButton btnSave = new JButton("Save Data");
+        btnSave.putClientProperty(FlatClientProperties.STYLE, "background:#27ae60; foreground:#fff; font:bold");
+        btnSave.setPreferredSize(new Dimension(120, 40));
+        btnSave.addActionListener(e -> onSave());
 
-            try{
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.setPreferredSize(new Dimension(100, 40));
+        btnCancel.addActionListener(e -> dispose());
 
-                String name = txtName.getText().trim();
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        actions.add(btnSave);
+        actions.add(btnCancel);
 
-                if(name.isEmpty())
-                    throw new IllegalArgumentException("Name required");
+        container.add(form, BorderLayout.CENTER);
+        container.add(actions, BorderLayout.SOUTH);
+        setContentPane(container);
+    }
 
-                String username = txtUsername.getText().trim();
+    private void onSave() {
+        try {
+            if (txtName.getText().isBlank()) throw new IllegalArgumentException("Name is required");
+            if (txtUsername.getText().isBlank()) throw new IllegalArgumentException("Username is required");
 
-                if(username.isEmpty())
-                    throw new IllegalArgumentException("Username required");
+            student.setFullName(txtName.getText().trim());
+            student.setPhone(txtPhone.getText().trim());
+            student.setEmail(txtEmail.getText().trim());
+            student.setGender((Gender) cboGender.getSelectedItem());
+            student.setStatus((StudentStatus) cboStatus.getSelectedItem());
 
-                String password = new String(txtPassword.getPassword());
-
-                if(password.isBlank())
-                    throw new IllegalArgumentException("Password required");
-
-                student.setFullName(name);
-                student.setPhone(txtPhone.getText());
-                student.setEmail(txtEmail.getText());
-                student.setGender((Gender)cboGender.getSelectedItem());
-                student.setStatus((StudentStatus)cboStatus.getSelectedItem());
-
-                saved=true;
-                dispose();
-
-            }catch(Exception ex){
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        ex.getMessage(),
-                        "Validation",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        }
-
-        public boolean isSaved(){
-            return saved;
-        }
-
-        public Student getStudent(){
-            return student;
-        }
-
-        public String getUsername(){
-            return txtUsername.getText();
-        }
-
-        public String getPassword(){
-            return new String(txtPassword.getPassword());
+            saved = true;
+            dispose();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Validation Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    public boolean isSaved() { return saved; }
+    public Student getStudent() { return student; }
+    public String getUsername() { return txtUsername.getText(); }
+    public String getPassword() { return new String(txtPass.getPassword()); }
+}
