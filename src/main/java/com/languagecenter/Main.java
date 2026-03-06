@@ -26,6 +26,8 @@ public class Main {
 
         RoomRepository roomRepo = new JpaRoomRepository();
 
+        ClassRepository classRepo = new JpaClassRepository();
+
         UserAccountRepository userRepo = new JpaUserAccountRepository();
 
         StudentService studentService = new StudentService(studentRepo,userRepo,tx);
@@ -35,6 +37,8 @@ public class Main {
         CourseService courseService = new CourseService(courseRepo,tx);
 
         RoomService roomService = new RoomService(roomRepo,tx);
+
+        ClassService classService = new ClassService(classRepo,tx);
 
         AuthService authService = new AuthService(userRepo,tx);
 
@@ -47,7 +51,7 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             LoginFrame login =
-                    new LoginFrame(authService,studentService,teacherService,courseService,roomService);
+                    new LoginFrame(authService,studentService,teacherService,courseService,roomService,classService);
             login.setVisible(true);
         });
     }

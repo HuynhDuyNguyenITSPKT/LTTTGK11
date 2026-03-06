@@ -18,9 +18,10 @@ public class LoginFrame extends JFrame {
     private final TeacherService teacherService;
     private final CourseService courseService;
     private final RoomService roomService;
+    private final ClassService classService;
 
     public LoginFrame(AuthService authService, StudentService studentService, TeacherService teacherService,
-                      CourseService courseService, RoomService roomService) {
+                      CourseService courseService, RoomService roomService, ClassService classService) {
         super("Language Center Management - Login");
 
         this.authService = authService;
@@ -28,6 +29,7 @@ public class LoginFrame extends JFrame {
         this.teacherService = teacherService;
         this.courseService = courseService;
         this.roomService = roomService;
+        this.classService = classService;
 
 
         // Giữ nguyên giao diện hệ điều hành
@@ -162,7 +164,7 @@ public class LoginFrame extends JFrame {
             dispose();
 
             if(acc.getRole() == UserRole.Admin){
-                new MainFrame(studentService,teacherService,courseService,roomService).setVisible(true);
+                new MainFrame(studentService,teacherService,courseService,roomService,classService).setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(null, "UI for this role is not yet implemented.", "Information", JOptionPane.INFORMATION_MESSAGE);
             }
