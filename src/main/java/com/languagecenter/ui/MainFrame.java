@@ -41,6 +41,7 @@ public class MainFrame extends JFrame {
         sidebar.add(createMenuButton("Teachers", "TEACHER"));
         sidebar.add(createMenuButton("Courses", "COURSE"));
         sidebar.add(createMenuButton("Rooms", "ROOM")); // Đã thêm nút Room
+        sidebar.add(createMenuButton("CLASS", "CLASS"));
         sidebar.add(createMenuButton("Payments", "PAY"));
 
         // 2. Content Panel (Sử dụng CardLayout)
