@@ -2,18 +2,9 @@ package com.languagecenter;
 
 import com.languagecenter.db.TransactionManager;
 import com.languagecenter.init.AppInitializer;
-import com.languagecenter.repo.CourseRepository;
-import com.languagecenter.repo.StudentRepository;
-import com.languagecenter.repo.TeacherRepository;
-import com.languagecenter.repo.UserAccountRepository;
-import com.languagecenter.repo.jpa.JpaCourseRepository;
-import com.languagecenter.repo.jpa.JpaStudentRepository;
-import com.languagecenter.repo.jpa.JpaTeacherRepository;
-import com.languagecenter.repo.jpa.JpaUserAccountRepository;
-import com.languagecenter.service.AuthService;
-import com.languagecenter.service.CourseService;
-import com.languagecenter.service.StudentService;
-import com.languagecenter.service.TeacherService;
+import com.languagecenter.repo.*;
+import com.languagecenter.repo.jpa.*;
+import com.languagecenter.service.*;
 import com.languagecenter.ui.LoginFrame;
 import com.languagecenter.ui.UI;
 
@@ -33,6 +24,8 @@ public class Main {
 
         CourseRepository courseRepo = new JpaCourseRepository();
 
+        RoomRepository roomRepo = new JpaRoomRepository();
+
         UserAccountRepository userRepo = new JpaUserAccountRepository();
 
         StudentService studentService = new StudentService(studentRepo,userRepo,tx);
@@ -40,6 +33,8 @@ public class Main {
         TeacherService teacherService = new TeacherService(teacherRepo,userRepo,tx);
 
         CourseService courseService = new CourseService(courseRepo,tx);
+
+        RoomService roomService = new RoomService(roomRepo,tx);
 
         AuthService authService = new AuthService(userRepo,tx);
 
@@ -52,7 +47,7 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             LoginFrame login =
-                    new LoginFrame(authService,studentService,teacherService,courseService);
+                    new LoginFrame(authService,studentService,teacherService,courseService,roomService);
             login.setVisible(true);
         });
     }

@@ -12,16 +12,19 @@ public final class UI {
             UIManager.setLookAndFeel(new FlatIntelliJLaf());
 
             // Tinh chỉnh Style toàn cục
-            UIManager.put("Button.arc", 8);
-            UIManager.put("Component.arc", 8);
-            UIManager.put("TextComponent.arc", 8);
+            UIManager.put("Button.arc", 10);
+            UIManager.put("Component.arc", 10);
+            UIManager.put("TextComponent.arc", 10);
 
-            // Làm cho bảng JTable trông thoáng hơn
-            UIManager.put("Table.rowHeight", 35);
+            // Cấu hình JTable hiện đại
+            UIManager.put("Table.rowHeight", 40);
             UIManager.put("Table.showHorizontalLines", true);
             UIManager.put("Table.showVerticalLines", false);
             UIManager.put("Table.intercellSpacing", new Dimension(0, 1));
-            UIManager.put("TableHeader.background", new Color(240, 240, 240));
+            UIManager.put("Table.selectionBackground", new Color(41, 128, 185, 40));
+            UIManager.put("Table.selectionForeground", Color.BLACK);
+            UIManager.put("TableHeader.background", new Color(245, 245, 245));
+            UIManager.put("TableHeader.font", new Font("Segoe UI", Font.BOLD, 14));
 
         } catch (Exception ignored) {}
     }

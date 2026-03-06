@@ -16,18 +16,20 @@ public class LoginFrame extends JFrame {
     private final StudentService studentService;
     private final TeacherService teacherService;
     private final CourseService courseService;
+    private final RoomService roomService;
 
     public LoginFrame(AuthService authService, StudentService studentService,
-                      TeacherService teacherService, CourseService courseService) {
-        super("Language Center Management System");
+                      TeacherService teacherService, CourseService courseService, RoomService roomService) {
+        super("System Login");
         this.authService = authService;
         this.studentService = studentService;
         this.teacherService = teacherService;
         this.courseService = courseService;
+        this.roomService = roomService;
 
         buildUI();
 
-        setSize(850, 500); // Tăng chiều rộng để chứa ảnh
+        setSize(850, 500);
         setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -37,24 +39,26 @@ public class LoginFrame extends JFrame {
         JPanel container = new JPanel(new BorderLayout());
         container.setBackground(Color.WHITE);
 
-        // --- BÊN TRÁI: HÌNH ẢNH MINH HỌA ---
+        // --- BÊN TRÁI: LOGO/IMAGE ---
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setPreferredSize(new Dimension(400, 0));
         imagePanel.setBackground(new Color(41, 128, 185));
 
-        // Tải ảnh từ resource (đảm bảo file tồn tại trong src/main/resources/images/login_bg.png)
         JLabel lblImage = new JLabel();
         java.net.URL imgURL = getClass().getResource("/images/logo.png");
         if (imgURL != null) {
-            ImageIcon icon = new ImageIcon(new ImageIcon(imgURL).getImage().getScaledInstance(400, 500, Image.SCALE_SMOOTH));
+            // Scale ảnh để vừa khít vùng chứa
+            ImageIcon icon = new ImageIcon(new ImageIcon(imgURL).getImage()
+                    .getScaledInstance(300, 300, Image.SCALE_SMOOTH));
             lblImage.setIcon(icon);
+            lblImage.setHorizontalAlignment(SwingConstants.CENTER);
         } else {
-            lblImage.setText("<html><div style='color:white; text-align:center;'><h2>LANGUAGE CENTER</h2><br>Management System</div></html>");
+            lblImage.setText("<html><div style='color:white; text-align:center;'><h2>ENGLISH CENTER</h2><br>Management System</div></html>");
             lblImage.setHorizontalAlignment(SwingConstants.CENTER);
         }
-        imagePanel.add(lblImage);
+        imagePanel.add(lblImage, BorderLayout.CENTER);
 
-        // --- BÊN PHẢI: FORM ĐĂNG NHẬP ---
+        // --- BÊN PHẢI: FORM ---
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setOpaque(false);
         formPanel.setBorder(new EmptyBorder(0, 50, 0, 50));
@@ -65,10 +69,10 @@ public class LoginFrame extends JFrame {
 
         JLabel lblWelcome = new JLabel("Welcome Back!");
         lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lblWelcome.setForeground(new Color(44, 62, 80));
         g.gridy = 0; g.insets = new Insets(0, 0, 30, 0);
         formPanel.add(lblWelcome, g);
 
-        // Styling input fields to
         Font inputFont = new Font("Segoe UI", Font.PLAIN, 16);
         txtUser.setFont(inputFont);
         txtUser.setPreferredSize(new Dimension(300, 45));
@@ -79,13 +83,14 @@ public class LoginFrame extends JFrame {
         txtPass.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Password");
         txtPass.putClientProperty(FlatClientProperties.STYLE, "showRevealButton:true");
 
-        g.insets = new Insets(0, 0, 20, 0);
+        g.insets = new Insets(0, 0, 15, 0);
         g.gridy = 1; formPanel.add(txtUser, g);
         g.gridy = 2; formPanel.add(txtPass, g);
 
         JButton btnLogin = new JButton("LOGIN");
         btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btnLogin.setPreferredSize(new Dimension(0, 50));
+        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogin.putClientProperty(FlatClientProperties.STYLE, "background:#2980b9; foreground:#ffffff");
 
         g.gridy = 3; g.insets = new Insets(10, 0, 0, 0);
@@ -101,10 +106,21 @@ public class LoginFrame extends JFrame {
 
     private void login() {
         try {
-            UserAccount acc = authService.login(txtUser.getText(), new String(txtPass.getPassword()));
+            String user = txtUser.getText().trim();
+            String pass = new String(txtPass.getPassword());
+
+            if (user.isEmpty() || pass.isEmpty()) {
+                throw new IllegalArgumentException("Username and password cannot be empty!");
+            }
+
+            UserAccount acc = authService.login(user, pass);
             dispose();
+
             if (acc.getRole() == UserRole.Admin) {
-                new MainFrame(studentService, teacherService, courseService).setVisible(true);
+                // Truyền đầy đủ service vào MainFrame
+                new MainFrame(studentService, teacherService, courseService, roomService).setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, "Access denied. Admin role required.", "Forbidden", JOptionPane.WARNING_MESSAGE);
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Login Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
