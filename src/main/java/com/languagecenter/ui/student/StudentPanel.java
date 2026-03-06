@@ -15,10 +15,7 @@ import java.util.List;
 public class StudentPanel extends JPanel {
     private final StudentService studentService;
     private final JTextField txtSearch = new JTextField();
-
-    // Khôi phục ComboBox trạng thái sinh viên
     private final JComboBox<StudentStatus> cboStatus = new JComboBox<>(StudentStatus.values());
-
     private final JTable table = new JTable();
     private final StudentTableModel tableModel = new StudentTableModel();
 
@@ -26,84 +23,66 @@ public class StudentPanel extends JPanel {
         this.studentService = studentService;
         setLayout(new BorderLayout(0, 15));
         setBorder(new EmptyBorder(20, 25, 20, 25));
-
         buildUI();
-        reload(); // Tải dữ liệu ban đầu
+        reload();
     }
 
     private void buildUI() {
-        // --- TOP: TITLE & FILTER (COMBO + SEARCH) ---
-        JPanel topBar = new JPanel(new GridBagLayout());
-        topBar.setOpaque(false);
-        GridBagConstraints gbc = new GridBagConstraints();
-
+        // --- TOP BAR ---
+        JPanel topBar = new JPanel(new BorderLayout());
         JLabel lblTitle = new JLabel("Student Directory");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
 
-        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 1.0; gbc.anchor = GridBagConstraints.WEST;
-        topBar.add(lblTitle, gbc);
-
-        // Cụm tìm kiếm và lọc trạng thái bên phải
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        filterPanel.setOpaque(false);
-
-        txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search name or email...");
+        txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search name...");
         txtSearch.setPreferredSize(new Dimension(250, 38));
-
-        cboStatus.setPreferredSize(new Dimension(150, 38));
+        cboStatus.setPreferredSize(new Dimension(140, 38));
 
         filterPanel.add(new JLabel("Status:"));
         filterPanel.add(cboStatus);
         filterPanel.add(txtSearch);
 
-        gbc.gridx = 1; gbc.weightx = 0; gbc.anchor = GridBagConstraints.EAST;
-        topBar.add(filterPanel, gbc);
+        topBar.add(lblTitle, BorderLayout.WEST);
+        topBar.add(filterPanel, BorderLayout.EAST);
 
-        // --- MIDDLE: ACTION BUTTONS (ĐỒNG NHẤT KÍCH THƯỚC) ---
+        // --- TOOLBAR ---
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
         toolBar.setOpaque(false);
+        Dimension btnSize = new Dimension(110, 40);
 
-        Dimension btnSize = new Dimension(120, 40);
         JButton btnAdd = createBtn("Add New", "#27ae60", btnSize);
+        JButton btnView = createBtn("View", "#34495e", btnSize);
         JButton btnEdit = createBtn("Edit", "#2980b9", btnSize);
         JButton btnDelete = createBtn("Delete", "#e74c3c", btnSize);
         JButton btnRefresh = createBtn("Refresh", "#7f8c8d", btnSize);
 
-        toolBar.add(btnAdd);
-        toolBar.add(Box.createHorizontalStrut(10));
-        toolBar.add(btnEdit);
-        toolBar.add(Box.createHorizontalStrut(10));
-        toolBar.add(btnDelete);
-        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(btnAdd); toolBar.addSeparator();
+        toolBar.add(btnView); toolBar.addSeparator();
+        toolBar.add(btnEdit); toolBar.addSeparator();
+        toolBar.add(btnDelete); toolBar.add(Box.createHorizontalGlue());
         toolBar.add(btnRefresh);
 
-        // --- TABLE: CĂN GIỮA & ĐỔI MÀU TRẠNG THÁI ---
+        // --- TABLE ---
         table.setModel(tableModel);
         table.setRowHeight(40);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-
-        // Sử dụng Renderer chung để căn giữa và đổi màu status
         CustomTableRenderer renderer = new CustomTableRenderer();
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
 
-        JPanel northPanel = new JPanel(new GridLayout(2, 1, 0, 10));
-        northPanel.setOpaque(false);
-        northPanel.add(topBar);
-        northPanel.add(toolBar);
+        JPanel north = new JPanel(new GridLayout(2, 1, 0, 10));
+        north.add(topBar); north.add(toolBar);
 
-        add(northPanel, BorderLayout.NORTH);
+        add(north, BorderLayout.NORTH);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // --- EVENT LISTENERS ---
+        // Listeners
         btnAdd.addActionListener(e -> onAdd());
-        btnEdit.addActionListener(e -> onEdit());
+        btnView.addActionListener(e -> onAction(true));
+        btnEdit.addActionListener(e -> onAction(false));
         btnDelete.addActionListener(e -> onDelete());
         btnRefresh.addActionListener(e -> reload());
-
-        // Tự động reload khi nhấn Enter hoặc thay đổi combo
         txtSearch.addActionListener(e -> reload());
         cboStatus.addActionListener(e -> reload());
     }
@@ -112,49 +91,31 @@ public class StudentPanel extends JPanel {
         JButton btn = new JButton(text);
         btn.setPreferredSize(size);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.putClientProperty(FlatClientProperties.STYLE, "background:" + color + "; foreground:#fff");
         return btn;
     }
 
     private void reload() {
         try {
-            String keyword = txtSearch.getText().trim();
-            StudentStatus status = (StudentStatus) cboStatus.getSelectedItem();
-
             List<Student> list = studentService.getAll();
-
-            // Lọc theo tên/keyword
-            if (!keyword.isEmpty()) {
-                list = StudentStreamQueries.searchByName(list, keyword);
-            }
-
-            // Lọc theo trạng thái sinh viên
-            if (status != null) {
-                list = StudentStreamQueries.filterByStatus(list, status);
-            }
-
+            String key = txtSearch.getText().trim();
+            if (!key.isEmpty()) list = StudentStreamQueries.searchByName(list, key);
+            StudentStatus status = (StudentStatus) cboStatus.getSelectedItem();
+            if (status != null) list = StudentStreamQueries.filterByStatus(list, status);
             tableModel.setData(list);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Reload Error: " + ex.getMessage());
-        }
+        } catch (Exception ex) { JOptionPane.showMessageDialog(this, ex.getMessage()); }
     }
 
-    private void onEdit() {
+    private void onAction(boolean isView) {
         int row = table.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Select a student to edit!");
-            return;
-        }
+        if (row < 0) return;
         Student s = tableModel.getStudent(row);
         try {
             UserAccount acc = studentService.findAccountByStudentId(s.getId());
-            StudentFormDialog dlg = new StudentFormDialog(
-                    (Frame) SwingUtilities.getWindowAncestor(this),
-                    "Edit Student", s, acc != null ? acc.getUsername() : "");
+            StudentFormDialog dlg = new StudentFormDialog((Frame) SwingUtilities.getWindowAncestor(this),
+                    isView ? "View Details" : "Edit Student", s, acc != null ? acc.getUsername() : "", isView);
             dlg.setVisible(true);
-
-            if (dlg.isSaved()) {
+            if (!isView && dlg.isSaved()) {
                 studentService.update(dlg.getStudent(), dlg.getUsername(), dlg.getPassword());
                 reload();
             }
@@ -163,11 +124,8 @@ public class StudentPanel extends JPanel {
 
     private void onDelete() {
         int row = table.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Select a student to delete!");
-            return;
-        }
-        if (JOptionPane.showConfirmDialog(this, "Delete this student?", "Confirm", JOptionPane.YES_NO_OPTION) == 0) {
+        if (row < 0) return;
+        if (JOptionPane.showConfirmDialog(this, "Delete student?", "Confirm", 0) == 0) {
             try {
                 studentService.delete(tableModel.getStudent(row).getId());
                 reload();
@@ -176,8 +134,7 @@ public class StudentPanel extends JPanel {
     }
 
     private void onAdd() {
-        StudentFormDialog dlg = new StudentFormDialog(
-                (Frame) SwingUtilities.getWindowAncestor(this), "Add Student", null, null);
+        StudentFormDialog dlg = new StudentFormDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add New", null, null, false);
         dlg.setVisible(true);
         if (dlg.isSaved()) {
             try {

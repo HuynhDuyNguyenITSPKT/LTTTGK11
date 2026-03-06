@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StudentTableModel extends AbstractTableModel {
-    private final String[] columns = {"ID", "Full Name", "Gender", "Phone", "Email", "Status"};
+    private final String[] columns = {"ID", "Full Name", "Gender", "Phone", "Email", "Address", "Status"};
     private List<Student> data = new ArrayList<>();
 
     public void setData(List<Student> data) {
@@ -28,7 +28,8 @@ public class StudentTableModel extends AbstractTableModel {
             case 2 -> s.getGender();
             case 3 -> s.getPhone();
             case 4 -> s.getEmail();
-            case 5 -> s.getStatus();
+            case 5 -> s.getAddress();
+            case 6 -> s.getStatus();
             default -> "";
         };
     }
