@@ -105,27 +105,24 @@ public class LoginFrame extends JFrame {
         getRootPane().setDefaultButton(btnLogin);
         setContentPane(container);
     }
-
     private void login() {
         try {
             String user = txtUser.getText().trim();
             String pass = new String(txtPass.getPassword());
 
-            if (user.isEmpty() || pass.isEmpty()) {
-                throw new IllegalArgumentException("Username and password cannot be empty!");
-            }
-
             UserAccount acc = authService.login(user, pass);
             dispose();
 
             if (acc.getRole() == UserRole.Admin) {
-                // Truyền đầy đủ service vào MainFrame
-                new MainFrame(studentService, teacherService, courseService, roomService,classService).setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(this, "Access denied. Admin role required.", "Forbidden", JOptionPane.WARNING_MESSAGE);
+                new MainFrame(studentService, teacherService, courseService, roomService, classService).setVisible(true);
+            } else if (acc.getRole() == UserRole.Teacher) {
+                // Cần tạo TeacherMainFrame tương tự StudentMainFrame
+                new TeacherMainFrame(acc, authService, studentService, teacherService, courseService, roomService, classService).setVisible(true);
+            } else if (acc.getRole() == UserRole.Student) {
+                new StudentMainFrame(acc, authService, studentService, teacherService, courseService, roomService, classService).setVisible(true);
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Login Failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
