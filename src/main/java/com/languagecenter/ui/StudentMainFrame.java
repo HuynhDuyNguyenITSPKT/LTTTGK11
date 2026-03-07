@@ -16,8 +16,9 @@ public class StudentMainFrame extends JFrame {
     private final CourseService courseService;
     private final RoomService roomService;
     private final ClassService classService;
+    private final ScheduleService scheduleService;
 
-    public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts, CourseService cs, RoomService rs, ClassService cls) {
+    public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts, CourseService cs, RoomService rs, ClassService cls,ScheduleService sche) {
         super("Student Portal - " + acc.getStudent().getFullName());
         this.authService = as;
         this.studentService = ss;
@@ -25,7 +26,7 @@ public class StudentMainFrame extends JFrame {
         this.courseService = cs;
         this.roomService = rs;
         this.classService = cls;
-
+        this.scheduleService = sche;
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Chạy toàn màn hình
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -76,7 +77,7 @@ public class StudentMainFrame extends JFrame {
         if (JOptionPane.showConfirmDialog(this, "Đăng xuất khỏi hệ thống?", "Logout", 0) == 0) {
             this.dispose();
             // Quay lại màn hình Login với đầy đủ các Service ban đầu
-            new LoginFrame(authService, studentService, teacherService, courseService, roomService, classService).setVisible(true);
+            new LoginFrame(authService, studentService, teacherService, courseService, roomService, classService,scheduleService).setVisible(true);
         }
     }
 }

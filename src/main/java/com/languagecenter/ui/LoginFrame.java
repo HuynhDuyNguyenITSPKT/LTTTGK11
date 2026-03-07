@@ -18,9 +18,10 @@ public class LoginFrame extends JFrame {
     private final CourseService courseService;
     private final RoomService roomService;
     private final ClassService classService;
+    private final ScheduleService scheduleService;
 
     public LoginFrame(AuthService authService, StudentService studentService,
-                      TeacherService teacherService, CourseService courseService, RoomService roomService,ClassService classService) {
+                      TeacherService teacherService, CourseService courseService, RoomService roomService,ClassService classService,ScheduleService scheduleService) {
         super("System Login");
         this.authService = authService;
         this.studentService = studentService;
@@ -28,6 +29,7 @@ public class LoginFrame extends JFrame {
         this.courseService = courseService;
         this.roomService = roomService;
         this.classService = classService;
+        this.scheduleService = scheduleService;
 
         buildUI();
 
@@ -114,12 +116,12 @@ public class LoginFrame extends JFrame {
             dispose();
 
             if (acc.getRole() == UserRole.Admin) {
-                new MainFrame(studentService, teacherService, courseService, roomService, classService).setVisible(true);
+                new MainFrame(studentService, teacherService, courseService, roomService, classService, scheduleService).setVisible(true);
             } else if (acc.getRole() == UserRole.Teacher) {
                 // Cần tạo TeacherMainFrame tương tự StudentMainFrame
-                new TeacherMainFrame(acc, authService, studentService, teacherService, courseService, roomService, classService).setVisible(true);
+                new TeacherMainFrame(acc, authService, studentService, teacherService, courseService, roomService, classService, scheduleService).setVisible(true);
             } else if (acc.getRole() == UserRole.Student) {
-                new StudentMainFrame(acc, authService, studentService, teacherService, courseService, roomService, classService).setVisible(true);
+                new StudentMainFrame(acc, authService, studentService, teacherService, courseService, roomService, classService,scheduleService).setVisible(true);
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);

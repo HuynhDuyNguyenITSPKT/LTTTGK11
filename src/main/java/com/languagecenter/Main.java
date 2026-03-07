@@ -30,6 +30,8 @@ public class Main {
 
         UserAccountRepository userRepo = new JpaUserAccountRepository();
 
+        ScheduleRepository scheduleRepo = new JpaScheduleRepository();
+
         StudentService studentService = new StudentService(studentRepo,userRepo,tx);
 
         TeacherService teacherService = new TeacherService(teacherRepo,userRepo,tx);
@@ -42,6 +44,8 @@ public class Main {
 
         AuthService authService = new AuthService(userRepo,tx);
 
+        ScheduleService scheduleService = new ScheduleService(scheduleRepo,tx);
+
         try {
             // tạo admin nếu chưa có
             AppInitializer.initAdmin(tx,userRepo);
@@ -51,7 +55,7 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             LoginFrame login =
-                    new LoginFrame(authService,studentService,teacherService,courseService,roomService,classService);
+                    new LoginFrame(authService,studentService,teacherService,courseService,roomService,classService,scheduleService);
             login.setVisible(true);
         });
     }

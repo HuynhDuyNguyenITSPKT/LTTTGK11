@@ -105,6 +105,14 @@ public class RoomPanel extends JPanel {
         table.setShowVerticalLines(false);
         table.setGridColor(new Color(235, 235, 235));
 
+        // căn giữa text
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
         // Renderer cho cột trạng thái (Cột số 4)
         table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override

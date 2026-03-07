@@ -84,4 +84,9 @@ public class Room {
     public void setStatus(RoomStatus status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return roomName;
+    }
 }

@@ -137,4 +137,9 @@ public class Class {
     public void setStatus(ClassStatus status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return className;
+    }
 }

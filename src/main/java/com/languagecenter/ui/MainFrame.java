@@ -3,6 +3,7 @@ package com.languagecenter.ui;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.languagecenter.service.*;
 import com.languagecenter.ui.clazz.ClassPanel;
+import com.languagecenter.ui.schedule.SchedulePanel;
 import com.languagecenter.ui.student.StudentPanel;
 import com.languagecenter.ui.teacher.TeacherPanel;
 import com.languagecenter.ui.course.CoursePanel;
@@ -16,7 +17,7 @@ public class MainFrame extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel contentPanel = new JPanel(cardLayout);
 
-    public MainFrame(StudentService ss, TeacherService ts, CourseService cs, RoomService rs,ClassService classService) {
+    public MainFrame(StudentService ss, TeacherService ts, CourseService cs, RoomService rs,ClassService classService,ScheduleService scheduleService) {
         super("Language Center Management - Admin Dashboard");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -41,7 +42,8 @@ public class MainFrame extends JFrame {
         sidebar.add(createMenuButton("Teachers", "TEACHER"));
         sidebar.add(createMenuButton("Courses", "COURSE"));
         sidebar.add(createMenuButton("Rooms", "ROOM")); // Đã thêm nút Room
-        sidebar.add(createMenuButton("CLASS", "CLASS"));
+        sidebar.add(createMenuButton("Class", "CLASS"));
+        sidebar.add(createMenuButton("Schedules", "SCHEDULE"));
         sidebar.add(createMenuButton("Payments", "PAY"));
 
         // 2. Content Panel (Sử dụng CardLayout)
@@ -51,6 +53,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(new CoursePanel(cs), "COURSE");
         contentPanel.add(new RoomPanel(rs), "ROOM"); // Đã thêm RoomPanel
         contentPanel.add(new ClassPanel(classService,cs,ts,rs), "CLASS"); // Thêm ClassPanel nếu cần
+        contentPanel.add(new SchedulePanel(scheduleService,classService,rs), "SCHEDULE");
         contentPanel.add(new JPanel(), "PAY");
 
         add(sidebar, BorderLayout.WEST);

@@ -108,6 +108,14 @@ public class CoursePanel extends JPanel {
         table.setSelectionForeground(Color.BLACK);
         table.setShowVerticalLines(false); // Chỉ hiện dòng kẻ ngang cho hiện đại
 
+        // căn giữa text
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
         // Renderer cho cột trạng thái (Cột số 4 giả định)
         // Lưu ý: index cột tùy thuộc vào TableModel của bạn
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
