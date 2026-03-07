@@ -1,4 +1,4 @@
-package com.languagecenter.ui.clazz;
+package com.languagecenter.ui.clas;
 
 import com.languagecenter.model.Class;
 import com.languagecenter.model.enums.ClassStatus;

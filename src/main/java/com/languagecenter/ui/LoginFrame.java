@@ -118,7 +118,7 @@ public class LoginFrame extends JFrame {
             dispose();
 
             if (acc.getRole() == UserRole.Admin) {
-                new MainFrame(studentService, teacherService, courseService, roomService, classService, scheduleService,enrollmentService).setVisible(true);
+                new MainFrame(acc, authService, studentService, teacherService, courseService, roomService, classService, scheduleService,enrollmentService).setVisible(true);
             } else if (acc.getRole() == UserRole.Teacher) {
                 // Cần tạo TeacherMainFrame tương tự StudentMainFrame
                 new TeacherMainFrame(acc, authService, studentService, teacherService, courseService, roomService, classService, scheduleService,enrollmentService).setVisible(true);
