@@ -4,6 +4,8 @@ import com.formdev.flatlaf.FlatClientProperties;
 import com.languagecenter.model.UserAccount;
 import com.languagecenter.service.*;
 import com.languagecenter.ui.student.StudentProfilePage;
+import com.languagecenter.ui.student.StudentSchedulePanel;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -17,8 +19,9 @@ public class StudentMainFrame extends JFrame {
     private final RoomService roomService;
     private final ClassService classService;
     private final ScheduleService scheduleService;
+    private final EnrollmentService enrollmentService;
 
-    public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts, CourseService cs, RoomService rs, ClassService cls,ScheduleService sche) {
+    public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts, CourseService cs, RoomService rs, ClassService cls,ScheduleService sche,EnrollmentService enrollmentService) {
         super("Student Portal - " + acc.getStudent().getFullName());
         this.authService = as;
         this.studentService = ss;
@@ -27,6 +30,7 @@ public class StudentMainFrame extends JFrame {
         this.roomService = rs;
         this.classService = cls;
         this.scheduleService = sche;
+        this.enrollmentService = enrollmentService;
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Chạy toàn màn hình
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -54,10 +58,12 @@ public class StudentMainFrame extends JFrame {
         sidebar.add(Box.createVerticalStrut(20));
         sidebar.add(createMenuBtn("Bảng điều khiển", "DASH"));
         sidebar.add(createMenuBtn("Hồ sơ cá nhân", "PROFILE"));
+        sidebar.add(createMenuBtn("Khóa Học", "CSs"));
 
         // CONTENT
         contentPanel.add(new JLabel("Welcome Dashboard", SwingConstants.CENTER), "DASH");
         contentPanel.add(new StudentProfilePage(acc.getStudent(), acc.getUsername(), ss), "PROFILE");
+        contentPanel.add(new StudentSchedulePanel(scheduleService,acc.getId()), "CSs");
 
         add(topBar, BorderLayout.NORTH);
         add(sidebar, BorderLayout.WEST);
@@ -77,7 +83,7 @@ public class StudentMainFrame extends JFrame {
         if (JOptionPane.showConfirmDialog(this, "Đăng xuất khỏi hệ thống?", "Logout", 0) == 0) {
             this.dispose();
             // Quay lại màn hình Login với đầy đủ các Service ban đầu
-            new LoginFrame(authService, studentService, teacherService, courseService, roomService, classService,scheduleService).setVisible(true);
+            new LoginFrame(authService, studentService, teacherService, courseService, roomService, classService,scheduleService,enrollmentService).setVisible(true);
         }
     }
 }

@@ -1,8 +1,10 @@
 package com.languagecenter.stream;
 
+import com.languagecenter.model.Schedule;
 import com.languagecenter.model.Student;
 import com.languagecenter.model.enums.StudentStatus;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -32,4 +34,49 @@ public final class StudentStreamQueries {
                 .filter(s -> s.getStatus() == status)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Lọc theo ngày
+     */
+    public static List<Schedule> filterByDate(List<Schedule> data, LocalDate date){
+
+        if(date == null)
+            return data;
+
+        return data.stream()
+                .filter(s -> s.getStudyDate().equals(date))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lọc theo khoảng ngày
+     */
+    public static List<Schedule> filterByDateRange(
+            List<Schedule> data,
+            LocalDate from,
+            LocalDate to){
+
+        if(from == null || to == null)
+            return data;
+
+        return data.stream()
+                .filter(s ->
+                        !s.getStudyDate().isBefore(from)
+                                && !s.getStudyDate().isAfter(to)
+                )
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lọc lịch hôm nay
+     */
+    public static List<Schedule> filterToday(List<Schedule> data){
+
+        LocalDate today = LocalDate.now();
+
+        return data.stream()
+                .filter(s -> s.getStudyDate().equals(today))
+                .collect(Collectors.toList());
+    }
+
 }

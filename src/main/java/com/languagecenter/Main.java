@@ -32,6 +32,8 @@ public class Main {
 
         ScheduleRepository scheduleRepo = new JpaScheduleRepository();
 
+        EnrollmentRepository enrollmentRepo = new JpaEnrollmentRepository();
+
         StudentService studentService = new StudentService(studentRepo,userRepo,tx);
 
         TeacherService teacherService = new TeacherService(teacherRepo,userRepo,tx);
@@ -44,6 +46,8 @@ public class Main {
 
         AuthService authService = new AuthService(userRepo,tx);
 
+        EnrollmentService enrollmentService = new EnrollmentService(enrollmentRepo,tx);
+
         ScheduleService scheduleService = new ScheduleService(scheduleRepo,tx);
 
         try {
@@ -55,7 +59,7 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             LoginFrame login =
-                    new LoginFrame(authService,studentService,teacherService,courseService,roomService,classService,scheduleService);
+                    new LoginFrame(authService,studentService,teacherService,courseService,roomService,classService,scheduleService,enrollmentService);
             login.setVisible(true);
         });
     }

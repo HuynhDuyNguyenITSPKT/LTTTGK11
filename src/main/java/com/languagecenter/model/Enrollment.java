@@ -105,4 +105,8 @@ public class Enrollment {
     public void setResult(ResultStatus result) {
         this.result = result;
     }
+    @Override
+    public String toString() {
+        return classEntity.getClassName();
+    }
 }

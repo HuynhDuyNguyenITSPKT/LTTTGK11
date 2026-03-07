@@ -67,4 +67,24 @@ public class JpaScheduleRepository implements ScheduleRepository {
 
         return count > 0;
     }
+
+    @Override
+    public List<Schedule> getScheduleByStudent(EntityManager em, Long studentId) {
+
+        return em.createQuery(
+                        """
+                        select s
+                        from Schedule s
+                        join fetch s.classEntity c
+                        join fetch c.teacher t
+                        join fetch s.room
+                        join Enrollment e on e.classEntity.id = c.id
+                        where e.student.id = :studentId
+                        order by s.studyDate, s.startTime
+                        """,
+                        Schedule.class
+                )
+                .setParameter("studentId", studentId)
+                .getResultList();
+    }
 }
