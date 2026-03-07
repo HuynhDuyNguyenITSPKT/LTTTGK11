@@ -30,6 +30,9 @@ public class CourseFormDialog extends JDialog {
 
         super(owner,title,true);
 
+        setMinimumSize(new Dimension(420,420));
+        setLocationRelativeTo(owner);
+
         buildUI();
 
         if(existing!=null){
@@ -51,41 +54,59 @@ public class CourseFormDialog extends JDialog {
         }
 
         pack();
-        setLocationRelativeTo(owner);
     }
 
     private void buildUI(){
 
-        JPanel form = new JPanel(new GridLayout(0,2,10,10));
+        Font font = new Font("Segoe UI",Font.PLAIN,14);
 
-        form.add(new JLabel("Course Name"));
-        form.add(txtName);
+        txtName.setFont(font);
+        txtDescription.setFont(font);
+        txtDuration.setFont(font);
+        txtFee.setFont(font);
 
-        form.add(new JLabel("Description"));
-        form.add(new JScrollPane(txtDescription));
+        cboLevel.setFont(font);
+        cboDurationUnit.setFont(font);
+        cboStatus.setFont(font);
 
-        form.add(new JLabel("Level"));
-        form.add(cboLevel);
+        txtDescription.setLineWrap(true);
+        txtDescription.setWrapStyleWord(true);
 
-        form.add(new JLabel("Duration"));
-        form.add(txtDuration);
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBorder(BorderFactory.createEmptyBorder(20,20,10,20));
 
-        form.add(new JLabel("Duration Unit"));
-        form.add(cboDurationUnit);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8,8,8,8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        form.add(new JLabel("Fee"));
-        form.add(txtFee);
+        int row=0;
 
-        form.add(new JLabel("Status"));
-        form.add(cboStatus);
+        addField(form,gbc,row++,"Course Name",txtName);
+        addField(form,gbc,row++,"Description",new JScrollPane(txtDescription));
+        addField(form,gbc,row++,"Level",cboLevel);
+        addField(form,gbc,row++,"Duration",txtDuration);
+        addField(form,gbc,row++,"Duration Unit",cboDurationUnit);
+        addField(form,gbc,row++,"Fee",txtFee);
+        addField(form,gbc,row++,"Status",cboStatus);
 
         JButton btnSave = new JButton("Save");
         JButton btnCancel = new JButton("Cancel");
 
+        btnSave.setFocusPainted(false);
+        btnCancel.setFocusPainted(false);
+
+        btnSave.setBackground(new Color(52,152,219));
+        btnSave.setForeground(Color.WHITE);
+
+        btnSave.setPreferredSize(new Dimension(110,35));
+        btnCancel.setPreferredSize(new Dimension(110,35));
+
         btnSave.addActionListener(e->onSave());
         btnCancel.addActionListener(e->dispose());
 
-        JPanel actions = new JPanel();
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        actions.setBorder(BorderFactory.createEmptyBorder(10,10,15,15));
+
         actions.add(btnSave);
         actions.add(btnCancel);
 
@@ -95,15 +116,38 @@ public class CourseFormDialog extends JDialog {
         add(actions,BorderLayout.SOUTH);
     }
 
+    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, Component comp){
+
+        gbc.gridx=0;
+        gbc.gridy=row;
+        gbc.weightx=0;
+
+        JLabel lbl=new JLabel(label);
+        lbl.setFont(new Font("Segoe UI",Font.BOLD,14));
+
+        panel.add(lbl,gbc);
+
+        gbc.gridx=1;
+        gbc.weightx=1;
+
+        panel.add(comp,gbc);
+    }
+
     private void onSave(){
 
         try{
 
+            if(txtName.getText().trim().isEmpty()){
+                throw new RuntimeException("Course name is required");
+            }
+
             course.setCourseName(txtName.getText());
             course.setDescription(txtDescription.getText());
             course.setLevel((CourseLevel)cboLevel.getSelectedItem());
+
             course.setDuration(Integer.parseInt(txtDuration.getText()));
             course.setDurationUnit((DurationUnit)cboDurationUnit.getSelectedItem());
+
             course.setFee(Double.parseDouble(txtFee.getText()));
             course.setStatus((CourseStatus)cboStatus.getSelectedItem());
 

@@ -63,7 +63,7 @@ public class StudentMainFrame extends JFrame {
         // CONTENT
         contentPanel.add(new JLabel("Welcome Dashboard", SwingConstants.CENTER), "DASH");
         contentPanel.add(new StudentProfilePage(acc.getStudent(), acc.getUsername(), ss), "PROFILE");
-        contentPanel.add(new StudentSchedulePanel(scheduleService,acc.getId()), "CSs");
+        contentPanel.add(new StudentSchedulePanel(scheduleService,acc.getStudent().getId()), "CSs");
 
         add(topBar, BorderLayout.NORTH);
         add(sidebar, BorderLayout.WEST);

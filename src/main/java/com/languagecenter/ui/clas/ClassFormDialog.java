@@ -6,6 +6,7 @@ import com.languagecenter.model.enums.ClassStatus;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.time.LocalDate;
 import java.util.List;
 
 public class ClassFormDialog extends JDialog {
@@ -15,6 +16,8 @@ public class ClassFormDialog extends JDialog {
     private final JComboBox<Teacher> cboTeacher = new JComboBox<>();
     private final JComboBox<Room> cboRoom = new JComboBox<>();
     private final JComboBox<ClassStatus> cboStatus = new JComboBox<>(ClassStatus.values());
+    private final JSpinner spnStartDate = new JSpinner(new javax.swing.SpinnerDateModel());
+    private final JSpinner spnEndDate = new JSpinner(new javax.swing.SpinnerDateModel());
 
     private boolean saved = false;
     private final Class clazz;
@@ -56,42 +59,33 @@ public class ClassFormDialog extends JDialog {
 
     private void buildUI() {
         JPanel root = new JPanel(new BorderLayout());
-        root.setBorder(new EmptyBorder(20, 20, 20, 20));
-        root.setBackground(Color.WHITE);
+        root.setBackground(new Color(245, 245, 250));
+        root.setBorder(new EmptyBorder(25, 25, 25, 25));
 
         JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(Color.WHITE);
+        form.setBackground(new Color(245, 245, 250));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(8, 5, 8, 5);
+        gbc.insets = new Insets(12, 8, 12, 8);
+        gbc.weightx = 1.0;
 
-        addLabelAndField(form, "Tên lớp học:", txtName, gbc, 0);
-        addLabelAndField(form, "Khóa học:", cboCourse, gbc, 1);
-        addLabelAndField(form, "Giáo viên:", cboTeacher, gbc, 2);
-        addLabelAndField(form, "Phòng học:", cboRoom, gbc, 3);
-        addLabelAndField(form, "Sĩ số tối đa:", spnMaxStudent, gbc, 4);
-        addLabelAndField(form, "Trạng thái:", cboStatus, gbc, 5);
+        addLabelAndField(form, "Tên lớp học", txtName, gbc, 0);
+        addLabelAndField(form, "Khóa học", cboCourse, gbc, 1);
+        addLabelAndField(form, "Giáo viên", cboTeacher, gbc, 2);
+        addLabelAndField(form, "Phòng học", cboRoom, gbc, 3);
+        addLabelAndField(form, "Ngày bắt đầu", spnStartDate, gbc, 4);
+        addLabelAndField(form, "Ngày kết thúc", spnEndDate, gbc, 5);
+        addLabelAndField(form, "Sĩ số tối đa", spnMaxStudent, gbc, 6);
+        addLabelAndField(form, "Trạng thái", cboStatus, gbc, 7);
 
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        actions.setBackground(Color.WHITE);
-        JButton btnSave = new JButton("Lưu lại");
-        btnSave.setBackground(new Color(37, 99, 235));
-        btnSave.setForeground(Color.WHITE);
-        btnSave.setPreferredSize(new Dimension(100, 35));
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+        actions.setBackground(new Color(245, 245, 250));
 
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = createModernButton("Hủy", new Color(200, 200, 200));
+        JButton btnSave = createModernButton("Lưu", new Color(37, 99, 235));
+
+        btnSave.addActionListener(e -> onSave());
         btnCancel.addActionListener(e -> dispose());
-        btnSave.addActionListener(e -> {
-            if(txtName.getText().isBlank()) return;
-            clazz.setClassName(txtName.getText());
-            clazz.setCourse((Course) cboCourse.getSelectedItem());
-            clazz.setTeacher((Teacher) cboTeacher.getSelectedItem());
-            clazz.setRoom((Room) cboRoom.getSelectedItem());
-            clazz.setMaxStudent((Integer) spnMaxStudent.getValue());
-            clazz.setStatus((ClassStatus) cboStatus.getSelectedItem());
-            saved = true;
-            dispose();
-        });
 
         actions.add(btnCancel);
         actions.add(btnSave);
@@ -101,11 +95,56 @@ public class ClassFormDialog extends JDialog {
     }
 
     private void addLabelAndField(JPanel panel, String label, JComponent field, GridBagConstraints gbc, int row) {
-        gbc.gridy = row; gbc.gridx = 0; gbc.weightx = 0.3;
-        panel.add(new JLabel(label), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        field.setPreferredSize(new Dimension(200, 30));
+        gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lbl.setForeground(new Color(40, 40, 40));
+        panel.add(lbl, gbc);
+
+        gbc.gridx = 1;
+        field.setBorder(createModernBorder());
+        if (field instanceof JTextField) field.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         panel.add(field, gbc);
+    }
+
+    private javax.swing.border.Border createModernBorder() {
+        return BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 220), 1),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        );
+    }
+
+    private JButton createModernButton(String text, Color bgColor) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bgColor);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setPreferredSize(new Dimension(100, 35));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    private void onSave() {
+        if(txtName.getText().isBlank()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên lớp học!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        clazz.setClassName(txtName.getText());
+        clazz.setCourse((Course) cboCourse.getSelectedItem());
+        clazz.setTeacher((Teacher) cboTeacher.getSelectedItem());
+        clazz.setRoom((Room) cboRoom.getSelectedItem());
+        clazz.setStartDate(java.time.Instant.ofEpochMilli(((java.util.Date) spnStartDate.getValue()).getTime())
+                .atZone(java.time.ZoneId.systemDefault()).toLocalDate());
+        clazz.setEndDate(java.time.Instant.ofEpochMilli(((java.util.Date) spnEndDate.getValue()).getTime())
+                .atZone(java.time.ZoneId.systemDefault()).toLocalDate());
+        clazz.setMaxStudent((Integer) spnMaxStudent.getValue());
+        clazz.setStatus((ClassStatus) cboStatus.getSelectedItem());
+        saved = true;
+        dispose();
     }
 
     private void fillData(Class c) {
@@ -113,6 +152,12 @@ public class ClassFormDialog extends JDialog {
         cboCourse.setSelectedItem(c.getCourse());
         cboTeacher.setSelectedItem(c.getTeacher());
         cboRoom.setSelectedItem(c.getRoom());
+        if (c.getStartDate() != null) {
+            spnStartDate.setValue(java.sql.Date.valueOf(c.getStartDate()));
+        }
+        if (c.getEndDate() != null) {
+            spnEndDate.setValue(java.sql.Date.valueOf(c.getEndDate()));
+        }
         spnMaxStudent.setValue(c.getMaxStudent());
         cboStatus.setSelectedItem(c.getStatus());
     }
