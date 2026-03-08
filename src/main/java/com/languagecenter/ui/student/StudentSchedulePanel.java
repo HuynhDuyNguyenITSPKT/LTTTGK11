@@ -180,10 +180,12 @@ public class StudentSchedulePanel extends JPanel {
 
         String roomName = s.getRoom().getRoomName();
 
+        String roomlocal = s.getRoom().getLocation();
+
         try{
 
             Desktop.getDesktop().browse(
-                    new URI("https://www.google.com/maps/search/" + roomName)
+                    new URI("https://www.google.com/maps/search/" + roomlocal)
             );
 
         }catch(Exception e){
