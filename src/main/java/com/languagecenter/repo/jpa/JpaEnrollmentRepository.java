@@ -60,4 +60,16 @@ public class JpaEnrollmentRepository implements EnrollmentRepository {
 
         return count > 0;
     }
+
+    @Override
+    public Long countStudentsByClass(EntityManager em, Long classId){
+
+        return em.createQuery("""
+        SELECT COUNT(e)
+        FROM Enrollment e
+        WHERE e.classEntity.id = :classId
+    """, Long.class)
+                .setParameter("classId", classId)
+                .getSingleResult();
+    }
 }

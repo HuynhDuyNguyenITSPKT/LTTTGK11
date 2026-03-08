@@ -18,4 +18,6 @@ public interface EnrollmentRepository {
     void delete(EntityManager em, Long id);
 
     boolean existsStudentInClass(EntityManager em, Long studentId, Long classId);
+
+    public Long countStudentsByClass(EntityManager em, Long classId);
 }

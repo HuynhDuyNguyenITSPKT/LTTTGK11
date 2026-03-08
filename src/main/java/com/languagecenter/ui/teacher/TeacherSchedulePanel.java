@@ -1,32 +1,37 @@
-package com.languagecenter.ui.student;
+package com.languagecenter.ui.teacher;
 
 import com.languagecenter.model.Schedule;
+import com.languagecenter.service.EnrollmentService;
 import com.languagecenter.service.ScheduleService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.*;
 
-public class StudentSchedulePanel extends JPanel {
+public class TeacherSchedulePanel extends JPanel {
 
     private final ScheduleService service;
-    private final Long studentId;
+    private final EnrollmentService enrollmentService;
+    private final Long teacherId;
 
     private List<Schedule> schedules = new ArrayList<>();
 
     private JPanel calendarPanel;
-
     private JLabel weekLabel;
 
-    // tuần đang xem
     private LocalDate currentWeekStart;
 
-    public StudentSchedulePanel(ScheduleService service, Long studentId) {
+    // map tính tiết
+    private Map<Long,Integer> lessonIndexMap = new HashMap<>();
+    private Map<Long,Integer> totalLessonMap = new HashMap<>();
+
+    public TeacherSchedulePanel(ScheduleService service, Long teacherId, EnrollmentService enrollmentService) {
 
         this.service = service;
-        this.studentId = studentId;
+        this.teacherId = teacherId;
+        this.enrollmentService = enrollmentService;
 
         setLayout(new BorderLayout());
         setBackground(new Color(245,245,245));
@@ -43,7 +48,7 @@ public class StudentSchedulePanel extends JPanel {
     private void buildToolbar(){
 
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        toolbar.setBackground(new Color(30,136,229));
+        toolbar.setBackground(new Color(63,81,181));
 
         JButton prevBtn = new JButton("◀");
         JButton nextBtn = new JButton("▶");
@@ -51,7 +56,7 @@ public class StudentSchedulePanel extends JPanel {
         prevBtn.addActionListener(e -> changeWeek(-1));
         nextBtn.addActionListener(e -> changeWeek(1));
 
-        JLabel title = new JLabel("Weekly Schedule");
+        JLabel title = new JLabel("Teacher Schedule");
         title.setForeground(Color.WHITE);
         title.setFont(new Font("Arial",Font.BOLD,18));
 
@@ -101,7 +106,9 @@ public class StudentSchedulePanel extends JPanel {
 
         try{
 
-            schedules = service.getScheduleByStudent(studentId);
+            schedules = service.getScheduleByTeacher(teacherId);
+
+            calculateLessonIndex();
 
             renderSchedules();
 
@@ -120,11 +127,10 @@ public class StudentSchedulePanel extends JPanel {
 
     private void renderSchedules(){
 
-        // update label tuần
         LocalDate endWeek = currentWeekStart.plusDays(6);
-        weekLabel.setText(currentWeekStart + "  →  " + endWeek);
 
-        // clear cũ
+        weekLabel.setText(currentWeekStart + " → " + endWeek);
+
         for(int i=0;i<7;i++){
 
             JPanel dayPanel = (JPanel) calendarPanel.getComponent(i);
@@ -138,44 +144,109 @@ public class StudentSchedulePanel extends JPanel {
 
             LocalDate date = s.getStudyDate();
 
-            if(date.isBefore(currentWeekStart) || date.isAfter(endWeek)){
+            if(date.isBefore(currentWeekStart) || date.isAfter(endWeek))
                 continue;
-            }
 
             int dayIndex = date.getDayOfWeek().getValue() - 1;
 
             JPanel dayPanel = (JPanel) calendarPanel.getComponent(dayIndex);
 
-            JPanel card = createScheduleCard(s);
-
-            dayPanel.add(card);
+            dayPanel.add(createScheduleCard(s));
         }
 
         revalidate();
         repaint();
     }
 
+    // tính tiết
+    private void calculateLessonIndex(){
+
+        Map<Long,List<Schedule>> classSchedules = new HashMap<>();
+
+        for(Schedule s : schedules){
+
+            Long classId = s.getClassEntity().getId();
+
+            classSchedules
+                    .computeIfAbsent(classId,k->new ArrayList<>())
+                    .add(s);
+        }
+
+        for(Map.Entry<Long,List<Schedule>> entry : classSchedules.entrySet()){
+
+            List<Schedule> list = entry.getValue();
+
+            list.sort((a,b)->{
+
+                int d = a.getStudyDate().compareTo(b.getStudyDate());
+
+                if(d != 0) return d;
+
+                return a.getStartTime().compareTo(b.getStartTime());
+            });
+
+            int total = list.size();
+
+            for(int i=0;i<list.size();i++){
+
+                Schedule s = list.get(i);
+
+                lessonIndexMap.put(s.getId(), i+1);
+                totalLessonMap.put(s.getId(), total);
+            }
+        }
+    }
+
     private JPanel createScheduleCard(Schedule s){
 
-        JPanel card = new JPanel(new BorderLayout());
-        card.setMaximumSize(new Dimension(200,60));
-        card.setBackground(new Color(187,222,251));
-        card.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card,BoxLayout.Y_AXIS));
 
-        JLabel title = new JLabel(s.getClassEntity().getClassName());
+        card.setMaximumSize(new Dimension(200,90));
+        card.setBackground(new Color(200,230,201));
+        card.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
+
+        String className = s.getClassEntity().getClassName();
+
+        int lesson = lessonIndexMap.getOrDefault(s.getId(),1);
+        int total = totalLessonMap.getOrDefault(s.getId(),1);
+
+        long studentCount = 0;
+
+        try{
+            studentCount = enrollmentService.countStudentsByClass(
+                    s.getClassEntity().getId()
+            );
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
+
+        int maxStudent = s.getClassEntity().getMaxStudent();
+
+        JLabel title = new JLabel(className);
         title.setFont(new Font("Arial",Font.BOLD,12));
 
         JLabel time = new JLabel(
-                s.getStartTime()+" - "+s.getEndTime()
+                "⏰ "+s.getStartTime()+" - "+s.getEndTime()
+        );
+
+        JLabel lessonLbl = new JLabel(
+                "📚 Tiết "+lesson+" / "+total
+        );
+
+        JLabel studentLbl = new JLabel(
+                "👨‍🎓 "+studentCount+" / "+maxStudent
         );
 
         JLabel room = new JLabel(
-                s.getRoom()!=null ? s.getRoom().getRoomName() : ""
+                "🏫 "+(s.getRoom()!=null ? s.getRoom().getRoomName() : "")
         );
 
-        card.add(title,BorderLayout.NORTH);
-        card.add(time,BorderLayout.CENTER);
-        card.add(room,BorderLayout.SOUTH);
+        card.add(title);
+        card.add(time);
+        card.add(lessonLbl);
+        card.add(studentLbl);
+        card.add(room);
 
         card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
@@ -184,15 +255,14 @@ public class StudentSchedulePanel extends JPanel {
             public void mouseClicked(java.awt.event.MouseEvent evt){
 
                 JOptionPane.showMessageDialog(
-                        StudentSchedulePanel.this,
-                        "Class: "+s.getClassEntity().getClassName()+"\n"+
-                                "Teacher: "+s.getClassEntity().getTeacher().getFullName()+"\n"+
+                        TeacherSchedulePanel.this,
+                        "Class: "+className+"\n"+
+                                "Lesson: "+lesson+" / "+total+"\n"+
+                                "Students: "+maxStudent+"\n"+
                                 "Time: "+s.getStartTime()+" - "+s.getEndTime()+"\n"+
                                 "Room: "+(s.getRoom()!=null?s.getRoom().getRoomName():"")
                 );
-
             }
-
         });
 
         return card;

@@ -5,6 +5,8 @@ import com.languagecenter.model.UserAccount;
 import com.languagecenter.service.*;
 import com.languagecenter.ui.component.CustomHeader;
 import com.languagecenter.ui.teacher.TeacherProfilePage;
+import com.languagecenter.ui.teacher.TeacherSchedulePanel;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -63,7 +65,7 @@ public class TeacherMainFrame extends JFrame {
         sidebar.add(createMenuBtn("Hồ sơ cá nhân", "PROFILE"));
 
         // CONTENT
-        contentPanel.add(new JLabel("Welcome Dashboard Teacher", SwingConstants.CENTER), "DASH");
+        contentPanel.add(new TeacherSchedulePanel(scheduleService,acc.getTeacher().getId(),enrollmentService), "DASH");
         // Truyền Teacher object lấy từ UserAccount đã đăng nhập
         contentPanel.add(new TeacherProfilePage(acc.getTeacher(), acc.getUsername(), ts), "PROFILE");
 

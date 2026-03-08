@@ -25,4 +25,6 @@ public interface ScheduleRepository {
                                LocalTime start,
                                LocalTime end);
     List<Schedule> getScheduleByStudent(EntityManager em, Long studentId);
+
+    List<Schedule> getScheduleByTeacher(EntityManager em, Long teacherId);
 }

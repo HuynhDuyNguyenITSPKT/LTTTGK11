@@ -90,4 +90,13 @@ public class EnrollmentService {
 
         });
     }
+
+    public long countStudentsByClass(Long classId) throws Exception {
+
+        return tx.runInTransaction(em ->
+                repo.countStudentsByClass(em, classId)
+        );
+
+    }
+
 }
