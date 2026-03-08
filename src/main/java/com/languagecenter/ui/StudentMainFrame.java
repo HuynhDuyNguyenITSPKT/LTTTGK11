@@ -6,6 +6,8 @@ import com.languagecenter.service.*;
 import com.languagecenter.ui.component.CustomHeader;
 import com.languagecenter.ui.student.StudentProfilePage;
 import com.languagecenter.ui.student.StudentSchedulePanel;
+import com.languagecenter.ui.student.StudentDashboardPanel;
+import com.languagecenter.ui.student.StudentInvoicePaymentPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,11 +25,12 @@ public class StudentMainFrame extends JFrame {
     private final EnrollmentService enrollmentService;
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
+    private final AttendanceService attendanceService;
 
     public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
                            CourseService cs, RoomService rs, ClassService cls, ScheduleService sche,
                            EnrollmentService enrollmentService, InvoiceService invoiceService,
-                           PaymentService paymentService) {
+                           PaymentService paymentService, AttendanceService attendanceService) {
         super("Student Portal - " + acc.getStudent().getFullName());
         this.authService = as;
         this.studentService = ss;
@@ -39,6 +42,7 @@ public class StudentMainFrame extends JFrame {
         this.enrollmentService = enrollmentService;
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
+        this.attendanceService = attendanceService;
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Chạy toàn màn hình
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -59,13 +63,15 @@ public class StudentMainFrame extends JFrame {
 
         sidebar.add(Box.createVerticalStrut(20));
         sidebar.add(createMenuBtn("Bảng điều khiển", "DASH"));
+        sidebar.add(createMenuBtn("Khóa Học", "COURSES"));
+        sidebar.add(createMenuBtn("Học phí & Thanh toán", "INVOICES"));
         sidebar.add(createMenuBtn("Hồ sơ cá nhân", "PROFILE"));
-        sidebar.add(createMenuBtn("Khóa Học", "CSs"));
 
         // CONTENT
-        contentPanel.add(new JLabel("Welcome Dashboard", SwingConstants.CENTER), "DASH");
+        contentPanel.add(new StudentDashboardPanel(acc.getStudent().getId(), enrollmentService, invoiceService), "DASH");
+        contentPanel.add(new StudentSchedulePanel(scheduleService,acc.getStudent().getId()), "COURSES");
+        contentPanel.add(new StudentInvoicePaymentPanel(acc.getStudent().getId(), invoiceService, paymentService), "INVOICES");
         contentPanel.add(new StudentProfilePage(acc.getStudent(), acc.getUsername(), ss), "PROFILE");
-        contentPanel.add(new StudentSchedulePanel(scheduleService,acc.getStudent().getId()), "CSs");
 
         add(topBar, BorderLayout.NORTH);
         add(sidebar, BorderLayout.WEST);
@@ -87,7 +93,7 @@ public class StudentMainFrame extends JFrame {
             // Quay lại màn hình Login với đầy đủ các Service ban đầu
             new LoginFrame(authService, studentService, teacherService, courseService,
                     roomService, classService, scheduleService, enrollmentService,
-                    invoiceService, paymentService).setVisible(true);
+                    invoiceService, paymentService, attendanceService).setVisible(true);
         }
     }
 }

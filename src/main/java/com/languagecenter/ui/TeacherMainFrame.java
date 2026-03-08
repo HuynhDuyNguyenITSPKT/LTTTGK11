@@ -6,6 +6,8 @@ import com.languagecenter.service.*;
 import com.languagecenter.ui.component.CustomHeader;
 import com.languagecenter.ui.teacher.TeacherProfilePage;
 import com.languagecenter.ui.teacher.TeacherSchedulePanel;
+import com.languagecenter.ui.teacher.TeacherDashboardPanel;
+import com.languagecenter.ui.teacher.AttendancePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,11 +27,13 @@ public class TeacherMainFrame extends JFrame {
     private final EnrollmentService enrollmentService;
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
+    private final AttendanceService attendanceService;
 
     public TeacherMainFrame(UserAccount acc, AuthService as, StudentService ss,
                             TeacherService ts, CourseService cs, RoomService rs,
                             ClassService cls, ScheduleService scheduleService, EnrollmentService enrollmentService,
-                            InvoiceService invoiceService, PaymentService paymentService) {
+                            InvoiceService invoiceService, PaymentService paymentService,
+                            AttendanceService attendanceService) {
         super("Teacher Portal - " + acc.getTeacher().getFullName());
         this.authService = as;
         this.studentService = ss;
@@ -41,6 +45,7 @@ public class TeacherMainFrame extends JFrame {
         this.enrollmentService = enrollmentService;
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
+        this.attendanceService = attendanceService;
 
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Chạy toàn màn hình
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -61,11 +66,15 @@ public class TeacherMainFrame extends JFrame {
         sidebar.setBackground(new Color(30, 130, 76));
 
         sidebar.add(Box.createVerticalStrut(20));
-        sidebar.add(createMenuBtn("Lịch dạy của tôi", "DASH"));
+        sidebar.add(createMenuBtn("Dashboard", "DASH"));
+        sidebar.add(createMenuBtn("Lịch dạy của tôi", "SCHEDULE"));
+        sidebar.add(createMenuBtn("Điểm danh", "ATTENDANCE"));
         sidebar.add(createMenuBtn("Hồ sơ cá nhân", "PROFILE"));
 
         // CONTENT
-        contentPanel.add(new TeacherSchedulePanel(scheduleService,acc.getTeacher().getId(),enrollmentService), "DASH");
+        contentPanel.add(new TeacherDashboardPanel(acc.getTeacher().getId(), classService, enrollmentService), "DASH");
+        contentPanel.add(new TeacherSchedulePanel(scheduleService,acc.getTeacher().getId(),enrollmentService), "SCHEDULE");
+        contentPanel.add(new AttendancePanel(acc.getTeacher().getId(), classService, enrollmentService, attendanceService), "ATTENDANCE");
         // Truyền Teacher object lấy từ UserAccount đã đăng nhập
         contentPanel.add(new TeacherProfilePage(acc.getTeacher(), acc.getUsername(), ts), "PROFILE");
 
@@ -89,7 +98,7 @@ public class TeacherMainFrame extends JFrame {
             // Quay lại LoginFrame với đầy đủ services
             new LoginFrame(authService, studentService, teacherService, courseService,
                     roomService, classService, scheduleService, enrollmentService,
-                    invoiceService, paymentService).setVisible(true);
+                    invoiceService, paymentService, attendanceService).setVisible(true);
         }
     }
 }

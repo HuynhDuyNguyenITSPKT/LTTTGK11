@@ -38,6 +38,8 @@ public class Main {
 
         PaymentRepository paymentRepo = new JpaPaymentRepository();
 
+        AttendanceRepository attendanceRepo = new JpaAttendanceRepository();
+
         StudentService studentService = new StudentService(studentRepo, teacherRepo, userRepo, tx);
 
         TeacherService teacherService = new TeacherService(teacherRepo, studentRepo, userRepo, tx);
@@ -58,6 +60,8 @@ public class Main {
 
         PaymentService paymentService = new PaymentService(paymentRepo, invoiceRepo, tx);
 
+        AttendanceService attendanceService = new AttendanceService(attendanceRepo, tx);
+
         try {
             // tạo admin nếu chưa có
             AppInitializer.initAdmin(tx,userRepo);
@@ -69,7 +73,7 @@ public class Main {
             LoginFrame login =
                     new LoginFrame(authService, studentService, teacherService, courseService,
                             roomService, classService, scheduleService, enrollmentService,
-                            invoiceService, paymentService);
+                            invoiceService, paymentService, attendanceService);
             login.setVisible(true);
         });
     }

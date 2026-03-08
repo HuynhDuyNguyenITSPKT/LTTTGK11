@@ -13,6 +13,7 @@ import com.languagecenter.ui.course.CoursePanel;
 import com.languagecenter.ui.room.RoomPanel;
 import com.languagecenter.ui.invoice.InvoicePanel;
 import com.languagecenter.ui.payment.PaymentPanel;
+import com.languagecenter.ui.admin.AdminDashboardPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -33,10 +34,12 @@ public class MainFrame extends JFrame {
     private final EnrollmentService enrollmentService;
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
+    private final AttendanceService attendanceService;
 
     public MainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
                      CourseService cs, RoomService rs, ClassService cls,
-                     ScheduleService sche, EnrollmentService es, InvoiceService is, PaymentService ps) {
+                     ScheduleService sche, EnrollmentService es, InvoiceService is, PaymentService ps,
+                     AttendanceService attendanceService) {
         super("Language Center Management - Admin Dashboard");
 
         this.authService = as;
@@ -49,7 +52,8 @@ public class MainFrame extends JFrame {
         this.enrollmentService = es;
         this.invoiceService = is;
         this.paymentService = ps;
-
+        this.attendanceService = attendanceService;
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -113,15 +117,8 @@ public class MainFrame extends JFrame {
         sidebar.add(createMenuButton("Payments", "PAY"));
 
         // --- 3. CONTENT PANEL ---
-        // Dashboard Home Panel (Thay vì để trống)
-        JPanel dashHome = new JPanel(new GridBagLayout());
-        dashHome.setBackground(new Color(245, 247, 250));
-        JLabel welcomeLabel = new JLabel("Welcome to Admin Management System");
-        welcomeLabel.setFont(new Font("Segoe UI", Font.ITALIC, 20));
-        welcomeLabel.setForeground(Color.GRAY);
-        dashHome.add(welcomeLabel);
-
-        contentPanel.add(dashHome, "DASH");
+        // Dashboard Home Panel with statistics
+        contentPanel.add(new AdminDashboardPanel(ss, ts, cls, es, is, ps), "DASH");
         contentPanel.add(new StudentPanel(ss), "STUDENT");
         contentPanel.add(new TeacherPanel(ts), "TEACHER");
         contentPanel.add(new CoursePanel(cs), "COURSE");
@@ -172,7 +169,7 @@ public class MainFrame extends JFrame {
             // Quay lại màn hình đăng nhập
             new LoginFrame(authService, studentService, teacherService, courseService,
                     roomService, classService, scheduleService, enrollmentService,
-                    invoiceService, paymentService).setVisible(true);
+                    invoiceService, paymentService, attendanceService).setVisible(true);
         }
     }
 }
