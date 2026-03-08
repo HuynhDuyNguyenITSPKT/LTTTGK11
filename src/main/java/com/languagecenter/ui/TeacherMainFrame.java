@@ -21,10 +21,13 @@ public class TeacherMainFrame extends JFrame {
     private final ClassService classService;
     private final ScheduleService scheduleService;
     private final EnrollmentService enrollmentService;
+    private final InvoiceService invoiceService;
+    private final PaymentService paymentService;
 
     public TeacherMainFrame(UserAccount acc, AuthService as, StudentService ss,
-                            TeacherService ts, CourseService cs, RoomService rs
-            , ClassService cls, ScheduleService scheduleService, EnrollmentService enrollmentService) {
+                            TeacherService ts, CourseService cs, RoomService rs,
+                            ClassService cls, ScheduleService scheduleService, EnrollmentService enrollmentService,
+                            InvoiceService invoiceService, PaymentService paymentService) {
         super("Teacher Portal - " + acc.getTeacher().getFullName());
         this.authService = as;
         this.studentService = ss;
@@ -34,6 +37,8 @@ public class TeacherMainFrame extends JFrame {
         this.classService = cls;
         this.scheduleService = scheduleService;
         this.enrollmentService = enrollmentService;
+        this.invoiceService = invoiceService;
+        this.paymentService = paymentService;
 
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Chạy toàn màn hình
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -80,7 +85,9 @@ public class TeacherMainFrame extends JFrame {
         if (JOptionPane.showConfirmDialog(this, "Bạn có muốn đăng xuất không?", "Logout", JOptionPane.YES_NO_OPTION) == 0) {
             this.dispose();
             // Quay lại LoginFrame với đầy đủ services
-            new LoginFrame(authService, studentService, teacherService, courseService, roomService, classService, scheduleService,enrollmentService).setVisible(true);
+            new LoginFrame(authService, studentService, teacherService, courseService,
+                    roomService, classService, scheduleService, enrollmentService,
+                    invoiceService, paymentService).setVisible(true);
         }
     }
 }

@@ -1,0 +1,270 @@
+package com.languagecenter.ui.payment;
+
+import com.languagecenter.model.Payment;
+import com.languagecenter.model.enums.PaymentMethod;
+import com.languagecenter.model.enums.PaymentStatus;
+import com.languagecenter.service.InvoiceService;
+import com.languagecenter.service.PaymentService;
+import com.languagecenter.service.StudentService;
+import com.languagecenter.stream.PaymentStreamQueries;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
+import java.util.List;
+
+public class PaymentPanel extends JPanel {
+
+    private final PaymentService service;
+    private final StudentService studentService;
+    private final InvoiceService invoiceService;
+
+    private final PaymentTableModel tableModel = new PaymentTableModel();
+    private final JTable table = new JTable(tableModel);
+
+    private List<Payment> allData;
+
+    private final JTextField txtStudentName = new JTextField(12);
+    private final JComboBox<PaymentStatus> cboStatus = new JComboBox<>();
+    private final JComboBox<PaymentMethod> cboPaymentMethod = new JComboBox<>();
+
+    public PaymentPanel(PaymentService service,
+                       StudentService studentService,
+                       InvoiceService invoiceService) {
+
+        this.service = service;
+        this.studentService = studentService;
+        this.invoiceService = invoiceService;
+
+        setLayout(new BorderLayout());
+        setBackground(new Color(245, 245, 245));
+
+        buildToolbar();
+        buildTable();
+
+        reload();
+    }
+
+    private void buildToolbar() {
+
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        toolbar.setBackground(new Color(30, 136, 229));
+        toolbar.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+
+        JButton btnAdd = createButton("Thêm", new Color(76, 175, 80));
+        JButton btnEdit = createButton("Sửa", new Color(255, 167, 38));
+        JButton btnDelete = createButton("Xóa", new Color(244, 67, 54));
+        JButton btnRefresh = createButton("Refresh", new Color(120, 144, 156));
+
+        toolbar.add(btnAdd);
+        toolbar.add(btnEdit);
+        toolbar.add(btnDelete);
+        toolbar.add(btnRefresh);
+
+        toolbar.add(new JLabel(" Student:"));
+        toolbar.add(txtStudentName);
+
+        toolbar.add(new JLabel(" Status:"));
+        cboStatus.addItem(null);
+        for (PaymentStatus status : PaymentStatus.values()) {
+            cboStatus.addItem(status);
+        }
+        toolbar.add(cboStatus);
+
+        toolbar.add(new JLabel(" Method:"));
+        cboPaymentMethod.addItem(null);
+        for (PaymentMethod method : PaymentMethod.values()) {
+            cboPaymentMethod.addItem(method);
+        }
+        toolbar.add(cboPaymentMethod);
+
+        JButton btnFilter = createButton("Filter", new Color(33, 150, 243));
+        toolbar.add(btnFilter);
+
+        add(toolbar, BorderLayout.NORTH);
+
+        btnRefresh.addActionListener(e -> reload());
+        btnAdd.addActionListener(e -> onAdd());
+        btnEdit.addActionListener(e -> onEdit());
+        btnDelete.addActionListener(e -> onDelete());
+        btnFilter.addActionListener(e -> applyFilter());
+    }
+
+    private void buildTable() {
+
+        table.setRowHeight(32);
+        table.setAutoCreateRowSorter(true);
+        table.setGridColor(new Color(220, 220, 220));
+
+        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+        center.setHorizontalAlignment(JLabel.CENTER);
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(center);
+        }
+
+        table.setSelectionBackground(new Color(200, 230, 255));
+
+        add(new JScrollPane(table), BorderLayout.CENTER);
+    }
+
+    private JButton createButton(String text, Color color) {
+
+        JButton btn = new JButton(text);
+        btn.setBackground(color);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 14));
+
+        return btn;
+    }
+
+    private void reload() {
+
+        try {
+
+            allData = service.getAll();
+            tableModel.setData(allData);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error loading payments: " + e.getMessage());
+        }
+    }
+
+    private void applyFilter() {
+
+        List<Payment> result = allData;
+
+        if (!txtStudentName.getText().isBlank()) {
+            result = PaymentStreamQueries.filterByStudentName(result, txtStudentName.getText());
+        }
+
+        if (cboStatus.getSelectedItem() != null) {
+            result = PaymentStreamQueries.filterByStatus(result, (PaymentStatus) cboStatus.getSelectedItem());
+        }
+
+        if (cboPaymentMethod.getSelectedItem() != null) {
+            result = PaymentStreamQueries.filterByPaymentMethod(result, (PaymentMethod) cboPaymentMethod.getSelectedItem());
+        }
+
+        tableModel.setData(result);
+    }
+
+    private void onAdd() {
+
+        try {
+
+            PaymentFormDialog dlg =
+                    new PaymentFormDialog(
+                            (Frame) SwingUtilities.getWindowAncestor(this),
+                            "Thêm Payment",
+                            null,
+                            studentService.getAll(),
+                            invoiceService.getAll(),
+                            service
+                    );
+
+            dlg.setVisible(true);
+
+            if (dlg.isSaved()) {
+
+                Payment payment = dlg.getPayment();
+
+                // Kiểm tra payment phải có invoice
+                if (payment.getInvoice() == null) {
+                    JOptionPane.showMessageDialog(this,
+                            "Payment phải có Invoice!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                service.create(payment);
+                reload();
+
+                JOptionPane.showMessageDialog(this,
+                        "Payment đã được tạo!\nInvoice status sẽ tự động cập nhật nếu đã thanh toán đủ.",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+
+        } catch (Exception ex) {
+
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
+    }
+
+    private void onEdit() {
+
+        int row = table.getSelectedRow();
+
+        if (row < 0) return;
+
+        Payment payment = tableModel.getPaymentAt(row);
+
+        try {
+
+            PaymentFormDialog dlg =
+                    new PaymentFormDialog(
+                            (Frame) SwingUtilities.getWindowAncestor(this),
+                            "Sửa Payment",
+                            payment,
+                            studentService.getAll(),
+                            invoiceService.getAll(),
+                            service
+                    );
+
+            dlg.setVisible(true);
+
+            if (dlg.isSaved()) {
+
+                service.update(dlg.getPayment());
+                reload();
+
+                JOptionPane.showMessageDialog(this,
+                        "Payment đã được cập nhật!\nInvoice status đã được kiểm tra lại.",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+
+        } catch (Exception ex) {
+
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
+    }
+
+    private void onDelete() {
+
+        int row = table.getSelectedRow();
+
+        if (row < 0) return;
+
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Bạn chắc chắn muốn xóa?\nInvoice status sẽ được kiểm tra lại sau khi xóa.",
+                "Confirm",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm != JOptionPane.YES_OPTION)
+            return;
+
+        Payment payment = tableModel.getPaymentAt(row);
+
+        try {
+
+            service.delete(payment.getId());
+            reload();
+
+            JOptionPane.showMessageDialog(this,
+                    "Payment đã được xóa!\nInvoice status đã được cập nhật lại.",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception ex) {
+
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
+    }
+}

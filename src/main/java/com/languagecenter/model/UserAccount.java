@@ -16,7 +16,7 @@ public class UserAccount {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false, length = 80)
+    @Column(nullable = false, length = 80, unique = true)
     private String username;
 
     @Column(name = "password_hash", nullable = false, length = 255)

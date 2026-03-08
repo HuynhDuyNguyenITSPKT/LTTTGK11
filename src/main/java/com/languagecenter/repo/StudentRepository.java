@@ -10,4 +10,5 @@ public interface StudentRepository {
     void create(EntityManager em, Student student) throws Exception;
     Student update(EntityManager em, Student student) throws Exception;
     void delete(EntityManager em, Long id) throws Exception;
+    Object findByEmail(EntityManager em, String email);
 }

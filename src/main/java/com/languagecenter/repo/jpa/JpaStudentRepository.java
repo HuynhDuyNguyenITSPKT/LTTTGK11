@@ -31,4 +31,16 @@ public class JpaStudentRepository implements StudentRepository {
         }
         em.remove(s);
     }
+
+    @Override
+    public Object findByEmail(EntityManager em, String email) {
+        List<Student> students = em.createQuery(
+                "select s from Student s where s.email = :email",
+                Student.class
+        )
+        .setParameter("email", email)
+        .getResultList();
+
+        return students.isEmpty() ? null : students.get(0);
+    }
 }

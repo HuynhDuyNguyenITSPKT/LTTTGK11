@@ -38,4 +38,16 @@ public class JpaTeacherRepository implements TeacherRepository {
             em.remove(t);
         }
     }
+
+    @Override
+    public Teacher findByEmail(EntityManager em, String email) {
+        List<Teacher> teachers = em.createQuery(
+                "select t from Teacher t where t.email = :email",
+                Teacher.class
+        )
+        .setParameter("email", email)
+        .getResultList();
+
+        return teachers.isEmpty() ? null : teachers.get(0);
+    }
 }

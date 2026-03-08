@@ -11,6 +11,8 @@ import com.languagecenter.ui.student.StudentPanel;
 import com.languagecenter.ui.teacher.TeacherPanel;
 import com.languagecenter.ui.course.CoursePanel;
 import com.languagecenter.ui.room.RoomPanel;
+import com.languagecenter.ui.invoice.InvoicePanel;
+import com.languagecenter.ui.payment.PaymentPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -29,10 +31,12 @@ public class MainFrame extends JFrame {
     private final ClassService classService;
     private final ScheduleService scheduleService;
     private final EnrollmentService enrollmentService;
+    private final InvoiceService invoiceService;
+    private final PaymentService paymentService;
 
     public MainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
                      CourseService cs, RoomService rs, ClassService cls,
-                     ScheduleService sche, EnrollmentService es) {
+                     ScheduleService sche, EnrollmentService es, InvoiceService is, PaymentService ps) {
         super("Language Center Management - Admin Dashboard");
 
         this.authService = as;
@@ -43,6 +47,8 @@ public class MainFrame extends JFrame {
         this.classService = cls;
         this.scheduleService = sche;
         this.enrollmentService = es;
+        this.invoiceService = is;
+        this.paymentService = ps;
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -103,6 +109,7 @@ public class MainFrame extends JFrame {
         sidebar.add(createMenuButton("Classes", "CLASS"));
         sidebar.add(createMenuButton("Enrollments", "ENROLL"));
         sidebar.add(createMenuButton("Schedules", "SCHEDULE"));
+        sidebar.add(createMenuButton("Invoices", "INVOICE"));
         sidebar.add(createMenuButton("Payments", "PAY"));
 
         // --- 3. CONTENT PANEL ---
@@ -122,7 +129,8 @@ public class MainFrame extends JFrame {
         contentPanel.add(new ClassPanel(cls, cs, ts, rs), "CLASS");
         contentPanel.add(new SchedulePanel(sche, cls, rs), "SCHEDULE");
         contentPanel.add(new EnrollmentPanel(es, ss, cls), "ENROLL");
-        contentPanel.add(new JPanel(), "PAY");
+        contentPanel.add(new InvoicePanel(is, ss), "INVOICE");
+        contentPanel.add(new PaymentPanel(ps, ss, is), "PAY");
 
         add(topBar, BorderLayout.NORTH);
         add(sidebar, BorderLayout.WEST);
@@ -163,7 +171,8 @@ public class MainFrame extends JFrame {
             this.dispose();
             // Quay lại màn hình đăng nhập
             new LoginFrame(authService, studentService, teacherService, courseService,
-                    roomService, classService, scheduleService, enrollmentService).setVisible(true);
+                    roomService, classService, scheduleService, enrollmentService,
+                    invoiceService, paymentService).setVisible(true);
         }
     }
 }

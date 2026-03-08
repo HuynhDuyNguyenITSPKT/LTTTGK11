@@ -154,7 +154,10 @@ public class TeacherPanel extends JPanel {
                 teacherService.update(dlg.getTeacher(), dlg.getUsername(), dlg.getPassword());
                 reload();
             }
-        } catch (Exception ex) { JOptionPane.showMessageDialog(this, ex.getMessage()); }
+        } catch (Exception ex) { 
+            reload();
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
     }
 
     private void onDelete() {
@@ -164,7 +167,7 @@ public class TeacherPanel extends JPanel {
             try {
                 teacherService.delete(tableModel.getTeacher(row).getId());
                 reload();
-            } catch (Exception ex) { JOptionPane.showMessageDialog(this, ex.getMessage()); }
+            } catch (Exception ex) { reload();JOptionPane.showMessageDialog(this, ex.getMessage()); }
         }
     }
 
@@ -175,7 +178,7 @@ public class TeacherPanel extends JPanel {
             try {
                 teacherService.create(dlg.getTeacher(), dlg.getUsername(), dlg.getPassword());
                 reload();
-            } catch (Exception ex) { JOptionPane.showMessageDialog(this, ex.getMessage()); }
+            } catch (Exception ex) { reload();JOptionPane.showMessageDialog(this, ex.getMessage()); }
         }
     }
 }

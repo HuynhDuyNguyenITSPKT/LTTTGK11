@@ -21,6 +21,10 @@ public class Invoice {
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
+    @ManyToOne
+    @JoinColumn(name = "enrollment_id", nullable = false)
+    private Enrollment enrollment;
+
     @Column(name = "total_amount", nullable = false)
     private Double totalAmount;
 
@@ -45,10 +49,11 @@ public class Invoice {
     public Invoice() {
     }
 
-    public Invoice(Student student, Double totalAmount,
+    public Invoice(Enrollment enrollment, Student student, Double totalAmount,
                    LocalDate issueDate,
                    InvoiceStatus status,
                    String note) {
+        this.enrollment = enrollment;
         this.student = student;
         this.totalAmount = totalAmount;
         this.issueDate = issueDate;
@@ -68,6 +73,14 @@ public class Invoice {
 
     public void setStudent(Student student) {
         this.student = student;
+    }
+
+    public Enrollment getEnrollment() {
+        return enrollment;
+    }
+
+    public void setEnrollment(Enrollment enrollment) {
+        this.enrollment = enrollment;
     }
 
     public Double getTotalAmount() {

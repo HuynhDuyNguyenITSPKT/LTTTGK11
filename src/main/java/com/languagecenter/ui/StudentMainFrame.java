@@ -21,8 +21,13 @@ public class StudentMainFrame extends JFrame {
     private final ClassService classService;
     private final ScheduleService scheduleService;
     private final EnrollmentService enrollmentService;
+    private final InvoiceService invoiceService;
+    private final PaymentService paymentService;
 
-    public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts, CourseService cs, RoomService rs, ClassService cls,ScheduleService sche,EnrollmentService enrollmentService) {
+    public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
+                           CourseService cs, RoomService rs, ClassService cls, ScheduleService sche,
+                           EnrollmentService enrollmentService, InvoiceService invoiceService,
+                           PaymentService paymentService) {
         super("Student Portal - " + acc.getStudent().getFullName());
         this.authService = as;
         this.studentService = ss;
@@ -32,6 +37,8 @@ public class StudentMainFrame extends JFrame {
         this.classService = cls;
         this.scheduleService = sche;
         this.enrollmentService = enrollmentService;
+        this.invoiceService = invoiceService;
+        this.paymentService = paymentService;
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Chạy toàn màn hình
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -78,7 +85,9 @@ public class StudentMainFrame extends JFrame {
         if (JOptionPane.showConfirmDialog(this, "Đăng xuất khỏi hệ thống?", "Logout", 0) == 0) {
             this.dispose();
             // Quay lại màn hình Login với đầy đủ các Service ban đầu
-            new LoginFrame(authService, studentService, teacherService, courseService, roomService, classService,scheduleService,enrollmentService).setVisible(true);
+            new LoginFrame(authService, studentService, teacherService, courseService,
+                    roomService, classService, scheduleService, enrollmentService,
+                    invoiceService, paymentService).setVisible(true);
         }
     }
 }

@@ -17,4 +17,6 @@ public interface TeacherRepository {
 
     Teacher findById(EntityManager em, Long id) throws Exception;
 
+    Teacher findByEmail(EntityManager em, String email);
+
 }

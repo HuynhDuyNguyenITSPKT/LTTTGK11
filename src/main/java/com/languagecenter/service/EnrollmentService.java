@@ -2,19 +2,27 @@ package com.languagecenter.service;
 
 import com.languagecenter.db.TransactionManager;
 import com.languagecenter.model.Enrollment;
+import com.languagecenter.model.Invoice;
 import com.languagecenter.model.enums.EnrollmentStatus;
+import com.languagecenter.model.enums.InvoiceStatus;
 import com.languagecenter.model.enums.ResultStatus;
 import com.languagecenter.repo.EnrollmentRepository;
+import com.languagecenter.repo.InvoiceRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class EnrollmentService {
 
     private final EnrollmentRepository repo;
+    private final InvoiceRepository invoiceRepo;
     private final TransactionManager tx;
 
-    public EnrollmentService(EnrollmentRepository repo, TransactionManager tx) {
+    public EnrollmentService(EnrollmentRepository repo,
+                            InvoiceRepository invoiceRepo,
+                            TransactionManager tx) {
         this.repo = repo;
+        this.invoiceRepo = invoiceRepo;
         this.tx = tx;
     }
 
@@ -38,7 +46,23 @@ public class EnrollmentService {
             if(e.getStatus() == EnrollmentStatus.Dropped)
                 e.setResult(ResultStatus.NA);
 
+            // Insert enrollment
             repo.create(em,e);
+
+            // Tự động tạo Invoice cho enrollment này
+            // Lấy học phí từ Course
+            Double courseFee = e.getClassEntity().getCourse().getFee();
+
+            Invoice invoice = new Invoice(
+                e,                          // enrollment
+                e.getStudent(),            // student
+                courseFee,                 // totalAmount = course fee
+                LocalDate.now(),           // issueDate = now
+                InvoiceStatus.Issued,      // status = Issued
+                "Hóa đơn học phí khóa " + e.getClassEntity().getClassName()  // note
+            );
+
+            invoiceRepo.create(em, invoice);
 
             return null;
         });

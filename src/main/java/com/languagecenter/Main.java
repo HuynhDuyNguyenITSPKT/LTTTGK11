@@ -34,9 +34,13 @@ public class Main {
 
         EnrollmentRepository enrollmentRepo = new JpaEnrollmentRepository();
 
-        StudentService studentService = new StudentService(studentRepo,userRepo,tx);
+        InvoiceRepository invoiceRepo = new JpaInvoiceRepository();
 
-        TeacherService teacherService = new TeacherService(teacherRepo,userRepo,tx);
+        PaymentRepository paymentRepo = new JpaPaymentRepository();
+
+        StudentService studentService = new StudentService(studentRepo, teacherRepo, userRepo, tx);
+
+        TeacherService teacherService = new TeacherService(teacherRepo, studentRepo, userRepo, tx);
 
         CourseService courseService = new CourseService(courseRepo,tx);
 
@@ -46,9 +50,13 @@ public class Main {
 
         AuthService authService = new AuthService(userRepo,tx);
 
-        EnrollmentService enrollmentService = new EnrollmentService(enrollmentRepo,tx);
+        EnrollmentService enrollmentService = new EnrollmentService(enrollmentRepo, invoiceRepo, tx);
 
         ScheduleService scheduleService = new ScheduleService(scheduleRepo,tx);
+
+        InvoiceService invoiceService = new InvoiceService(invoiceRepo, tx);
+
+        PaymentService paymentService = new PaymentService(paymentRepo, invoiceRepo, tx);
 
         try {
             // tạo admin nếu chưa có
@@ -59,7 +67,9 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             LoginFrame login =
-                    new LoginFrame(authService,studentService,teacherService,courseService,roomService,classService,scheduleService,enrollmentService);
+                    new LoginFrame(authService, studentService, teacherService, courseService,
+                            roomService, classService, scheduleService, enrollmentService,
+                            invoiceService, paymentService);
             login.setVisible(true);
         });
     }

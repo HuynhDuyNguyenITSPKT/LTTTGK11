@@ -151,6 +151,16 @@ public class EnrollmentPanel extends JPanel {
 
                 service.create(dlg.getEnrollment());
                 reload();
+
+                // Thông báo Invoice đã được tạo tự động
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Enrollment đã được tạo thành công!\n" +
+                        "Hóa đơn (Invoice) đã được tự động tạo cho enrollment này.\n" +
+                        "Vui lòng vào mục 'Invoices' để xem chi tiết.",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
             }
 
         }catch(Exception ex){
