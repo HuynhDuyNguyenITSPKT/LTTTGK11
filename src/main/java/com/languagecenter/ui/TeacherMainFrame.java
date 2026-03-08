@@ -41,8 +41,8 @@ public class TeacherMainFrame extends JFrame {
 
         // TOP BAR
         CustomHeader topBar = new CustomHeader(
-            "STUDENT PORTAL", 
-            acc.getStudent().getFullName(), 
+            "TEACHER PORTAL", 
+            acc.getTeacher().getFullName(), 
             new Color(103, 58, 183), 
             e -> handleLogout()
         );

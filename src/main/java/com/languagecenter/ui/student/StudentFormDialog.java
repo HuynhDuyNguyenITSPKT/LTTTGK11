@@ -1,18 +1,23 @@
 package com.languagecenter.ui.student;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.languagecenter.model.Student;
 import com.languagecenter.model.enums.Gender;
 import com.languagecenter.model.enums.StudentStatus;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 
 public class StudentFormDialog extends JDialog {
     private final JTextField txtName = new JTextField(20);
-    private final JTextField txtDOB = new JTextField(20); // Định dạng: yyyy-MM-dd
+    
+    // THAY THẾ: Sử dụng DatePicker thay vì JTextField
+    private final DatePicker datePickerDOB; 
+    
     private final JTextField txtPhone = new JTextField(20);
     private final JTextField txtEmail = new JTextField(20);
     private final JTextField txtAddress = new JTextField(20);
@@ -30,11 +35,20 @@ public class StudentFormDialog extends JDialog {
         this.student = (existing != null) ? existing : new Student();
         this.readOnly = readOnly;
 
+        // Khởi tạo DatePicker với cấu hình tiếng Việt hoặc giao diện tùy chỉnh
+        DatePickerSettings dateSettings = new DatePickerSettings();
+        dateSettings.setFormatForDatesCommonEra("yyyy-MM-dd");
+        dateSettings.setAllowEmptyDates(false);
+        datePickerDOB = new DatePicker(dateSettings);
+
         buildUI();
 
         if (existing != null) {
             txtName.setText(existing.getFullName());
-            txtDOB.setText(existing.getDateOfBirth() != null ? existing.getDateOfBirth().toString() : "");
+            // Đổ dữ liệu vào DatePicker
+            if (existing.getDateOfBirth() != null) {
+                datePickerDOB.setDate(existing.getDateOfBirth());
+            }
             txtPhone.setText(existing.getPhone());
             txtEmail.setText(existing.getEmail());
             txtAddress.setText(existing.getAddress());
@@ -43,7 +57,7 @@ public class StudentFormDialog extends JDialog {
             txtUsername.setText(username);
 
             if (readOnly) {
-                disableFields(); // Khóa các ô nhập liệu nếu ở chế độ xem
+                disableFields();
             }
         }
 
@@ -53,7 +67,7 @@ public class StudentFormDialog extends JDialog {
 
     private void disableFields() {
         txtName.setEditable(false);
-        txtDOB.setEditable(false);
+        datePickerDOB.setEnabled(false); // Khóa DatePicker
         txtPhone.setEditable(false);
         txtEmail.setEditable(false);
         txtAddress.setEditable(false);
@@ -75,9 +89,9 @@ public class StudentFormDialog extends JDialog {
         Font labelFont = new Font("Segoe UI", Font.BOLD, 14);
         Font inputFont = new Font("Segoe UI", Font.PLAIN, 14);
 
-        // Danh sách nhãn và ô nhập tương ứng
-        String[] labels = {"Full Name:", "DOB (yyyy-MM-dd):", "Phone:", "Email:", "Address:", "Gender:", "Status:", "Username:", "Password:"};
-        JComponent[] fields = {txtName, txtDOB, txtPhone, txtEmail, txtAddress, cboGender, cboStatus, txtUsername, txtPass};
+        // Nhãn và các Component tương ứng
+        String[] labels = {"Full Name:", "Date of Birth:", "Phone:", "Email:", "Address:", "Gender:", "Status:", "Username:", "Password:"};
+        JComponent[] fields = {txtName, datePickerDOB, txtPhone, txtEmail, txtAddress, cboGender, cboStatus, txtUsername, txtPass};
 
         for (int i = 0; i < labels.length; i++) {
             JLabel lbl = new JLabel(labels[i]);
@@ -87,6 +101,13 @@ public class StudentFormDialog extends JDialog {
 
             fields[i].setFont(inputFont);
             fields[i].setPreferredSize(new Dimension(300, 35));
+            
+            // Tùy chỉnh riêng cho DatePicker để nó trông giống các TextField khác
+            if (fields[i] instanceof DatePicker) {
+                datePickerDOB.getComponentDateTextField().putClientProperty(FlatClientProperties.STYLE, "arc:5");
+                datePickerDOB.getComponentToggleCalendarButton().setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
             g.gridx = 1; g.weightx = 1.0;
             form.add(fields[i], g);
         }
@@ -113,23 +134,19 @@ public class StudentFormDialog extends JDialog {
     private void onSave() {
         try {
             if (txtName.getText().isBlank()) throw new IllegalArgumentException("Name is required");
-            if (txtUsername.getText().isBlank()) throw new IllegalArgumentException("Username is required");
-
+            
             student.setFullName(txtName.getText().trim());
+            // Lấy ngày trực tiếp từ DatePicker (trả về LocalDate)
+            student.setDateOfBirth(datePickerDOB.getDate());
+            
             student.setPhone(txtPhone.getText().trim());
             student.setEmail(txtEmail.getText().trim());
             student.setAddress(txtAddress.getText().trim());
             student.setGender((Gender) cboGender.getSelectedItem());
             student.setStatus((StudentStatus) cboStatus.getSelectedItem());
 
-            if (!txtDOB.getText().isBlank()) {
-                student.setDateOfBirth(LocalDate.parse(txtDOB.getText().trim()));
-            }
-
             saved = true;
             dispose();
-        } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Format yyyy-MM-dd is required for DOB", "Date Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Validation Error", JOptionPane.ERROR_MESSAGE);
         }
