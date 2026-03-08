@@ -3,6 +3,7 @@ package com.languagecenter.ui;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.languagecenter.model.UserAccount;
 import com.languagecenter.service.*;
+import com.languagecenter.ui.component.CustomHeader;
 import com.languagecenter.ui.student.StudentProfilePage;
 import com.languagecenter.ui.student.StudentSchedulePanel;
 
@@ -36,19 +37,13 @@ public class StudentMainFrame extends JFrame {
         setLayout(new BorderLayout());
 
         // TOP BAR
-        JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setBackground(Color.WHITE);
-        topBar.setPreferredSize(new Dimension(0, 60));
-        topBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
-
-        JLabel lblUser = new JLabel("  Chào học viên, " + acc.getStudent().getFullName());
-        lblUser.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        topBar.add(lblUser, BorderLayout.WEST);
-
-        JButton btnLogout = new JButton("Đăng xuất");
-        btnLogout.putClientProperty(FlatClientProperties.STYLE, "buttonType:borderless; foreground:#e74c3c; font:bold");
-        btnLogout.addActionListener(e -> handleLogout());
-        topBar.add(btnLogout, BorderLayout.EAST);
+        CustomHeader topBar = new CustomHeader(
+            "STUDENT PORTAL", 
+            acc.getStudent().getFullName(), 
+            new Color(103, 58, 183), 
+            e -> handleLogout()
+        );
+        add(topBar, BorderLayout.NORTH);
 
         // SIDEBAR
         JPanel sidebar = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));

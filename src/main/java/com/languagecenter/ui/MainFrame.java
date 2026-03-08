@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 import com.languagecenter.model.UserAccount;
 import com.languagecenter.service.*;
 import com.languagecenter.ui.clas.ClassPanel;
+import com.languagecenter.ui.component.CustomHeader;
 import com.languagecenter.ui.enrollment.EnrollmentPanel;
 import com.languagecenter.ui.schedule.SchedulePanel;
 import com.languagecenter.ui.student.StudentPanel;
@@ -47,22 +48,13 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
 
         // --- 1. TOP BAR (Header) ---
-        JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setBackground(Color.WHITE);
-        topBar.setPreferredSize(new Dimension(0, 60));
-        topBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
-
-        JLabel lblUser = new JLabel("  Administrator: " + acc.getUsername());
-        lblUser.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        lblUser.setForeground(new Color(52, 73, 94));
-        topBar.add(lblUser, BorderLayout.WEST);
-
-        JButton btnLogout = new JButton("Logout ");
-        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnLogout.putClientProperty(FlatClientProperties.STYLE,
-                "buttonType:borderless; foreground:#e74c3c; font:bold; focusWidth:0");
-        btnLogout.addActionListener(e -> handleLogout());
-        topBar.add(btnLogout, BorderLayout.EAST);
+        CustomHeader topBar = new CustomHeader(
+            "ADMIN DASHBOARD", 
+            acc.getUsername(), 
+            new Color(44, 62, 80), 
+            e -> handleLogout()
+        );
+        add(topBar, BorderLayout.NORTH);
 
         // --- 2. SIDEBAR ---
         JPanel sidebar = new JPanel();
