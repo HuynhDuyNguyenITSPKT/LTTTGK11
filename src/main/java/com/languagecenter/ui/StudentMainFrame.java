@@ -8,6 +8,8 @@ import com.languagecenter.ui.student.StudentProfilePage;
 import com.languagecenter.ui.student.StudentSchedulePanel;
 import com.languagecenter.ui.student.StudentDashboardPanel;
 import com.languagecenter.ui.student.StudentInvoicePaymentPanel;
+import com.languagecenter.ui.student.StudentPaymentPanel;
+import com.languagecenter.ui.student.StudentInvoiceHistoryPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +28,12 @@ public class StudentMainFrame extends JFrame {
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
     private final AttendanceService attendanceService;
+
+    // References to panels for reloading
+    private StudentDashboardPanel dashboardPanel;
+    private StudentSchedulePanel schedulePanel;
+    private StudentPaymentPanel paymentPanel;
+    private StudentInvoiceHistoryPanel historyPanel;
 
     public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
                            CourseService cs, RoomService rs, ClassService cls, ScheduleService sche,
@@ -64,13 +72,20 @@ public class StudentMainFrame extends JFrame {
         sidebar.add(Box.createVerticalStrut(20));
         sidebar.add(createMenuBtn("Bảng điều khiển", "DASH"));
         sidebar.add(createMenuBtn("Khóa Học", "COURSES"));
-        sidebar.add(createMenuBtn("Học phí & Thanh toán", "INVOICES"));
+        sidebar.add(createMenuBtn("Thanh toán học phí", "PAYMENT"));
+        sidebar.add(createMenuBtn("Hóa đơn & Thanh toán", "HISTORY"));
         sidebar.add(createMenuBtn("Hồ sơ cá nhân", "PROFILE"));
 
-        // CONTENT
-        contentPanel.add(new StudentDashboardPanel(acc.getStudent().getId(), enrollmentService, invoiceService), "DASH");
-        contentPanel.add(new StudentSchedulePanel(scheduleService,acc.getStudent().getId()), "COURSES");
-        contentPanel.add(new StudentInvoicePaymentPanel(acc.getStudent().getId(), invoiceService, paymentService), "INVOICES");
+        // CONTENT - Create panel instances
+        dashboardPanel = new StudentDashboardPanel(acc.getStudent().getId(), enrollmentService);
+        schedulePanel = new StudentSchedulePanel(scheduleService, acc.getStudent().getId());
+        paymentPanel = new StudentPaymentPanel(acc.getStudent().getId(), invoiceService, paymentService);
+        historyPanel = new StudentInvoiceHistoryPanel(acc.getStudent().getId(), invoiceService, paymentService);
+
+        contentPanel.add(dashboardPanel, "DASH");
+        contentPanel.add(schedulePanel, "COURSES");
+        contentPanel.add(paymentPanel, "PAYMENT");
+        contentPanel.add(historyPanel, "HISTORY");
         contentPanel.add(new StudentProfilePage(acc.getStudent(), acc.getUsername(), ss), "PROFILE");
 
         add(topBar, BorderLayout.NORTH);
@@ -83,8 +98,38 @@ public class StudentMainFrame extends JFrame {
         btn.setPreferredSize(new Dimension(210, 45));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.putClientProperty(FlatClientProperties.STYLE, "buttonType:borderless; foreground:#ffffff; arc:0; focusedBackground:#9575cd");
-        btn.addActionListener(e -> cardLayout.show(contentPanel, card));
+        btn.addActionListener(e -> {
+            // Reload panel data before showing
+            reloadPanelData(card);
+            cardLayout.show(contentPanel, card);
+        });
         return btn;
+    }
+
+    private void reloadPanelData(String card) {
+        switch (card) {
+            case "DASH":
+                if (dashboardPanel != null) {
+                    dashboardPanel.reload();
+                }
+                break;
+            case "COURSES":
+                if (schedulePanel != null) {
+                    schedulePanel.reload();
+                }
+                break;
+            case "PAYMENT":
+                if (paymentPanel != null) {
+                    paymentPanel.reload();
+                }
+                break;
+            case "HISTORY":
+                if (historyPanel != null) {
+                    historyPanel.reload();
+                }
+                break;
+            // PROFILE doesn't need reload
+        }
     }
 
     private void handleLogout() {

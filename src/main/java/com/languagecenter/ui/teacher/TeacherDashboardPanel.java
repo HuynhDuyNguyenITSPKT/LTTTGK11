@@ -22,7 +22,7 @@ public class TeacherDashboardPanel extends JPanel {
 
     private final JTable tableClasses = new JTable();
     private final DefaultTableModel tableModel = new DefaultTableModel(
-            new String[]{"Class Name", "Course", "Room", "Start Date", "End Date", "Students", "Status"}, 0
+            new String[]{"STT", "Class Name", "Course", "Room", "Start Date", "End Date", "Students", "Status"}, 0
     ) {
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -72,6 +72,10 @@ public class TeacherDashboardPanel extends JPanel {
         tableClasses.setFont(new Font("Arial", Font.PLAIN, 13));
         tableClasses.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
         tableClasses.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Set column width for STT
+        tableClasses.getColumnModel().getColumn(0).setPreferredWidth(50);
+        tableClasses.getColumnModel().getColumn(0).setMaxWidth(70);
 
         // Center align all cells
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -137,11 +141,13 @@ public class TeacherDashboardPanel extends JPanel {
             long totalStudents = 0;
             tableModel.setRowCount(0);
 
+            int stt = 1; // Số thứ tự
             for (Class cls : myClasses) {
                 long studentCount = enrollmentService.countStudentsByClass(cls.getId());
                 totalStudents += studentCount;
 
                 tableModel.addRow(new Object[]{
+                        stt++, // STT
                         cls.getClassName(),
                         cls.getCourse() != null ? cls.getCourse().getCourseName() : "N/A",
                         cls.getRoom() != null ? cls.getRoom().getRoomName() : "N/A",

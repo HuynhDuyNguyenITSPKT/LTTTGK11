@@ -84,6 +84,11 @@ public class TeacherPanel extends JPanel {
         // --- TABLE SETUP ---
         table.setRowHeight(40);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+
+        // Set column width for STT
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);
+        table.getColumnModel().getColumn(0).setMaxWidth(70);
+
         CustomTableRenderer renderer = new CustomTableRenderer();
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);

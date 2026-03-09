@@ -1,8 +1,6 @@
 package com.languagecenter.ui.student;
 
 import com.languagecenter.model.Enrollment;
-import com.languagecenter.model.Invoice;
-import com.languagecenter.model.enums.InvoiceStatus;
 import com.languagecenter.service.*;
 
 import javax.swing.*;
@@ -15,15 +13,14 @@ import java.util.List;
 public class StudentDashboardPanel extends JPanel {
     private final Long studentId;
     private final EnrollmentService enrollmentService;
-    private final InvoiceService invoiceService;
 
     private final JLabel lblTotalClasses = new JLabel("0");
-    private final JLabel lblTotalInvoices = new JLabel("0");
-    private final JLabel lblPaidInvoices = new JLabel("0");
+    private final JLabel lblActiveClasses = new JLabel("0");
+    private final JLabel lblCompletedClasses = new JLabel("0");
 
     private final JTable tableEnrollments = new JTable();
     private final DefaultTableModel enrollmentTableModel = new DefaultTableModel(
-            new String[]{"Class Name", "Course", "Teacher", "Status", "Result"}, 0
+            new String[]{"STT", "Class Name", "Course", "Teacher", "Status", "Result"}, 0
     ) {
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -31,27 +28,19 @@ public class StudentDashboardPanel extends JPanel {
         }
     };
 
-    private final JTable tableInvoices = new JTable();
-    private final DefaultTableModel invoiceTableModel = new DefaultTableModel(
-            new String[]{"Invoice ID", "Class", "Amount", "Issue Date", "Status"}, 0
-    ) {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
-    };
-
-    public StudentDashboardPanel(Long studentId, EnrollmentService enrollmentService,
-                                 InvoiceService invoiceService) {
+    public StudentDashboardPanel(Long studentId, EnrollmentService enrollmentService) {
         this.studentId = studentId;
         this.enrollmentService = enrollmentService;
-        this.invoiceService = invoiceService;
 
         setLayout(new BorderLayout(0, 20));
         setBorder(new EmptyBorder(20, 25, 20, 25));
         setBackground(new Color(245, 247, 250));
 
         buildUI();
+        loadData();
+    }
+
+    public void reload() {
         loadData();
     }
 
@@ -67,25 +56,28 @@ public class StudentDashboardPanel extends JPanel {
         // Stats Panel
         JPanel statsPanel = new JPanel(new GridLayout(1, 3, 20, 0));
         statsPanel.setOpaque(false);
-        statsPanel.add(createStatCard("My Classes", lblTotalClasses, new Color(52, 152, 219), "📚"));
-        statsPanel.add(createStatCard("Total Invoices", lblTotalInvoices, new Color(230, 126, 34), "💰"));
-        statsPanel.add(createStatCard("Paid Invoices", lblPaidInvoices, new Color(46, 204, 113), "✅"));
-
-        // Tables Panel
-        JPanel tablesPanel = new JPanel(new GridLayout(2, 1, 0, 20));
-        tablesPanel.setOpaque(false);
+        statsPanel.add(createStatCard("Total Classes", lblTotalClasses, new Color(52, 152, 219), "📚"));
+        statsPanel.add(createStatCard("Active Classes", lblActiveClasses, new Color(46, 204, 113), "📖"));
+        statsPanel.add(createStatCard("Completed Classes", lblCompletedClasses, new Color(149, 165, 166), "✅"));
 
         // Enrollments Table
         JPanel enrollmentPanel = new JPanel(new BorderLayout(0, 10));
         enrollmentPanel.setOpaque(false);
-        JLabel lblEnrollmentTitle = new JLabel("My Enrollments");
+        JLabel lblEnrollmentTitle = new JLabel("My Enrollments & Classes");
         lblEnrollmentTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblEnrollmentTitle.setForeground(new Color(44, 62, 80));
 
         tableEnrollments.setModel(enrollmentTableModel);
-        tableEnrollments.setRowHeight(30);
+        tableEnrollments.setRowHeight(35);
         tableEnrollments.setFont(new Font("Arial", Font.PLAIN, 13));
         tableEnrollments.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+        tableEnrollments.getTableHeader().setBackground(new Color(103, 58, 183));
+        tableEnrollments.getTableHeader().setForeground(Color.WHITE);
+        tableEnrollments.setGridColor(new Color(230, 230, 230));
+
+        // Set column width for STT
+        tableEnrollments.getColumnModel().getColumn(0).setPreferredWidth(50);
+        tableEnrollments.getColumnModel().getColumn(0).setMaxWidth(70);
 
         // Center align all cells
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -96,44 +88,14 @@ public class StudentDashboardPanel extends JPanel {
 
         JScrollPane scrollEnrollments = new JScrollPane(tableEnrollments);
         scrollEnrollments.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-        scrollEnrollments.setPreferredSize(new Dimension(0, 200));
 
         enrollmentPanel.add(lblEnrollmentTitle, BorderLayout.NORTH);
         enrollmentPanel.add(scrollEnrollments, BorderLayout.CENTER);
 
-        // Invoices Table
-        JPanel invoicePanel = new JPanel(new BorderLayout(0, 10));
-        invoicePanel.setOpaque(false);
-        JLabel lblInvoiceTitle = new JLabel("My Invoices");
-        lblInvoiceTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblInvoiceTitle.setForeground(new Color(44, 62, 80));
-
-        tableInvoices.setModel(invoiceTableModel);
-        tableInvoices.setRowHeight(30);
-        tableInvoices.setFont(new Font("Arial", Font.PLAIN, 13));
-        tableInvoices.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
-
-        // Center align all cells
-        DefaultTableCellRenderer centerRenderer2 = new DefaultTableCellRenderer();
-        centerRenderer2.setHorizontalAlignment(SwingConstants.CENTER);
-        for (int i = 0; i < tableInvoices.getColumnCount(); i++) {
-            tableInvoices.getColumnModel().getColumn(i).setCellRenderer(centerRenderer2);
-        }
-
-        JScrollPane scrollInvoices = new JScrollPane(tableInvoices);
-        scrollInvoices.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-        scrollInvoices.setPreferredSize(new Dimension(0, 200));
-
-        invoicePanel.add(lblInvoiceTitle, BorderLayout.NORTH);
-        invoicePanel.add(scrollInvoices, BorderLayout.CENTER);
-
-        tablesPanel.add(enrollmentPanel);
-        tablesPanel.add(invoicePanel);
-
         JPanel centerPanel = new JPanel(new BorderLayout(0, 20));
         centerPanel.setOpaque(false);
         centerPanel.add(statsPanel, BorderLayout.NORTH);
-        centerPanel.add(tablesPanel, BorderLayout.CENTER);
+        centerPanel.add(enrollmentPanel, BorderLayout.CENTER);
 
         add(headerPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
@@ -174,8 +136,13 @@ public class StudentDashboardPanel extends JPanel {
                     .toList();
 
             enrollmentTableModel.setRowCount(0);
+            int stt = 1;
+            long activeCount = 0;
+            long completedCount = 0;
+
             for (Enrollment enrollment : enrollments) {
                 enrollmentTableModel.addRow(new Object[]{
+                        stt++,
                         enrollment.getClassEntity().getClassName(),
                         enrollment.getClassEntity().getCourse() != null ?
                                 enrollment.getClassEntity().getCourse().getCourseName() : "N/A",
@@ -184,28 +151,19 @@ public class StudentDashboardPanel extends JPanel {
                         enrollment.getStatus(),
                         enrollment.getResult()
                 });
-            }
 
-            // Load Invoices
-            List<Invoice> invoices = invoiceService.getByStudentId(studentId);
-            long paidCount = invoices.stream()
-                    .filter(i -> i.getStatus() == InvoiceStatus.Paid)
-                    .count();
-
-            invoiceTableModel.setRowCount(0);
-            for (Invoice invoice : invoices) {
-                invoiceTableModel.addRow(new Object[]{
-                        invoice.getId(),
-                        invoice.getEnrollment().getClassEntity().getClassName(),
-                        String.format("%.2f", invoice.getTotalAmount()),
-                        invoice.getIssueDate(),
-                        invoice.getStatus()
-                });
+                // Count active and completed
+                String status = enrollment.getStatus().toString().toLowerCase();
+                if (status.contains("active") || status.contains("enrolled")) {
+                    activeCount++;
+                } else if (status.contains("completed") || status.contains("finished")) {
+                    completedCount++;
+                }
             }
 
             lblTotalClasses.setText(String.valueOf(enrollments.size()));
-            lblTotalInvoices.setText(String.valueOf(invoices.size()));
-            lblPaidInvoices.setText(String.valueOf(paidCount));
+            lblActiveClasses.setText(String.valueOf(activeCount));
+            lblCompletedClasses.setText(String.valueOf(completedCount));
 
         } catch (Exception e) {
             e.printStackTrace();

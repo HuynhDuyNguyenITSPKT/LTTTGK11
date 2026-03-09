@@ -40,6 +40,10 @@ public class StudentSchedulePanel extends JPanel {
         loadData();
     }
 
+    public void reload() {
+        loadData();
+    }
+
     private void buildToolbar(){
 
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
