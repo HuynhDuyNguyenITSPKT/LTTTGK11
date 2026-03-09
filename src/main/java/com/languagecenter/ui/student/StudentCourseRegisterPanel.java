@@ -30,6 +30,7 @@ public class StudentCourseRegisterPanel extends JPanel {
     private final Color PRIMARY = new Color(79,70,229);
     private final Color BACKGROUND = new Color(245,247,251);
     private final Color BORDER = new Color(229,231,235);
+    private final Color CARD_BG = new Color(220,252,231);
 
     public StudentCourseRegisterPanel(
             Long studentId,
@@ -65,7 +66,6 @@ public class StudentCourseRegisterPanel extends JPanel {
 
         txtSearch = new JTextField();
         txtSearch.setPreferredSize(new Dimension(200,32));
-
         txtSearch.addActionListener(e -> filterCourses());
 
         JButton btnSearch = createPrimaryButton("Search");
@@ -79,9 +79,12 @@ public class StudentCourseRegisterPanel extends JPanel {
 
         add(header,BorderLayout.NORTH);
 
-        courseContainer = new JPanel(new GridLayout(0,4,20,20));
+        // container hiển thị course
+        courseContainer = new JPanel(new FlowLayout(FlowLayout.LEFT,20,20));
         courseContainer.setBackground(BACKGROUND);
         courseContainer.setBorder(new EmptyBorder(20,20,20,20));
+
+        courseContainer.setPreferredSize(new Dimension(920, 1000));
 
         JScrollPane scroll = new JScrollPane(courseContainer);
         scroll.setBorder(null);
@@ -99,7 +102,6 @@ public class StudentCourseRegisterPanel extends JPanel {
         btn.setForeground(Color.WHITE);
         btn.setFont(new Font("Segoe UI",Font.BOLD,13));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
         btn.setBorder(BorderFactory.createEmptyBorder(8,16,8,16));
 
         btn.addMouseListener(new MouseAdapter(){
@@ -122,7 +124,6 @@ public class StudentCourseRegisterPanel extends JPanel {
         try{
 
             courseData = courseService.getAll();
-
             renderCourses(courseData);
 
         }catch(Exception e){
@@ -146,21 +147,29 @@ public class StudentCourseRegisterPanel extends JPanel {
 
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card,BoxLayout.Y_AXIS));
-        card.setBackground(Color.WHITE);
+        card.setBackground(CARD_BG);
 
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER),
                 new EmptyBorder(15,15,15,15)
         ));
 
-        card.setPreferredSize(new Dimension(220,200));
+        // kích thước cố định
+        card.setPreferredSize(new Dimension(200,160));
+        card.setMinimumSize(new Dimension(200,160));
+        card.setMaximumSize(new Dimension(200,160));
+
         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         JLabel name = new JLabel(c.getCourseName());
-        name.setFont(new Font("Segoe UI",Font.BOLD,18));
+        name.setFont(new Font("Segoe UI",Font.BOLD,16));
+        name.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel level = new JLabel("Level: " + c.getLevel());
+        level.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         JLabel fee = new JLabel("Fee: " + c.getFee());
+        fee.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JTextArea desc = new JTextArea(c.getDescription());
         desc.setLineWrap(true);
@@ -168,8 +177,10 @@ public class StudentCourseRegisterPanel extends JPanel {
         desc.setEditable(false);
         desc.setOpaque(false);
         desc.setFont(new Font("Segoe UI",Font.PLAIN,12));
+        desc.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JButton btnView = createPrimaryButton("Xem lớp");
+        btnView.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnView.addActionListener(e -> showClasses(c));
 
         card.add(name);
@@ -362,7 +373,6 @@ public class StudentCourseRegisterPanel extends JPanel {
         try{
 
             enrollmentService.register(studentId, clazz);
-
             JOptionPane.showMessageDialog(this,"Đăng ký thành công!");
 
         }catch(Exception ex){
