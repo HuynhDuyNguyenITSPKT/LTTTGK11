@@ -6,6 +6,7 @@ import com.languagecenter.service.*;
 import com.languagecenter.ui.component.CustomHeader;
 import com.languagecenter.ui.student.StudentProfilePage;
 import com.languagecenter.ui.student.StudentSchedulePanel;
+import com.languagecenter.ui.student.StudentCourseRegisterPanel;
 import com.languagecenter.ui.student.StudentDashboardPanel;
 import com.languagecenter.ui.student.StudentInvoicePaymentPanel;
 import com.languagecenter.ui.student.StudentPaymentPanel;
@@ -34,6 +35,7 @@ public class StudentMainFrame extends JFrame {
     private StudentSchedulePanel schedulePanel;
     private StudentPaymentPanel paymentPanel;
     private StudentInvoiceHistoryPanel historyPanel;
+    private StudentCourseRegisterPanel enrollmentPanel;
 
     public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
                            CourseService cs, RoomService rs, ClassService cls, ScheduleService sche,
@@ -75,18 +77,21 @@ public class StudentMainFrame extends JFrame {
         sidebar.add(createMenuBtn("Thanh toán học phí", "PAYMENT"));
         sidebar.add(createMenuBtn("Hóa đơn & Thanh toán", "HISTORY"));
         sidebar.add(createMenuBtn("Hồ sơ cá nhân", "PROFILE"));
+        sidebar.add(createMenuBtn("Đăng kí lớp học", "ENROLLMENT"));
 
         // CONTENT - Create panel instances
         dashboardPanel = new StudentDashboardPanel(acc.getStudent().getId(), enrollmentService);
         schedulePanel = new StudentSchedulePanel(scheduleService, acc.getStudent().getId());
         paymentPanel = new StudentPaymentPanel(acc.getStudent().getId(), invoiceService, paymentService);
         historyPanel = new StudentInvoiceHistoryPanel(acc.getStudent().getId(), invoiceService, paymentService);
+        enrollmentPanel = new StudentCourseRegisterPanel(acc.getStudent().getId(), courseService, classService, scheduleService, enrollmentService);
 
         contentPanel.add(dashboardPanel, "DASH");
         contentPanel.add(schedulePanel, "COURSES");
         contentPanel.add(paymentPanel, "PAYMENT");
         contentPanel.add(historyPanel, "HISTORY");
         contentPanel.add(new StudentProfilePage(acc.getStudent(), acc.getUsername(), ss), "PROFILE");
+        contentPanel.add(enrollmentPanel, "ENROLLMENT");
 
         add(topBar, BorderLayout.NORTH);
         add(sidebar, BorderLayout.WEST);

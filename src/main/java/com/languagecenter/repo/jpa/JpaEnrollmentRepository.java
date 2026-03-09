@@ -72,4 +72,21 @@ public class JpaEnrollmentRepository implements EnrollmentRepository {
                 .setParameter("classId", classId)
                 .getSingleResult();
     }
+
+
+    @Override
+    public boolean existsStudentInCourse(EntityManager em, Long studentId, Long courseId){
+
+        Long count = em.createQuery("""
+            SELECT COUNT(e)
+            FROM Enrollment e
+            WHERE e.student.id = :studentId
+            AND e.classEntity.course.id = :courseId
+        """, Long.class)
+        .setParameter("studentId", studentId)
+        .setParameter("courseId", courseId)
+        .getSingleResult();
+
+        return count > 0;
+    }
 }

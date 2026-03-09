@@ -86,6 +86,12 @@ public class ScheduleService {
                 em -> repo.getScheduleByTeacher(em, teacherId)
         );
     }
+    
+    public List<Schedule> getByClass(Long classId) throws Exception {
 
+    return tx.runInTransaction(em ->
+        repo.getByClass(em, classId)
+    );
+    }
 
 }

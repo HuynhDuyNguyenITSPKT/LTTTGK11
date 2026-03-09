@@ -35,4 +35,17 @@ public class JpaClassRepository implements ClassRepository {
         Class c = em.find(Class.class, id);
         if (c != null) em.remove(c);
     }
+
+    @Override
+    public List<Class> getByCourse(EntityManager em, Long courseId){
+
+        return em.createQuery("""
+            SELECT c
+            FROM Class c
+            WHERE c.course.id = :courseId
+            ORDER BY c.startDate
+        """, Class.class)
+        .setParameter("courseId", courseId)
+        .getResultList();
+    }
 }

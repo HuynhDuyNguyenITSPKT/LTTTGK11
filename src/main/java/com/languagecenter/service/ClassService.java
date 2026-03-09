@@ -42,4 +42,10 @@ public class ClassService {
             return null;
         });
     }
+
+    public List<Class> getByCourse(Long courseId) throws Exception {
+    return tx.runInTransaction(em ->
+        classRepo.getByCourse(em, courseId)
+    );
+}
 }

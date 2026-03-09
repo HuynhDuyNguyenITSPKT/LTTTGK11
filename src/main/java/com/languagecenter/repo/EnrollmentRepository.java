@@ -20,4 +20,6 @@ public interface EnrollmentRepository {
     boolean existsStudentInClass(EntityManager em, Long studentId, Long classId);
 
     public Long countStudentsByClass(EntityManager em, Long classId);
+
+    boolean existsStudentInCourse(EntityManager em, Long studentId, Long courseId);
 }

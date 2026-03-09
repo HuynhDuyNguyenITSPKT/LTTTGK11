@@ -29,4 +29,6 @@ public interface ScheduleRepository {
     List<Schedule> getScheduleByTeacher(EntityManager em, Long teacherId);
 
     public boolean checkTeacherScheduleConflict(EntityManager em);
+
+    List<Schedule> getByClass(EntityManager em, Long classId);
 }

@@ -1,12 +1,13 @@
 package com.languagecenter.repo.jpa;
 
-import com.languagecenter.model.Schedule;
-import com.languagecenter.repo.ScheduleRepository;
-import jakarta.persistence.EntityManager;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+
+import com.languagecenter.model.Schedule;
+import com.languagecenter.repo.ScheduleRepository;
+
+import jakarta.persistence.EntityManager;
 
 public class JpaScheduleRepository implements ScheduleRepository {
 
@@ -119,5 +120,18 @@ public class JpaScheduleRepository implements ScheduleRepository {
 """, Long.class).getSingleResult();
 
         return count == 0;
+    }
+
+    @Override
+    public List<Schedule> getByClass(EntityManager em, Long classId){
+
+        return em.createQuery("""
+            SELECT s
+            FROM Schedule s
+            WHERE s.classEntity.id = :classId
+            ORDER BY s.studyDate, s.startTime
+        """, Schedule.class)
+        .setParameter("classId", classId)
+        .getResultList();
     }
 }

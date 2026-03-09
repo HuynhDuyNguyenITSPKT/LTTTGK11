@@ -10,4 +10,5 @@ public interface ClassRepository {
     void create(EntityManager em, Class clazz) throws Exception;
     void update(EntityManager em, Class clazz) throws Exception;
     void delete(EntityManager em, Long id) throws Exception;
+    List<Class> getByCourse(EntityManager em, Long courseId);
 }
