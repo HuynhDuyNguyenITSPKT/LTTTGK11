@@ -40,6 +40,8 @@ public class Main {
 
         AttendanceRepository attendanceRepo = new JpaAttendanceRepository();
 
+        com.languagecenter.repo.ResultRepository resultRepo = new com.languagecenter.repo.jpa.JpaResultRepository();
+
         StudentService studentService = new StudentService(studentRepo, teacherRepo, userRepo, tx);
 
         TeacherService teacherService = new TeacherService(teacherRepo, studentRepo, userRepo, tx);
@@ -62,6 +64,9 @@ public class Main {
 
         AttendanceService attendanceService = new AttendanceService(attendanceRepo, tx);
 
+        com.languagecenter.service.ResultService resultService =
+                new com.languagecenter.service.ResultService(resultRepo, tx);
+
         try {
             // tạo admin nếu chưa có
             AppInitializer.initAdmin(tx,userRepo);
@@ -73,7 +78,7 @@ public class Main {
             LoginFrame login =
                     new LoginFrame(authService, studentService, teacherService, courseService,
                             roomService, classService, scheduleService, enrollmentService,
-                            invoiceService, paymentService, attendanceService);
+                            invoiceService, paymentService, attendanceService, resultService);
             login.setVisible(true);
         });
     }

@@ -23,12 +23,13 @@ public class LoginFrame extends JFrame {
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
     private final AttendanceService attendanceService;
+    private final ResultService resultService;
 
     public LoginFrame(AuthService authService, StudentService studentService,
                       TeacherService teacherService, CourseService courseService, RoomService roomService,
                       ClassService classService, ScheduleService scheduleService, EnrollmentService enrollmentService,
                       InvoiceService invoiceService, PaymentService paymentService,
-                      AttendanceService attendanceService) {
+                      AttendanceService attendanceService, ResultService resultService) {
         super("System Login");
         this.authService = authService;
         this.studentService = studentService;
@@ -41,6 +42,7 @@ public class LoginFrame extends JFrame {
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
         this.attendanceService = attendanceService;
+        this.resultService = resultService;
 
         buildUI();
 
@@ -128,16 +130,16 @@ public class LoginFrame extends JFrame {
             if (acc.getRole() == UserRole.Admin) {
                 new MainFrame(acc, authService, studentService, teacherService, courseService,
                         roomService, classService, scheduleService, enrollmentService,
-                        invoiceService, paymentService, attendanceService).setVisible(true);
+                        invoiceService, paymentService, attendanceService, resultService).setVisible(true);
             } else if (acc.getRole() == UserRole.Teacher) {
                 // Cần tạo TeacherMainFrame tương tự StudentMainFrame
                 new TeacherMainFrame(acc, authService, studentService, teacherService, courseService,
                         roomService, classService, scheduleService, enrollmentService,
-                        invoiceService, paymentService, attendanceService).setVisible(true);
+                        invoiceService, paymentService, attendanceService, resultService).setVisible(true);
             } else if (acc.getRole() == UserRole.Student) {
                 new StudentMainFrame(acc, authService, studentService, teacherService, courseService,
                         roomService, classService, scheduleService, enrollmentService,
-                        invoiceService, paymentService, attendanceService).setVisible(true);
+                        invoiceService, paymentService, attendanceService, resultService).setVisible(true);
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Login Error", JOptionPane.ERROR_MESSAGE);

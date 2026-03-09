@@ -14,6 +14,7 @@ import com.languagecenter.ui.room.RoomPanel;
 import com.languagecenter.ui.invoice.InvoicePanel;
 import com.languagecenter.ui.payment.PaymentPanel;
 import com.languagecenter.ui.admin.AdminDashboardPanel;
+import com.languagecenter.ui.result.ResultPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -35,6 +36,7 @@ public class MainFrame extends JFrame {
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
     private final AttendanceService attendanceService;
+    private final ResultService resultService;
 
     private AdminDashboardPanel dashboardPanel;
     private StudentPanel studentPanel;
@@ -46,11 +48,12 @@ public class MainFrame extends JFrame {
     private EnrollmentPanel enrollmentPanel;
     private InvoicePanel invoicePanel;
     private PaymentPanel paymentPanel;
+    private ResultPanel resultPanel;
 
     public MainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
                      CourseService cs, RoomService rs, ClassService cls,
                      ScheduleService sche, EnrollmentService es, InvoiceService is, PaymentService ps,
-                     AttendanceService attendanceService) {
+                     AttendanceService attendanceService, ResultService resultService) {
         super("Language Center Management - Admin Dashboard");
 
         this.authService = as;
@@ -64,6 +67,7 @@ public class MainFrame extends JFrame {
         this.invoiceService = is;
         this.paymentService = ps;
         this.attendanceService = attendanceService;
+        this.resultService = resultService;
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -125,6 +129,7 @@ public class MainFrame extends JFrame {
         sidebar.add(createMenuButton("Schedules", "SCHEDULE"));
         sidebar.add(createMenuButton("Invoices", "INVOICE"));
         sidebar.add(createMenuButton("Payments", "PAY"));
+        sidebar.add(createMenuButton("Results",  "RESULT"));
 
         // --- 3. CONTENT PANEL ---
         dashboardPanel = new AdminDashboardPanel(ss, ts, cls, es, is, ps);
@@ -135,8 +140,9 @@ public class MainFrame extends JFrame {
         classPanel = new ClassPanel(cls, cs, ts, rs);
         schedulePanel = new SchedulePanel(sche, cls, rs);
         enrollmentPanel = new EnrollmentPanel(es, ss, cls);
-        invoicePanel = new InvoicePanel(is, ss);
-        paymentPanel = new PaymentPanel(ps, ss, is);
+        invoicePanel   = new InvoicePanel(is, ss);
+        paymentPanel   = new PaymentPanel(ps, ss, is);
+        resultPanel    = new ResultPanel(resultService, ss, cls);
 
         contentPanel.add(dashboardPanel, "DASH");
         contentPanel.add(studentPanel, "STUDENT");
@@ -146,8 +152,9 @@ public class MainFrame extends JFrame {
         contentPanel.add(classPanel, "CLASS");
         contentPanel.add(schedulePanel, "SCHEDULE");
         contentPanel.add(enrollmentPanel, "ENROLL");
-        contentPanel.add(invoicePanel, "INVOICE");
-        contentPanel.add(paymentPanel, "PAY");
+        contentPanel.add(invoicePanel,    "INVOICE");
+        contentPanel.add(paymentPanel,    "PAY");
+        contentPanel.add(resultPanel,     "RESULT");
 
         add(topBar, BorderLayout.NORTH);
         add(sidebar, BorderLayout.WEST);
@@ -189,6 +196,7 @@ public class MainFrame extends JFrame {
             case "ENROLL"   -> { if (enrollmentPanel != null) enrollmentPanel.reload(); }
             case "INVOICE"  -> { if (invoicePanel    != null) invoicePanel.reload(); }
             case "PAY"      -> { if (paymentPanel    != null) paymentPanel.reload(); }
+            case "RESULT"   -> { if (resultPanel     != null) resultPanel.reload();  }
         }
     }
 
@@ -204,7 +212,7 @@ public class MainFrame extends JFrame {
             // Quay lại màn hình đăng nhập
             new LoginFrame(authService, studentService, teacherService, courseService,
                     roomService, classService, scheduleService, enrollmentService,
-                    invoiceService, paymentService, attendanceService).setVisible(true);
+                    invoiceService, paymentService, attendanceService, resultService).setVisible(true);
         }
     }
 }

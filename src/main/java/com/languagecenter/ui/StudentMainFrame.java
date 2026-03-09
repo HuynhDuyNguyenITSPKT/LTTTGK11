@@ -11,6 +11,7 @@ import com.languagecenter.ui.student.StudentDashboardPanel;
 import com.languagecenter.ui.student.StudentInvoicePaymentPanel;
 import com.languagecenter.ui.student.StudentPaymentPanel;
 import com.languagecenter.ui.student.StudentInvoiceHistoryPanel;
+import com.languagecenter.ui.student.StudentResultPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,18 +30,19 @@ public class StudentMainFrame extends JFrame {
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
     private final AttendanceService attendanceService;
-
-    // References to panels for reloading
+    private final com.languagecenter.service.ResultService resultService;
     private StudentDashboardPanel dashboardPanel;
     private StudentSchedulePanel schedulePanel;
     private StudentPaymentPanel paymentPanel;
     private StudentInvoiceHistoryPanel historyPanel;
     private StudentCourseRegisterPanel enrollmentPanel;
+    private StudentResultPanel resultPanel;
 
     public StudentMainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
                            CourseService cs, RoomService rs, ClassService cls, ScheduleService sche,
                            EnrollmentService enrollmentService, InvoiceService invoiceService,
-                           PaymentService paymentService, AttendanceService attendanceService) {
+                           PaymentService paymentService, AttendanceService attendanceService,
+                           com.languagecenter.service.ResultService resultService) {
         super("Student Portal - " + acc.getStudent().getFullName());
         this.authService = as;
         this.studentService = ss;
@@ -53,6 +55,7 @@ public class StudentMainFrame extends JFrame {
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
         this.attendanceService = attendanceService;
+        this.resultService = resultService;
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1280, 800);
         setLocationRelativeTo(null);
@@ -77,20 +80,23 @@ public class StudentMainFrame extends JFrame {
         sidebar.add(createMenuBtn("Courses", "COURSES"));
         sidebar.add(createMenuBtn("Tuition Payment", "PAYMENT"));
         sidebar.add(createMenuBtn("Invoice & Payment", "HISTORY"));
-        sidebar.add(createMenuBtn("My Profile", "PROFILE"));
-        sidebar.add(createMenuBtn("Enroll Class", "ENROLLMENT"));
+        sidebar.add(createMenuBtn("My Results",        "RESULTS"));
+        sidebar.add(createMenuBtn("My Profile",        "PROFILE"));
+        sidebar.add(createMenuBtn("Enroll Class",      "ENROLLMENT"));
 
         // CONTENT - Create panel instances
-        dashboardPanel = new StudentDashboardPanel(acc.getStudent().getId(), enrollmentService);
-        schedulePanel = new StudentSchedulePanel(scheduleService, acc.getStudent().getId());
-        paymentPanel = new StudentPaymentPanel(acc.getStudent().getId(), invoiceService, paymentService);
-        historyPanel = new StudentInvoiceHistoryPanel(acc.getStudent().getId(), invoiceService, paymentService);
+        dashboardPanel  = new StudentDashboardPanel(acc.getStudent().getId(), enrollmentService);
+        schedulePanel   = new StudentSchedulePanel(scheduleService, acc.getStudent().getId());
+        paymentPanel    = new StudentPaymentPanel(acc.getStudent().getId(), invoiceService, paymentService);
+        historyPanel    = new StudentInvoiceHistoryPanel(acc.getStudent().getId(), invoiceService, paymentService);
         enrollmentPanel = new StudentCourseRegisterPanel(acc.getStudent().getId(), courseService, classService, scheduleService, enrollmentService);
+        resultPanel     = new StudentResultPanel(acc.getStudent().getId(), resultService);
 
-        contentPanel.add(dashboardPanel, "DASH");
-        contentPanel.add(schedulePanel, "COURSES");
-        contentPanel.add(paymentPanel, "PAYMENT");
-        contentPanel.add(historyPanel, "HISTORY");
+        contentPanel.add(dashboardPanel,  "DASH");
+        contentPanel.add(schedulePanel,   "COURSES");
+        contentPanel.add(paymentPanel,    "PAYMENT");
+        contentPanel.add(historyPanel,    "HISTORY");
+        contentPanel.add(resultPanel,     "RESULTS");
         contentPanel.add(new StudentProfilePage(acc.getStudent(), acc.getUsername(), ss), "PROFILE");
         contentPanel.add(enrollmentPanel, "ENROLLMENT");
 
@@ -118,6 +124,7 @@ public class StudentMainFrame extends JFrame {
             case "COURSES"    -> { if (schedulePanel   != null) schedulePanel.reload(); }
             case "PAYMENT"    -> { if (paymentPanel    != null) paymentPanel.reload(); }
             case "HISTORY"    -> { if (historyPanel    != null) historyPanel.reload(); }
+            case "RESULTS"    -> { if (resultPanel     != null) resultPanel.reload(); }
             case "ENROLLMENT" -> { if (enrollmentPanel != null) enrollmentPanel.reload(); }
         }
     }
@@ -127,7 +134,7 @@ public class StudentMainFrame extends JFrame {
             this.dispose();
             new LoginFrame(authService, studentService, teacherService, courseService,
                     roomService, classService, scheduleService, enrollmentService,
-                    invoiceService, paymentService, attendanceService).setVisible(true);
+                    invoiceService, paymentService, attendanceService, resultService).setVisible(true);
         }
     }
 }

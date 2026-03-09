@@ -8,6 +8,7 @@ import com.languagecenter.ui.teacher.TeacherProfilePage;
 import com.languagecenter.ui.teacher.TeacherSchedulePanel;
 import com.languagecenter.ui.teacher.TeacherDashboardPanel;
 import com.languagecenter.ui.teacher.AttendancePanel;
+import com.languagecenter.ui.teacher.TeacherResultPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,16 +28,19 @@ public class TeacherMainFrame extends JFrame {
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
     private final AttendanceService attendanceService;
+    private final com.languagecenter.service.ResultService resultService;
 
     private TeacherDashboardPanel dashboardPanel;
     private TeacherSchedulePanel schedulePanel;
     private AttendancePanel attendancePanel;
+    private TeacherResultPanel resultPanel;
 
     public TeacherMainFrame(UserAccount acc, AuthService as, StudentService ss,
                             TeacherService ts, CourseService cs, RoomService rs,
                             ClassService cls, ScheduleService scheduleService, EnrollmentService enrollmentService,
                             InvoiceService invoiceService, PaymentService paymentService,
-                            AttendanceService attendanceService) {
+                            AttendanceService attendanceService,
+                            com.languagecenter.service.ResultService resultService) {
         super("Teacher Portal - " + acc.getTeacher().getFullName());
         this.authService = as;
         this.studentService = ss;
@@ -49,6 +53,7 @@ public class TeacherMainFrame extends JFrame {
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
         this.attendanceService = attendanceService;
+        this.resultService = resultService;
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1280, 800);
@@ -70,19 +75,22 @@ public class TeacherMainFrame extends JFrame {
         sidebar.setBackground(new Color(30, 130, 76));
 
         sidebar.add(Box.createVerticalStrut(20));
-        sidebar.add(createMenuBtn("Dashboard", "DASH"));
+        sidebar.add(createMenuBtn("Dashboard",  "DASH"));
         sidebar.add(createMenuBtn("My Schedule", "SCHEDULE"));
-        sidebar.add(createMenuBtn("Attendance", "ATTENDANCE"));
-        sidebar.add(createMenuBtn("My Profile", "PROFILE"));
+        sidebar.add(createMenuBtn("Attendance",  "ATTENDANCE"));
+        sidebar.add(createMenuBtn("Results",     "RESULT"));
+        sidebar.add(createMenuBtn("My Profile",  "PROFILE"));
 
         // CONTENT
-        dashboardPanel = new TeacherDashboardPanel(acc.getTeacher().getId(), classService, enrollmentService);
-        schedulePanel = new TeacherSchedulePanel(scheduleService, acc.getTeacher().getId(), enrollmentService);
+        dashboardPanel  = new TeacherDashboardPanel(acc.getTeacher().getId(), classService, enrollmentService);
+        schedulePanel   = new TeacherSchedulePanel(scheduleService, acc.getTeacher().getId(), enrollmentService);
         attendancePanel = new AttendancePanel(acc.getTeacher().getId(), classService, enrollmentService, attendanceService);
+        resultPanel     = new TeacherResultPanel(acc.getTeacher().getId(), classService, enrollmentService, resultService);
 
         contentPanel.add(dashboardPanel, "DASH");
         contentPanel.add(schedulePanel, "SCHEDULE");
         contentPanel.add(attendancePanel, "ATTENDANCE");
+        contentPanel.add(resultPanel, "RESULT");
         contentPanel.add(new TeacherProfilePage(acc.getTeacher(), acc.getUsername(), ts), "PROFILE");
 
         add(topBar, BorderLayout.NORTH);
@@ -108,6 +116,7 @@ public class TeacherMainFrame extends JFrame {
             case "DASH"       -> { if (dashboardPanel  != null) dashboardPanel.reload(); }
             case "SCHEDULE"   -> { if (schedulePanel   != null) schedulePanel.reload(); }
             case "ATTENDANCE" -> { if (attendancePanel != null) attendancePanel.reload(); }
+            case "RESULT"     -> { if (resultPanel     != null) resultPanel.reload(); }
         }
     }
 
@@ -116,7 +125,7 @@ public class TeacherMainFrame extends JFrame {
             this.dispose();
             new LoginFrame(authService, studentService, teacherService, courseService,
                     roomService, classService, scheduleService, enrollmentService,
-                    invoiceService, paymentService, attendanceService).setVisible(true);
+                    invoiceService, paymentService, attendanceService, resultService).setVisible(true);
         }
     }
 }
