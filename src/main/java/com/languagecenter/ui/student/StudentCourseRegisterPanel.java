@@ -6,9 +6,12 @@ import com.languagecenter.model.Schedule;
 import com.languagecenter.service.*;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StudentCourseRegisterPanel extends JPanel {
 
@@ -19,12 +22,14 @@ public class StudentCourseRegisterPanel extends JPanel {
     private final ScheduleService scheduleService;
     private final EnrollmentService enrollmentService;
 
-    private JTable courseTable;
-    private JTable classTable;
-    private JTable scheduleTable;
+    private JPanel courseContainer;
+    private JTextField txtSearch;
 
     private List<Course> courseData;
-    private List<Class> classData;
+
+    private final Color PRIMARY = new Color(79,70,229);
+    private final Color BACKGROUND = new Color(245,247,251);
+    private final Color BORDER = new Color(229,231,235);
 
     public StudentCourseRegisterPanel(
             Long studentId,
@@ -40,67 +45,76 @@ public class StudentCourseRegisterPanel extends JPanel {
         this.enrollmentService = enrollmentService;
 
         setLayout(new BorderLayout());
-        setBackground(new Color(245,245,245));
+        setBackground(BACKGROUND);
 
         buildUI();
-
         loadCourses();
     }
 
     private void buildUI(){
 
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(BACKGROUND);
+        header.setBorder(new EmptyBorder(20,20,10,20));
+
         JLabel title = new JLabel("ĐĂNG KÝ KHÓA HỌC");
-        title.setFont(new Font("Segoe UI",Font.BOLD,22));
-        title.setHorizontalAlignment(JLabel.CENTER);
-        title.setBorder(BorderFactory.createEmptyBorder(10,0,10,0));
+        title.setFont(new Font("Segoe UI",Font.BOLD,26));
 
-        add(title,BorderLayout.NORTH);
+        JPanel right = new JPanel();
+        right.setOpaque(false);
 
-        JPanel centerPanel = new JPanel(new GridLayout(1,3,10,10));
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        txtSearch = new JTextField();
+        txtSearch.setPreferredSize(new Dimension(200,32));
 
-        courseTable = new JTable();
-        classTable = new JTable();
-        scheduleTable = new JTable();
+        txtSearch.addActionListener(e -> filterCourses());
 
-        centerPanel.add(createPanel("Courses",courseTable));
-        centerPanel.add(createPanel("Classes",classTable));
-        centerPanel.add(createPanel("Schedule",scheduleTable));
+        JButton btnSearch = createPrimaryButton("Search");
+        btnSearch.addActionListener(e -> filterCourses());
 
-        add(centerPanel,BorderLayout.CENTER);
+        right.add(txtSearch);
+        right.add(btnSearch);
 
-        JButton btnRegister = new JButton("Đăng ký lớp");
-        btnRegister.setPreferredSize(new Dimension(200,40));
-        btnRegister.setBackground(new Color(76,175,80));
-        btnRegister.setForeground(Color.WHITE);
-        btnRegister.setFont(new Font("Segoe UI",Font.BOLD,14));
+        header.add(title,BorderLayout.WEST);
+        header.add(right,BorderLayout.EAST);
 
-        JPanel bottom = new JPanel();
-        bottom.add(btnRegister);
+        add(header,BorderLayout.NORTH);
 
-        add(bottom,BorderLayout.SOUTH);
+        courseContainer = new JPanel(new GridLayout(0,4,20,20));
+        courseContainer.setBackground(BACKGROUND);
+        courseContainer.setBorder(new EmptyBorder(20,20,20,20));
 
-        courseTable.getSelectionModel().addListSelectionListener(e -> loadClasses());
-        classTable.getSelectionModel().addListSelectionListener(e -> loadSchedules());
+        JScrollPane scroll = new JScrollPane(courseContainer);
+        scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
 
-        btnRegister.addActionListener(e -> register());
+        add(scroll,BorderLayout.CENTER);
     }
 
-    private JPanel createPanel(String title, JTable table){
+    private JButton createPrimaryButton(String text){
 
-        JPanel panel = new JPanel(new BorderLayout());
+        JButton btn = new JButton(text);
 
-        JLabel lbl = new JLabel(title);
-        lbl.setFont(new Font("Segoe UI",Font.BOLD,14));
-        lbl.setHorizontalAlignment(JLabel.CENTER);
-        lbl.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        btn.setFocusPainted(false);
+        btn.setBackground(PRIMARY);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Segoe UI",Font.BOLD,13));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        table.setRowHeight(28);
+        btn.setBorder(BorderFactory.createEmptyBorder(8,16,8,16));
 
-        panel.add(lbl,BorderLayout.NORTH);
-        panel.add(new JScrollPane(table),BorderLayout.CENTER);
+        btn.addMouseListener(new MouseAdapter(){
 
-        return panel;
+            public void mouseEntered(MouseEvent e){
+                btn.setBackground(PRIMARY.darker());
+            }
+
+            public void mouseExited(MouseEvent e){
+                btn.setBackground(PRIMARY);
+            }
+
+        });
+
+        return btn;
     }
 
     private void loadCourses(){
@@ -109,112 +123,237 @@ public class StudentCourseRegisterPanel extends JPanel {
 
             courseData = courseService.getAll();
 
-            DefaultTableModel model = new DefaultTableModel(
-                    new Object[]{"ID","Course","Level","Fee"},0
-            );
-
-            for(Course c : courseData){
-
-                model.addRow(new Object[]{
-                        c.getId(),
-                        c.getCourseName(),
-                        c.getLevel(),
-                        c.getFee()
-                });
-            }
-
-            courseTable.setModel(model);
+            renderCourses(courseData);
 
         }catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    private void loadClasses(){
+    private void renderCourses(List<Course> list){
 
-        int row = courseTable.getSelectedRow();
+        courseContainer.removeAll();
 
-        if(row < 0) return;
+        list.forEach(c ->
+                courseContainer.add(createCourseCard(c))
+        );
 
-        Course course = courseData.get(row);
+        courseContainer.revalidate();
+        courseContainer.repaint();
+    }
+
+    private JPanel createCourseCard(Course c){
+
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card,BoxLayout.Y_AXIS));
+        card.setBackground(Color.WHITE);
+
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER),
+                new EmptyBorder(15,15,15,15)
+        ));
+
+        card.setPreferredSize(new Dimension(220,200));
+        card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        JLabel name = new JLabel(c.getCourseName());
+        name.setFont(new Font("Segoe UI",Font.BOLD,18));
+
+        JLabel level = new JLabel("Level: " + c.getLevel());
+        JLabel fee = new JLabel("Fee: " + c.getFee());
+
+        JTextArea desc = new JTextArea(c.getDescription());
+        desc.setLineWrap(true);
+        desc.setWrapStyleWord(true);
+        desc.setEditable(false);
+        desc.setOpaque(false);
+        desc.setFont(new Font("Segoe UI",Font.PLAIN,12));
+
+        JButton btnView = createPrimaryButton("Xem lớp");
+        btnView.addActionListener(e -> showClasses(c));
+
+        card.add(name);
+        card.add(Box.createVerticalStrut(5));
+        card.add(level);
+        card.add(fee);
+        card.add(Box.createVerticalStrut(8));
+        card.add(desc);
+        card.add(Box.createVerticalGlue());
+        card.add(btnView);
+
+        card.addMouseListener(new MouseAdapter(){
+
+            public void mouseEntered(MouseEvent e){
+                card.setBorder(BorderFactory.createLineBorder(PRIMARY,2));
+            }
+
+            public void mouseExited(MouseEvent e){
+                card.setBorder(BorderFactory.createLineBorder(BORDER));
+            }
+
+        });
+
+        return card;
+    }
+
+    private void filterCourses(){
+
+        String keyword = txtSearch.getText().toLowerCase();
+
+        List<Course> filtered =
+                courseData.stream()
+                        .filter(c ->
+                                c.getCourseName()
+                                        .toLowerCase()
+                                        .contains(keyword))
+                        .collect(Collectors.toList());
+
+        renderCourses(filtered);
+    }
+
+    private void showClasses(Course course){
 
         try{
 
-            classData = classService.getByCourse(course.getId());
+            List<Class> classes =
+                    classService.getByCourse(course.getId());
 
-            DefaultTableModel model = new DefaultTableModel(
-                    new Object[]{"ID","Class","Teacher","Start","End","Max"},0
+            JDialog dialog = new JDialog(
+                    (Frame) SwingUtilities.getWindowAncestor(this),
+                    "Danh sách lớp",true);
+
+            dialog.setSize(450,420);
+            dialog.setLocationRelativeTo(this);
+
+            JPanel container = new JPanel();
+            container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
+            container.setBackground(BACKGROUND);
+            container.setBorder(new EmptyBorder(15,15,15,15));
+
+            classes.forEach(c ->
+                    container.add(createClassCard(c))
             );
 
-            for(Class c : classData){
-
-                model.addRow(new Object[]{
-                        c.getId(),
-                        c.getClassName(),
-                        c.getTeacher() != null ? c.getTeacher().getFullName() : "",
-                        c.getStartDate(),
-                        c.getEndDate(),
-                        c.getMaxStudent()
-                });
-            }
-
-            classTable.setModel(model);
+            dialog.add(new JScrollPane(container));
+            dialog.setVisible(true);
 
         }catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    private void loadSchedules(){
+    private JPanel createClassCard(Class c){
 
-        int row = classTable.getSelectedRow();
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card,BoxLayout.Y_AXIS));
 
-        if(row < 0) return;
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER),
+                new EmptyBorder(15,15,15,15)
+        ));
 
-        Class clazz = classData.get(row);
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE,150));
+
+        JLabel name = new JLabel(c.getClassName());
+        name.setFont(new Font("Segoe UI",Font.BOLD,16));
+
+        JLabel teacher = new JLabel(
+                "Teacher: " +
+                        (c.getTeacher()!=null ?
+                                c.getTeacher().getFullName() : "")
+        );
+
+        JLabel date = new JLabel(
+                c.getStartDate()+" - "+c.getEndDate()
+        );
+
+        JLabel max = new JLabel("Max: "+c.getMaxStudent());
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnPanel.setOpaque(false);
+
+        JButton btnSchedule = createPrimaryButton("Xem lịch");
+        JButton btnRegister = createPrimaryButton("Đăng ký");
+
+        btnSchedule.addActionListener(e -> showSchedules(c));
+        btnRegister.addActionListener(e -> register(c));
+
+        btnPanel.add(btnSchedule);
+        btnPanel.add(btnRegister);
+
+        card.add(name);
+        card.add(Box.createVerticalStrut(5));
+        card.add(teacher);
+        card.add(date);
+        card.add(max);
+        card.add(Box.createVerticalStrut(10));
+        card.add(btnPanel);
+
+        return card;
+    }
+
+    private void showSchedules(Class clazz){
 
         try{
 
             List<Schedule> schedules =
                     scheduleService.getByClass(clazz.getId());
 
-            DefaultTableModel model = new DefaultTableModel(
-                    new Object[]{"Date","Start","End","Room"},0
+            JDialog dialog = new JDialog(
+                    (Frame) SwingUtilities.getWindowAncestor(this),
+                    "Lịch học",true);
+
+            dialog.setSize(380,350);
+            dialog.setLocationRelativeTo(this);
+
+            JPanel container = new JPanel();
+            container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
+            container.setBackground(BACKGROUND);
+            container.setBorder(new EmptyBorder(15,15,15,15));
+
+            schedules.forEach(s ->
+                    container.add(createScheduleCard(s))
             );
 
-            for(Schedule s : schedules){
-
-                model.addRow(new Object[]{
-                        s.getStudyDate(),
-                        s.getStartTime(),
-                        s.getEndTime(),
-                        s.getRoom().getRoomName()
-                });
-            }
-
-            scheduleTable.setModel(model);
+            dialog.add(new JScrollPane(container));
+            dialog.setVisible(true);
 
         }catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    private void register(){
+    private JPanel createScheduleCard(Schedule s){
 
-        int row = classTable.getSelectedRow();
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card,BoxLayout.Y_AXIS));
 
-        if(row < 0){
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER),
+                new EmptyBorder(12,12,12,12)
+        ));
 
-            JOptionPane.showMessageDialog(this,"Vui lòng chọn lớp!");
-            return;
-        }
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE,80));
 
-        Class clazz = classData.get(row);
+        JLabel date = new JLabel("Date: "+s.getStudyDate());
+        JLabel time = new JLabel(s.getStartTime()+" - "+s.getEndTime());
+        JLabel room = new JLabel("Room: "+s.getRoom().getRoomName());
+
+        card.add(date);
+        card.add(time);
+        card.add(room);
+
+        return card;
+    }
+
+    private void register(Class clazz){
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
                 "Bạn muốn đăng ký lớp: "+clazz.getClassName()+" ?",
-                "Confirm",
+                "Xác nhận",
                 JOptionPane.YES_NO_OPTION
         );
 
