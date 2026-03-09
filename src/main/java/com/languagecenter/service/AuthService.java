@@ -2,6 +2,8 @@ package com.languagecenter.service;
 
 import com.languagecenter.db.TransactionManager;
 import com.languagecenter.model.UserAccount;
+import com.languagecenter.model.enums.StudentStatus;
+import com.languagecenter.model.enums.TeacherStatus;
 import com.languagecenter.repo.UserAccountRepository;
 import com.languagecenter.util.PasswordUtil;
 
@@ -27,6 +29,14 @@ public class AuthService {
 
                 if (!Boolean.TRUE.equals(user.getIsActive())) {
                     throw new RuntimeException("Account disabled");
+                }
+
+                if(user.getStudent() != null && user.getStudent().getStatus() != StudentStatus.Active){
+                    throw new RuntimeException("Student account is not active");
+                }
+
+                if(user.getTeacher() != null && user.getTeacher().getStatus() != TeacherStatus.Active){
+                    throw new RuntimeException("Teacher account is not active");
                 }
 
                 boolean match =
