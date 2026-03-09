@@ -36,24 +36,21 @@ public class TeacherProfilePage extends JPanel {
         g.insets = new Insets(12, 10, 12, 10);
 
         // Tiêu đề trang
-        JLabel lblTitle = new JLabel("HỒ SƠ GIẢNG VIÊN");
+        JLabel lblTitle = new JLabel("TEACHER PROFILE");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblTitle.setForeground(new Color(30, 130, 76));
         g.gridx = 0; g.gridy = 0; g.gridwidth = 2;
         card.add(lblTitle, g);
 
-        // Hiển thị thông tin
         g.gridwidth = 1;
-        addReadOnlyRow(card, g, "Mã giảng viên:", "TC-" + teacher.getId(), 1);
-        addReadOnlyRow(card, g, "Họ và tên:", teacher.getFullName(), 2);
+        addReadOnlyRow(card, g, "Teacher ID:", "TC-" + teacher.getId(), 1);
+        addReadOnlyRow(card, g, "Full Name:", teacher.getFullName(), 2);
 
-        // Các trường cho phép chỉnh sửa
-        addEditableRow(card, g, "Số điện thoại:", txtPhone = new JTextField(teacher.getPhone()), 3);
-        addEditableRow(card, g, "Email cá nhân:", txtEmail = new JTextField(teacher.getEmail()), 4);
-        addEditableRow(card, g, "Chuyên môn:", txtSpecialty = new JTextField(teacher.getSpecialty()), 5);
+        addEditableRow(card, g, "Phone:", txtPhone = new JTextField(teacher.getPhone()), 3);
+        addEditableRow(card, g, "Email:", txtEmail = new JTextField(teacher.getEmail()), 4);
+        addEditableRow(card, g, "Specialty:", txtSpecialty = new JTextField(teacher.getSpecialty()), 5);
 
-        // Nút cập nhật
-        JButton btnSave = new JButton("Lưu thay đổi hồ sơ");
+        JButton btnSave = new JButton("Save Profile");
         btnSave.putClientProperty(FlatClientProperties.STYLE, "background:#1e824c; foreground:#ffffff; font:bold; arc:10");
         btnSave.setPreferredSize(new Dimension(200, 45));
         btnSave.addActionListener(e -> saveProfile());
@@ -85,11 +82,10 @@ public class TeacherProfilePage extends JPanel {
             teacher.setEmail(txtEmail.getText().trim());
             teacher.setSpecialty(txtSpecialty.getText().trim());
 
-            // Gọi service update. Password truyền null để không thay đổi mật khẩu hiện tại
             teacherService.update(teacher, username, null);
-            JOptionPane.showMessageDialog(this, "Thông tin hồ sơ đã được cập nhật!");
+            JOptionPane.showMessageDialog(this, "Profile updated successfully!");
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi cập nhật: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Update error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

@@ -49,27 +49,27 @@ public class ClassPanel extends JPanel {
         toolbar.setOpaque(false);
 
         // 1. Nhóm Tìm kiếm
-        toolbar.add(new JLabel("Tên lớp:"));
+        toolbar.add(new JLabel("Class Name:"));
         toolbar.add(txtSearch);
 
-        // 2. Nhóm Trạng thái
-        toolbar.add(new JLabel("Trạng thái:"));
-        cboStatusFilter.addItem(null); // Để mặc định là "Tất cả"
+        // 2. Status group
+        toolbar.add(new JLabel("Status:"));
+        cboStatusFilter.addItem(null);
         for (ClassStatus s : ClassStatus.values()) cboStatusFilter.addItem(s);
         toolbar.add(cboStatusFilter);
 
-        // 3. Nhóm Học phí (Lấy từ Course)
-        toolbar.add(new JLabel("Học phí từ:"));
+        // 3. Fee from Course
+        toolbar.add(new JLabel("Fee from:"));
         toolbar.add(txtMinFee);
-        toolbar.add(new JLabel("đến:"));
+        toolbar.add(new JLabel("to:"));
         toolbar.add(txtMaxFee);
 
-        // 4. Các nút chức năng
-        JButton btnSearch = createStyledButton("Lọc", new Color(79, 70, 229)); // Màu tím hiện đại
-        JButton btnAdd = createStyledButton("Thêm Lớp", new Color(34, 197, 94));
-        JButton btnEdit = createStyledButton("Sửa", new Color(59, 130, 246));
-        JButton btnDelete = createStyledButton("Xóa", new Color(239, 68, 68));
-        JButton btnRefresh = createStyledButton("Làm mới", Color.DARK_GRAY);
+        // 4. Function buttons
+        JButton btnSearch = createStyledButton("Filter", new Color(79, 70, 229));
+        JButton btnAdd = createStyledButton("Add Class", new Color(34, 197, 94));
+        JButton btnEdit = createStyledButton("Edit", new Color(59, 130, 246));
+        JButton btnDelete = createStyledButton("Delete", new Color(239, 68, 68));
+        JButton btnRefresh = createStyledButton("Refresh", Color.DARK_GRAY);
 
         toolbar.add(btnSearch);
         toolbar.add(btnAdd);
@@ -112,13 +112,13 @@ public class ClassPanel extends JPanel {
             Double max = txtMaxFee.getText().isBlank() ? null : Double.valueOf(txtMaxFee.getText());
             result = ClassStreamQueries.filterByCourseFee(result, min, max);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập học phí là số hợp lệ!", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please enter a valid numeric fee!", "Input Error", JOptionPane.ERROR_MESSAGE);
         }
 
         tableModel.setData(result);
     }
-
-    private void reload() {
+    
+    public void reload() {
         try {
             // Tải lại danh sách gốc từ Database
             cachedClasses = classService.getAll();
@@ -180,13 +180,13 @@ public class ClassPanel extends JPanel {
     private void onEdit() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một lớp học để sửa!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please select a class to edit!", "Notice", JOptionPane.WARNING_MESSAGE);
             return;
         }
         Class selectedClass = tableModel.getClassAt(selectedRow);
         try {
             ClassFormDialog dlg = new ClassFormDialog(
-                    (Frame) SwingUtilities.getWindowAncestor(this), "Chỉnh Sửa Lớp Học", selectedClass,
+                    (Frame) SwingUtilities.getWindowAncestor(this), "Edit Class", selectedClass,
                     courseService.getAll(), teacherService.getAll(), roomService.getAll()
             );
             dlg.setVisible(true);
@@ -194,33 +194,33 @@ public class ClassPanel extends JPanel {
                 try {
                     classService.update(dlg.getClazz());
                     reload();
-                    JOptionPane.showMessageDialog(this, "Cập nhật lớp học thành công!");
+                    JOptionPane.showMessageDialog(this, "Class updated successfully!");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi cập nhật", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
     private void onDelete() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp học cần xóa!");
+            JOptionPane.showMessageDialog(this, "Please select a class to delete!");
             return;
         }
         Class selectedClass = tableModel.getClassAt(selectedRow);
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Bạn có chắc chắn muốn xóa lớp " + selectedClass.getClassName() + "?",
-                "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+                "Are you sure you want to delete class " + selectedClass.getClassName() + "?",
+                "Confirm Delete", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 classService.delete(selectedClass.getId());
                 reload();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Không thể xóa: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Cannot delete: " + ex.getMessage());
             }
         }
     }
@@ -231,7 +231,7 @@ public class ClassPanel extends JPanel {
             var teachers = teacherService.getAll();
             var rooms = roomService.getAll();
             ClassFormDialog dlg = new ClassFormDialog(
-                    (Frame) SwingUtilities.getWindowAncestor(this), "Thêm Lớp Mới", null,
+                    (Frame) SwingUtilities.getWindowAncestor(this), "Add New Class", null,
                     courses, teachers, rooms
             );
             dlg.setVisible(true);
@@ -239,14 +239,14 @@ public class ClassPanel extends JPanel {
                 try {
                     classService.create(dlg.getClazz());
                     reload();
-                    JOptionPane.showMessageDialog(this, "Thêm lớp học thành công!");
+                    JOptionPane.showMessageDialog(this, "Class added successfully!");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi nghiệp vụ", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Business Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi hệ thống: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "System error: " + ex.getMessage());
         }
     }
 }

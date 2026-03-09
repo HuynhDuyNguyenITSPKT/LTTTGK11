@@ -48,6 +48,10 @@ public class AttendancePanel extends JPanel {
         loadClasses();
     }
 
+    public void reload() {
+        loadClasses();
+    }
+
     private void buildUI() {
         // Title
         JPanel headerPanel = new JPanel(new BorderLayout());

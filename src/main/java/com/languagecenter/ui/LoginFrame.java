@@ -45,7 +45,6 @@ public class LoginFrame extends JFrame {
         buildUI();
 
         setSize(850, 500);
-        setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
@@ -141,7 +140,7 @@ public class LoginFrame extends JFrame {
                         invoiceService, paymentService, attendanceService).setVisible(true);
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Login Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

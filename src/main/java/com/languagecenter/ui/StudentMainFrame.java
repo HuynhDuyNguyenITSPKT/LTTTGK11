@@ -53,8 +53,9 @@ public class StudentMainFrame extends JFrame {
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
         this.attendanceService = attendanceService;
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Chạy toàn màn hình
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(1280, 800);
+        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
         // TOP BAR
@@ -72,12 +73,12 @@ public class StudentMainFrame extends JFrame {
         sidebar.setBackground(new Color(103, 58, 183)); // Màu tím Student
 
         sidebar.add(Box.createVerticalStrut(20));
-        sidebar.add(createMenuBtn("Bảng điều khiển", "DASH"));
-        sidebar.add(createMenuBtn("Khóa Học", "COURSES"));
-        sidebar.add(createMenuBtn("Thanh toán học phí", "PAYMENT"));
-        sidebar.add(createMenuBtn("Hóa đơn & Thanh toán", "HISTORY"));
-        sidebar.add(createMenuBtn("Hồ sơ cá nhân", "PROFILE"));
-        sidebar.add(createMenuBtn("Đăng kí lớp học", "ENROLLMENT"));
+        sidebar.add(createMenuBtn("Dashboard", "DASH"));
+        sidebar.add(createMenuBtn("Courses", "COURSES"));
+        sidebar.add(createMenuBtn("Tuition Payment", "PAYMENT"));
+        sidebar.add(createMenuBtn("Invoice & Payment", "HISTORY"));
+        sidebar.add(createMenuBtn("My Profile", "PROFILE"));
+        sidebar.add(createMenuBtn("Enroll Class", "ENROLLMENT"));
 
         // CONTENT - Create panel instances
         dashboardPanel = new StudentDashboardPanel(acc.getStudent().getId(), enrollmentService);
@@ -99,12 +100,12 @@ public class StudentMainFrame extends JFrame {
     }
 
     private JButton createMenuBtn(String text, String card) {
-        JButton btn = new JButton(text);
-        btn.setPreferredSize(new Dimension(210, 45));
+        JButton btn = new JButton("  " + text);
+        btn.setPreferredSize(new Dimension(220, 50));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
-        btn.putClientProperty(FlatClientProperties.STYLE, "buttonType:borderless; foreground:#ffffff; arc:0; focusedBackground:#9575cd");
+        btn.putClientProperty(FlatClientProperties.STYLE, "buttonType:borderless; foreground:#ffffff; arc:0; focusedBackground:#9575cd; hoverBackground:#9575cd");
         btn.addActionListener(e -> {
-            // Reload panel data before showing
             reloadPanelData(card);
             cardLayout.show(contentPanel, card);
         });
@@ -113,34 +114,17 @@ public class StudentMainFrame extends JFrame {
 
     private void reloadPanelData(String card) {
         switch (card) {
-            case "DASH":
-                if (dashboardPanel != null) {
-                    dashboardPanel.reload();
-                }
-                break;
-            case "COURSES":
-                if (schedulePanel != null) {
-                    schedulePanel.reload();
-                }
-                break;
-            case "PAYMENT":
-                if (paymentPanel != null) {
-                    paymentPanel.reload();
-                }
-                break;
-            case "HISTORY":
-                if (historyPanel != null) {
-                    historyPanel.reload();
-                }
-                break;
-            // PROFILE doesn't need reload
+            case "DASH"       -> { if (dashboardPanel  != null) dashboardPanel.reload(); }
+            case "COURSES"    -> { if (schedulePanel   != null) schedulePanel.reload(); }
+            case "PAYMENT"    -> { if (paymentPanel    != null) paymentPanel.reload(); }
+            case "HISTORY"    -> { if (historyPanel    != null) historyPanel.reload(); }
+            case "ENROLLMENT" -> { if (enrollmentPanel != null) enrollmentPanel.reload(); }
         }
     }
 
     private void handleLogout() {
-        if (JOptionPane.showConfirmDialog(this, "Đăng xuất khỏi hệ thống?", "Logout", 0) == 0) {
+        if (JOptionPane.showConfirmDialog(this, "Are you sure you want to log out?", "Logout", JOptionPane.YES_NO_OPTION) == 0) {
             this.dispose();
-            // Quay lại màn hình Login với đầy đủ các Service ban đầu
             new LoginFrame(authService, studentService, teacherService, courseService,
                     roomService, classService, scheduleService, enrollmentService,
                     invoiceService, paymentService, attendanceService).setVisible(true);

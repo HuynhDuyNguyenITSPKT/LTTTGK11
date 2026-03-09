@@ -36,6 +36,17 @@ public class MainFrame extends JFrame {
     private final PaymentService paymentService;
     private final AttendanceService attendanceService;
 
+    private AdminDashboardPanel dashboardPanel;
+    private StudentPanel studentPanel;
+    private TeacherPanel teacherPanel;
+    private CoursePanel coursePanel;
+    private RoomPanel roomPanel;
+    private ClassPanel classPanel;
+    private SchedulePanel schedulePanel;
+    private EnrollmentPanel enrollmentPanel;
+    private InvoicePanel invoicePanel;
+    private PaymentPanel paymentPanel;
+
     public MainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
                      CourseService cs, RoomService rs, ClassService cls,
                      ScheduleService sche, EnrollmentService es, InvoiceService is, PaymentService ps,
@@ -53,7 +64,6 @@ public class MainFrame extends JFrame {
         this.invoiceService = is;
         this.paymentService = ps;
         this.attendanceService = attendanceService;
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -117,17 +127,27 @@ public class MainFrame extends JFrame {
         sidebar.add(createMenuButton("Payments", "PAY"));
 
         // --- 3. CONTENT PANEL ---
-        // Dashboard Home Panel with statistics
-        contentPanel.add(new AdminDashboardPanel(ss, ts, cls, es, is, ps), "DASH");
-        contentPanel.add(new StudentPanel(ss), "STUDENT");
-        contentPanel.add(new TeacherPanel(ts), "TEACHER");
-        contentPanel.add(new CoursePanel(cs), "COURSE");
-        contentPanel.add(new RoomPanel(rs), "ROOM");
-        contentPanel.add(new ClassPanel(cls, cs, ts, rs), "CLASS");
-        contentPanel.add(new SchedulePanel(sche, cls, rs), "SCHEDULE");
-        contentPanel.add(new EnrollmentPanel(es, ss, cls), "ENROLL");
-        contentPanel.add(new InvoicePanel(is, ss), "INVOICE");
-        contentPanel.add(new PaymentPanel(ps, ss, is), "PAY");
+        dashboardPanel = new AdminDashboardPanel(ss, ts, cls, es, is, ps);
+        studentPanel = new StudentPanel(ss);
+        teacherPanel = new TeacherPanel(ts);
+        coursePanel = new CoursePanel(cs);
+        roomPanel = new RoomPanel(rs);
+        classPanel = new ClassPanel(cls, cs, ts, rs);
+        schedulePanel = new SchedulePanel(sche, cls, rs);
+        enrollmentPanel = new EnrollmentPanel(es, ss, cls);
+        invoicePanel = new InvoicePanel(is, ss);
+        paymentPanel = new PaymentPanel(ps, ss, is);
+
+        contentPanel.add(dashboardPanel, "DASH");
+        contentPanel.add(studentPanel, "STUDENT");
+        contentPanel.add(teacherPanel, "TEACHER");
+        contentPanel.add(coursePanel, "COURSE");
+        contentPanel.add(roomPanel, "ROOM");
+        contentPanel.add(classPanel, "CLASS");
+        contentPanel.add(schedulePanel, "SCHEDULE");
+        contentPanel.add(enrollmentPanel, "ENROLL");
+        contentPanel.add(invoicePanel, "INVOICE");
+        contentPanel.add(paymentPanel, "PAY");
 
         add(topBar, BorderLayout.NORTH);
         add(sidebar, BorderLayout.WEST);
@@ -139,22 +159,37 @@ public class MainFrame extends JFrame {
 
     private JButton createMenuButton(String text, String cardName) {
         JButton btn = new JButton("   " + text);
-        btn.setPreferredSize(new Dimension(220, 48));
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        btn.setPreferredSize(new Dimension(220, 50));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        // Style FlatLaf
         btn.putClientProperty(FlatClientProperties.STYLE,
                 "buttonType:borderless; " +
                         "foreground:#ecf0f1; " +
                         "focusedBackground:#34495e; " +
                         "hoverBackground:#34495e; " +
                         "arc:0");
-
-        btn.addActionListener(e -> cardLayout.show(contentPanel, cardName));
+        btn.addActionListener(e -> {
+            reloadPanel(cardName);
+            cardLayout.show(contentPanel, cardName);
+        });
         return btn;
+    }
+
+    private void reloadPanel(String cardName) {
+        switch (cardName) {
+            case "DASH"     -> { if (dashboardPanel  != null) dashboardPanel.reload(); }
+            case "STUDENT"  -> { if (studentPanel    != null) studentPanel.reload(); }
+            case "TEACHER"  -> { if (teacherPanel    != null) teacherPanel.reload(); }
+            case "COURSE"   -> { if (coursePanel     != null) coursePanel.reload(); }
+            case "ROOM"     -> { if (roomPanel       != null) roomPanel.reload(); }
+            case "CLASS"    -> { if (classPanel      != null) classPanel.reload(); }
+            case "SCHEDULE" -> { if (schedulePanel   != null) schedulePanel.reload(); }
+            case "ENROLL"   -> { if (enrollmentPanel != null) enrollmentPanel.reload(); }
+            case "INVOICE"  -> { if (invoicePanel    != null) invoicePanel.reload(); }
+            case "PAY"      -> { if (paymentPanel    != null) paymentPanel.reload(); }
+        }
     }
 
     private void handleLogout() {

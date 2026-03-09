@@ -49,9 +49,9 @@ public class SchedulePanel extends JPanel {
         toolbar.setBackground(new Color(30,136,229));
         toolbar.setBorder(BorderFactory.createEmptyBorder(8,10,8,10));
 
-        JButton btnAdd = createButton("Thêm", new Color(76,175,80));
-        JButton btnEdit = createButton("Sửa", new Color(255,167,38));
-        JButton btnDelete = createButton("Xóa", new Color(244,67,54));
+        JButton btnAdd = createButton("Add", new Color(76,175,80));
+        JButton btnEdit = createButton("Edit", new Color(255,167,38));
+        JButton btnDelete = createButton("Delete", new Color(244,67,54));
         JButton btnRefresh = createButton("Refresh", new Color(120,144,156));
 
         toolbar.add(btnAdd);
@@ -108,7 +108,7 @@ public class SchedulePanel extends JPanel {
         return btn;
     }
 
-    private void reload(){
+    public void reload(){
 
         try{
 
@@ -146,7 +146,7 @@ public class SchedulePanel extends JPanel {
             ScheduleFormDialog dlg =
                     new ScheduleFormDialog(
                             (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Thêm lịch học",
+                            "Add Schedule",
                             null,
                             classService.getAll(),
                             roomService.getAll()
@@ -182,7 +182,7 @@ public class SchedulePanel extends JPanel {
             ScheduleFormDialog dlg =
                     new ScheduleFormDialog(
                             (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Sửa lịch",
+                            "Edit Schedule",
                             s,
                             classService.getAll(),
                             roomService.getAll()

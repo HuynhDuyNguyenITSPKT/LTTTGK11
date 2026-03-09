@@ -51,19 +51,19 @@ public class RoomPanel extends JPanel {
         cboStatus.addItem(null); // Option "Tất cả"
         for (RoomStatus s : RoomStatus.values()) cboStatus.addItem(s);
 
-        filterPanel.add(new JLabel("Tìm kiếm:"));
+        filterPanel.add(new JLabel("Search:"));
         filterPanel.add(txtSearch);
-        filterPanel.add(new JLabel("Trạng thái:"));
+        filterPanel.add(new JLabel("Status:"));
         filterPanel.add(cboStatus);
 
         // Khu vực bên phải: Thao tác dữ liệu
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actionPanel.setOpaque(false);
 
-        JButton btnAdd = createStyledButton("Thêm phòng", COLOR_SUCCESS);
-        JButton btnEdit = createStyledButton("Sửa", COLOR_PRIMARY);
-        JButton btnDelete = createStyledButton("Xóa", COLOR_DANGER);
-        JButton btnRefresh = createStyledButton("Làm mới", Color.DARK_GRAY);
+        JButton btnAdd = createStyledButton("Add Room", COLOR_SUCCESS);
+        JButton btnEdit = createStyledButton("Edit", COLOR_PRIMARY);
+        JButton btnDelete = createStyledButton("Delete", COLOR_DANGER);
+        JButton btnRefresh = createStyledButton("Refresh", Color.DARK_GRAY);
 
         actionPanel.add(btnAdd);
         actionPanel.add(btnEdit);
@@ -146,12 +146,16 @@ public class RoomPanel extends JPanel {
         return btn;
     }
 
+    public void reload() {
+        reloadAll();
+    }
+
     private void reloadAll() {
         try {
             cachedRooms = roomService.getAll();
             tableModel.setData(cachedRooms);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
@@ -183,7 +187,7 @@ public class RoomPanel extends JPanel {
     private void onEdit() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Chọn phòng để sửa");
+            JOptionPane.showMessageDialog(this, "Please select a room to edit");
             return;
         }
         Room r = tableModel.getRoom(row);

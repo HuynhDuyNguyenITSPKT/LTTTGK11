@@ -30,7 +30,7 @@ public class StudentPaymentPanel extends JPanel {
 
     private final JTable invoiceTable = new JTable();
     private final DefaultTableModel tableModel = new DefaultTableModel(
-            new String[]{"Chọn", "Lớp học", "Tổng tiền", "Đã trả", "Còn lại", "Ngày phát hành", "Trạng thái"}, 0
+            new String[]{"Select", "Class", "Total", "Paid", "Remaining", "Issued Date", "Status"}, 0
     ) {
         @Override
         public Class<?> getColumnClass(int column) {
@@ -44,10 +44,10 @@ public class StudentPaymentPanel extends JPanel {
         }
     };
 
-    private final JLabel lblTotalDebt = new JLabel("0 VNĐ");
-    private final JLabel lblPaidAmount = new JLabel("0 VNĐ");
-    private final JLabel lblRemainingAmount = new JLabel("0 VNĐ");
-    private final JLabel lblSelectedAmount = new JLabel("0 VNĐ");
+    private final JLabel lblTotalDebt = new JLabel("0 VND");
+    private final JLabel lblPaidAmount = new JLabel("0 VND");
+    private final JLabel lblRemainingAmount = new JLabel("0 VND");
+    private final JLabel lblSelectedAmount = new JLabel("0 VND");
 
     private final Map<Integer, Invoice> rowToInvoiceMap = new HashMap<>();
     private List<Invoice> unpaidInvoices = new ArrayList<>();
@@ -73,7 +73,7 @@ public class StudentPaymentPanel extends JPanel {
         // Title
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
-        JLabel lblTitle = new JLabel("Thanh toán học phí");
+        JLabel lblTitle = new JLabel("Tuition Payment");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(new Color(103, 58, 183));
         headerPanel.add(lblTitle, BorderLayout.WEST);
@@ -81,16 +81,16 @@ public class StudentPaymentPanel extends JPanel {
         // Stats Panel (4 cards)
         JPanel statsPanel = new JPanel(new GridLayout(1, 4, 15, 0));
         statsPanel.setOpaque(false);
-        statsPanel.add(createStatCard("Tổng nợ học phí", lblTotalDebt, new Color(231, 76, 60)));
-        statsPanel.add(createStatCard("Đã thanh toán", lblPaidAmount, new Color(46, 204, 113)));
-        statsPanel.add(createStatCard("Còn phải trả", lblRemainingAmount, new Color(243, 156, 18)));
-        statsPanel.add(createStatCard("Đã chọn thanh toán", lblSelectedAmount, new Color(52, 152, 219)));
+        statsPanel.add(createStatCard("Total Tuition", lblTotalDebt, new Color(231, 76, 60)));
+        statsPanel.add(createStatCard("Total Paid", lblPaidAmount, new Color(46, 204, 113)));
+        statsPanel.add(createStatCard("Remaining", lblRemainingAmount, new Color(243, 156, 18)));
+        statsPanel.add(createStatCard("Selected Amount", lblSelectedAmount, new Color(52, 152, 219)));
 
         // Table Panel
         JPanel tablePanel = new JPanel(new BorderLayout(0, 15));
         tablePanel.setOpaque(false);
 
-        JLabel lblTableTitle = new JLabel("Danh sách hóa đơn chưa thanh toán");
+        JLabel lblTableTitle = new JLabel("Unpaid Invoices");
         lblTableTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblTableTitle.setForeground(new Color(44, 62, 80));
 
@@ -125,7 +125,7 @@ public class StudentPaymentPanel extends JPanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
         buttonPanel.setOpaque(false);
 
-        JButton btnSelectAll = new JButton("Chọn tất cả");
+        JButton btnSelectAll = new JButton("Select All");
         btnSelectAll.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnSelectAll.setBackground(new Color(52, 152, 219));
         btnSelectAll.setForeground(Color.WHITE);
@@ -134,7 +134,7 @@ public class StudentPaymentPanel extends JPanel {
         btnSelectAll.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSelectAll.addActionListener(e -> selectAllInvoices(true));
 
-        JButton btnDeselectAll = new JButton("Bỏ chọn tất cả");
+        JButton btnDeselectAll = new JButton("Deselect All");
         btnDeselectAll.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnDeselectAll.setBackground(new Color(149, 165, 166));
         btnDeselectAll.setForeground(Color.WHITE);
@@ -143,7 +143,7 @@ public class StudentPaymentPanel extends JPanel {
         btnDeselectAll.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnDeselectAll.addActionListener(e -> selectAllInvoices(false));
 
-        JButton btnPay = new JButton("Thanh toán các mục đã chọn");
+        JButton btnPay = new JButton("Pay Selected");
         btnPay.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnPay.setBackground(new Color(46, 204, 113));
         btnPay.setForeground(Color.WHITE);
@@ -239,13 +239,13 @@ public class StudentPaymentPanel extends JPanel {
             lblTotalDebt.setText(formatCurrency(totalDebt));
             lblPaidAmount.setText(formatCurrency(paidAmount));
             lblRemainingAmount.setText(formatCurrency(remainingAmount));
-            lblSelectedAmount.setText("0 VNĐ");
+            lblSelectedAmount.setText("0 VND");
 
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this,
-                "Lỗi khi tải dữ liệu: " + e.getMessage(),
-                "Lỗi",
+                "Error loading data: " + e.getMessage(),
+                "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -298,8 +298,8 @@ public class StudentPaymentPanel extends JPanel {
 
         if (selectedInvoices.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "Vui lòng chọn ít nhất một hóa đơn để thanh toán!",
-                    "Thông báo",
+                    "Please select at least one invoice to pay!",
+                    "Notice",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -309,7 +309,7 @@ public class StudentPaymentPanel extends JPanel {
     }
 
     private void showPaymentDialog(List<Invoice> selectedInvoices) {
-        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Xác nhận thanh toán", true);
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Payment Confirmation", true);
         dialog.setLayout(new BorderLayout(10, 10));
         dialog.setSize(600, 500);
         dialog.setLocationRelativeTo(this);
@@ -320,7 +320,7 @@ public class StudentPaymentPanel extends JPanel {
         contentPanel.setBackground(Color.WHITE);
 
         // Title
-        JLabel lblTitle = new JLabel("Chi tiết thanh toán");
+        JLabel lblTitle = new JLabel("Payment Details");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitle.setForeground(new Color(103, 58, 183));
         contentPanel.add(lblTitle, BorderLayout.NORTH);
@@ -363,7 +363,7 @@ public class StudentPaymentPanel extends JPanel {
         totalPanel.setBackground(new Color(103, 58, 183));
         totalPanel.setBorder(new EmptyBorder(15, 10, 15, 10));
 
-        JLabel lblTotalLabel = new JLabel("Tổng cộng:");
+        JLabel lblTotalLabel = new JLabel("Total:");
         lblTotalLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblTotalLabel.setForeground(Color.WHITE);
 
@@ -380,7 +380,7 @@ public class StudentPaymentPanel extends JPanel {
         // Payment method selection
         JPanel methodPanel = new JPanel(new GridLayout(3, 1, 5, 10));
         methodPanel.setBackground(Color.WHITE);
-        methodPanel.setBorder(BorderFactory.createTitledBorder("Chọn phương thức thanh toán"));
+        methodPanel.setBorder(BorderFactory.createTitledBorder("Select Payment Method"));
 
         ButtonGroup paymentGroup = new ButtonGroup();
         JRadioButton rbCash = new JRadioButton("Tiền mặt (Cash)");
@@ -424,7 +424,7 @@ public class StudentPaymentPanel extends JPanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         buttonPanel.setBackground(Color.WHITE);
 
-        JButton btnConfirm = new JButton("Xác nhận thanh toán");
+        JButton btnConfirm = new JButton("Confirm Payment");
         btnConfirm.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnConfirm.setBackground(new Color(46, 204, 113));
         btnConfirm.setForeground(Color.WHITE);
@@ -445,7 +445,7 @@ public class StudentPaymentPanel extends JPanel {
             dialog.dispose();
         });
 
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = new JButton("Cancel");
         btnCancel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnCancel.setBackground(new Color(231, 76, 60));
         btnCancel.setForeground(Color.WHITE);
@@ -500,29 +500,29 @@ public class StudentPaymentPanel extends JPanel {
             // Show result and ask for export
             if (failCount == 0) {
                 int option = JOptionPane.showOptionDialog(this,
-                        String.format("Thanh toán thành công %d hóa đơn!\nTổng số tiền: %s\nPhương thức: %s\n\nBạn có muốn xuất hóa đơn PDF không?",
+                        String.format("Payment successful for %d invoice(s)!\nTotal amount: %s\nMethod: %s\n\nDo you want to export invoice PDF?",
                                 successCount, formatCurrency(totalAmount), method),
-                        "Thanh toán thành công",
+                        "Payment Successful",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.INFORMATION_MESSAGE,
                         null,
-                        new Object[]{"Xuất PDF", "Không"},
-                        "Xuất PDF");
+                        new Object[]{"Export PDF", "No"},
+                        "Export PDF");
 
                 if (option == JOptionPane.YES_OPTION) {
                     exportInvoicesPdf(successInvoices);
                 }
             } else {
                 JOptionPane.showMessageDialog(this,
-                        String.format("Kết quả thanh toán:\n- Thành công: %d\n- Thất bại: %d\n\nChi tiết lỗi:\n%s",
+                        String.format("Payment result:\n- Success: %d\n- Failed: %d\n\nError details:\n%s",
                                 successCount, failCount, errorMessages.toString()),
-                        "Kết quả thanh toán",
+                        "Payment Result",
                         JOptionPane.WARNING_MESSAGE);
 
                 if (successCount > 0) {
                     int option = JOptionPane.showConfirmDialog(this,
-                            "Có " + successCount + " hóa đơn đã thanh toán thành công.\nBạn có muốn xuất hóa đơn PDF không?",
-                            "Xuất hóa đơn",
+                            successCount + " invoice(s) paid successfully.\nDo you want to export invoice PDF?",
+                            "Export Invoice",
                             JOptionPane.YES_NO_OPTION);
                     if (option == JOptionPane.YES_OPTION) {
                         exportInvoicesPdf(successInvoices);
@@ -536,8 +536,8 @@ public class StudentPaymentPanel extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this,
-                    "Lỗi khi xử lý thanh toán: " + e.getMessage(),
-                    "Lỗi",
+                    "Error processing payment: " + e.getMessage(),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -549,7 +549,7 @@ public class StudentPaymentPanel extends JPanel {
 
         try {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Lưu hóa đơn PDF");
+            fileChooser.setDialogTitle("Save Invoice PDF");
 
             if (invoices.size() == 1) {
                 fileChooser.setSelectedFile(new File("Invoice_" + invoices.get(0).getId() + ".pdf"));
@@ -580,15 +580,15 @@ public class StudentPaymentPanel extends JPanel {
                 }
 
                 JOptionPane.showMessageDialog(this,
-                        "Xuất hóa đơn PDF thành công!\nĐường dẫn: " + fileToSave.getParent(),
-                        "Thành công",
+                        "Invoice PDF exported successfully!\nPath: " + fileToSave.getParent(),
+                        "Success",
                         JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this,
-                    "Lỗi khi xuất hóa đơn PDF: " + e.getMessage(),
-                    "Lỗi",
+                    "Error exporting invoice PDF: " + e.getMessage(),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

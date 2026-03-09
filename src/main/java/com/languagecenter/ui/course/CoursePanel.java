@@ -52,19 +52,19 @@ public class CoursePanel extends JPanel {
         cboStatus.addItem(null); // Tất cả
         for(CourseStatus s : CourseStatus.values()) cboStatus.addItem(s);
 
-        filterPanel.add(new JLabel("Tìm kiếm:"));
+        filterPanel.add(new JLabel("Search:"));
         filterPanel.add(txtSearch);
-        filterPanel.add(new JLabel("Trạng thái:"));
+        filterPanel.add(new JLabel("Status:"));
         filterPanel.add(cboStatus);
 
         // Panel chứa các nút bấm (Phải)
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actionPanel.setOpaque(false);
 
-        JButton btnAdd = createStyledButton("Thêm mới", COLOR_SUCCESS);
-        JButton btnEdit = createStyledButton("Chỉnh sửa", COLOR_PRIMARY);
-        JButton btnDelete = createStyledButton("Xóa", COLOR_DANGER);
-        JButton btnRefresh = createStyledButton("Làm mới", Color.DARK_GRAY);
+        JButton btnAdd = createStyledButton("Add New", COLOR_SUCCESS);
+        JButton btnEdit = createStyledButton("Edit", COLOR_PRIMARY);
+        JButton btnDelete = createStyledButton("Delete", COLOR_DANGER);
+        JButton btnRefresh = createStyledButton("Refresh", Color.DARK_GRAY);
 
         actionPanel.add(btnAdd);
         actionPanel.add(btnEdit);
@@ -156,12 +156,16 @@ public class CoursePanel extends JPanel {
 
     // --- Các hàm Logic giữ nguyên logic cũ nhưng bắt lỗi tốt hơn ---
 
+    public void reload() {
+        reloadAll();
+    }
+
     private void reloadAll() {
         try {
             cachedCourses = service.getAll();
             tableModel.setData(cachedCourses);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi tải dữ liệu: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error loading data: " + ex.getMessage());
         }
     }
 
@@ -179,14 +183,14 @@ public class CoursePanel extends JPanel {
     }
 
     private void onAdd() {
-        CourseFormDialog dlg = new CourseFormDialog((Frame) SwingUtilities.getWindowAncestor(this), "Thêm khóa học mới", null);
+        CourseFormDialog dlg = new CourseFormDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add New Course", null);
         dlg.setVisible(true);
         if (dlg.isSaved()) {
             try {
                 service.create(dlg.getCourse());
                 reloadAll();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
             }
         }
     }
@@ -194,18 +198,18 @@ public class CoursePanel extends JPanel {
     private void onEdit() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một khóa học!");
+            JOptionPane.showMessageDialog(this, "Please select a course!");
             return;
         }
         Course c = tableModel.getCourse(row);
-        CourseFormDialog dlg = new CourseFormDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chỉnh sửa khóa học", c);
+        CourseFormDialog dlg = new CourseFormDialog((Frame) SwingUtilities.getWindowAncestor(this), "Edit Course", c);
         dlg.setVisible(true);
         if (dlg.isSaved()) {
             try {
                 service.update(dlg.getCourse());
                 reloadAll();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
             }
         }
     }
@@ -213,17 +217,17 @@ public class CoursePanel extends JPanel {
     private void onDelete() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn khóa học cần xóa!");
+            JOptionPane.showMessageDialog(this, "Please select a course to delete!");
             return;
         }
         Course c = tableModel.getCourse(row);
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa khóa học này?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this course?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 service.delete(c.getId());
                 reloadAll();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
             }
         }
     }

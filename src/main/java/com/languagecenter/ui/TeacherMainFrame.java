@@ -16,7 +16,6 @@ public class TeacherMainFrame extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel contentPanel = new JPanel(cardLayout);
 
-    // Lưu trữ các service để truyền lại cho LoginFrame khi Logout
     private final AuthService authService;
     private final StudentService studentService;
     private final TeacherService teacherService;
@@ -28,6 +27,10 @@ public class TeacherMainFrame extends JFrame {
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
     private final AttendanceService attendanceService;
+
+    private TeacherDashboardPanel dashboardPanel;
+    private TeacherSchedulePanel schedulePanel;
+    private AttendancePanel attendancePanel;
 
     public TeacherMainFrame(UserAccount acc, AuthService as, StudentService ss,
                             TeacherService ts, CourseService cs, RoomService rs,
@@ -47,8 +50,9 @@ public class TeacherMainFrame extends JFrame {
         this.paymentService = paymentService;
         this.attendanceService = attendanceService;
 
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Chạy toàn màn hình
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(1280, 800);
+        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
         // TOP BAR
@@ -67,15 +71,18 @@ public class TeacherMainFrame extends JFrame {
 
         sidebar.add(Box.createVerticalStrut(20));
         sidebar.add(createMenuBtn("Dashboard", "DASH"));
-        sidebar.add(createMenuBtn("Lịch dạy của tôi", "SCHEDULE"));
-        sidebar.add(createMenuBtn("Điểm danh", "ATTENDANCE"));
-        sidebar.add(createMenuBtn("Hồ sơ cá nhân", "PROFILE"));
+        sidebar.add(createMenuBtn("My Schedule", "SCHEDULE"));
+        sidebar.add(createMenuBtn("Attendance", "ATTENDANCE"));
+        sidebar.add(createMenuBtn("My Profile", "PROFILE"));
 
         // CONTENT
-        contentPanel.add(new TeacherDashboardPanel(acc.getTeacher().getId(), classService, enrollmentService), "DASH");
-        contentPanel.add(new TeacherSchedulePanel(scheduleService,acc.getTeacher().getId(),enrollmentService), "SCHEDULE");
-        contentPanel.add(new AttendancePanel(acc.getTeacher().getId(), classService, enrollmentService, attendanceService), "ATTENDANCE");
-        // Truyền Teacher object lấy từ UserAccount đã đăng nhập
+        dashboardPanel = new TeacherDashboardPanel(acc.getTeacher().getId(), classService, enrollmentService);
+        schedulePanel = new TeacherSchedulePanel(scheduleService, acc.getTeacher().getId(), enrollmentService);
+        attendancePanel = new AttendancePanel(acc.getTeacher().getId(), classService, enrollmentService, attendanceService);
+
+        contentPanel.add(dashboardPanel, "DASH");
+        contentPanel.add(schedulePanel, "SCHEDULE");
+        contentPanel.add(attendancePanel, "ATTENDANCE");
         contentPanel.add(new TeacherProfilePage(acc.getTeacher(), acc.getUsername(), ts), "PROFILE");
 
         add(topBar, BorderLayout.NORTH);
@@ -84,18 +91,29 @@ public class TeacherMainFrame extends JFrame {
     }
 
     private JButton createMenuBtn(String text, String card) {
-        JButton btn = new JButton(text);
-        btn.setPreferredSize(new Dimension(210, 45));
+        JButton btn = new JButton("  " + text);
+        btn.setPreferredSize(new Dimension(220, 50));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
-        btn.putClientProperty(FlatClientProperties.STYLE, "buttonType:borderless; foreground:#ffffff; arc:0; focusedBackground:#27ae60");
-        btn.addActionListener(e -> cardLayout.show(contentPanel, card));
+        btn.putClientProperty(FlatClientProperties.STYLE, "buttonType:borderless; foreground:#ffffff; arc:0; focusedBackground:#27ae60; hoverBackground:#27ae60");
+        btn.addActionListener(e -> {
+            reloadPanel(card);
+            cardLayout.show(contentPanel, card);
+        });
         return btn;
     }
 
+    private void reloadPanel(String card) {
+        switch (card) {
+            case "DASH"       -> { if (dashboardPanel  != null) dashboardPanel.reload(); }
+            case "SCHEDULE"   -> { if (schedulePanel   != null) schedulePanel.reload(); }
+            case "ATTENDANCE" -> { if (attendancePanel != null) attendancePanel.reload(); }
+        }
+    }
+
     private void handleLogout() {
-        if (JOptionPane.showConfirmDialog(this, "Bạn có muốn đăng xuất không?", "Logout", JOptionPane.YES_NO_OPTION) == 0) {
+        if (JOptionPane.showConfirmDialog(this, "Are you sure you want to log out?", "Logout", JOptionPane.YES_NO_OPTION) == 0) {
             this.dispose();
-            // Quay lại LoginFrame với đầy đủ services
             new LoginFrame(authService, studentService, teacherService, courseService,
                     roomService, classService, scheduleService, enrollmentService,
                     invoiceService, paymentService, attendanceService).setVisible(true);

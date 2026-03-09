@@ -95,7 +95,7 @@ public class StudentPanel extends JPanel {
         return btn;
     }
 
-    private void reload() {
+    public void reload() {
         try {
             List<Student> list = studentService.getAll();
             String key = txtSearch.getText().trim();

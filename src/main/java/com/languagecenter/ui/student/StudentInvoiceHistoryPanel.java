@@ -26,7 +26,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
 
     private final JTable paymentTable = new JTable();
     private final DefaultTableModel paymentTableModel = new DefaultTableModel(
-            new String[]{"Chọn", "STT", "Payment ID", "Lớp học", "Số tiền", "Phương thức", "Ngày thanh toán", "Trạng thái"}, 0
+            new String[]{"Select", "#", "Payment ID", "Class", "Amount", "Method", "Payment Date", "Status"}, 0
     ) {
         @Override
         public Class<?> getColumnClass(int column) {
@@ -41,7 +41,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
 
     private final JTable invoiceDetailTable = new JTable();
     private final DefaultTableModel invoiceDetailTableModel = new DefaultTableModel(
-            new String[]{"Thông tin", "Giá trị"}, 0
+            new String[]{"Info", "Value"}, 0
     ) {
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -50,7 +50,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
     };
 
     private final JLabel lblTotalPayments = new JLabel("0");
-    private final JLabel lblTotalPaid = new JLabel("0 VNĐ");
+    private final JLabel lblTotalPaid = new JLabel("0 VND");
     private final JLabel lblCompletedPayments = new JLabel("0");
     private final JLabel lblPendingPayments = new JLabel("0");
 
@@ -76,7 +76,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
         // Title
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
-        JLabel lblTitle = new JLabel("Hóa đơn và Thanh toán của tôi");
+        JLabel lblTitle = new JLabel("My Invoices & Payments");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(new Color(103, 58, 183));
         headerPanel.add(lblTitle, BorderLayout.WEST);
@@ -84,10 +84,10 @@ public class StudentInvoiceHistoryPanel extends JPanel {
         // Stats Panel (4 cards)
         JPanel statsPanel = new JPanel(new GridLayout(1, 4, 15, 0));
         statsPanel.setOpaque(false);
-        statsPanel.add(createStatCard("Tổng thanh toán", lblTotalPayments, new Color(52, 152, 219)));
-        statsPanel.add(createStatCard("Tổng số tiền", lblTotalPaid, new Color(46, 204, 113)));
-        statsPanel.add(createStatCard("Hoàn thành", lblCompletedPayments, new Color(46, 204, 113)));
-        statsPanel.add(createStatCard("Đang xử lý", lblPendingPayments, new Color(243, 156, 18)));
+        statsPanel.add(createStatCard("Total Payments", lblTotalPayments, new Color(52, 152, 219)));
+        statsPanel.add(createStatCard("Total Amount", lblTotalPaid, new Color(46, 204, 113)));
+        statsPanel.add(createStatCard("Completed", lblCompletedPayments, new Color(46, 204, 113)));
+        statsPanel.add(createStatCard("Pending", lblPendingPayments, new Color(243, 156, 18)));
 
         // Split Panel for Payments and Invoice Details (HORIZONTAL - 2 columns)
         // Payment table takes 2/3 of the space (left), Invoice detail takes 1/3 (right)
@@ -108,7 +108,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
         JPanel paymentHeaderPanel = new JPanel(new BorderLayout());
         paymentHeaderPanel.setBackground(Color.WHITE);
 
-        JLabel lblPaymentTitle = new JLabel("💳 Lịch sử thanh toán");
+        JLabel lblPaymentTitle = new JLabel("Payment History");
         lblPaymentTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblPaymentTitle.setForeground(new Color(44, 62, 80));
 
@@ -116,13 +116,13 @@ public class StudentInvoiceHistoryPanel extends JPanel {
         JPanel filterExportPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         filterExportPanel.setBackground(Color.WHITE);
 
-        JLabel lblFilter = new JLabel("Lọc theo lớp:");
+        JLabel lblFilter = new JLabel("Filter by class:");
         lblFilter.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         classFilterCombo = new JComboBox<>();
         classFilterCombo.setPreferredSize(new Dimension(200, 30));
         classFilterCombo.addActionListener(e -> filterPaymentsByClass());
 
-        JButton btnExportSelected = new JButton("📄 Xuất đã chọn");
+        JButton btnExportSelected = new JButton("Export Selected");
         btnExportSelected.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnExportSelected.setBackground(new Color(52, 152, 219));
         btnExportSelected.setForeground(Color.WHITE);
@@ -131,7 +131,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
         btnExportSelected.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnExportSelected.addActionListener(e -> exportSelectedPayments());
 
-        JButton btnSelectAll = new JButton("Chọn tất cả");
+        JButton btnSelectAll = new JButton("Select All");
         btnSelectAll.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnSelectAll.setBackground(new Color(149, 165, 166));
         btnSelectAll.setForeground(Color.WHITE);
@@ -140,7 +140,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
         btnSelectAll.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSelectAll.addActionListener(e -> selectAllPayments(true));
 
-        JButton btnDeselectAll = new JButton("Bỏ chọn");
+        JButton btnDeselectAll = new JButton("Deselect");
         btnDeselectAll.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnDeselectAll.setBackground(new Color(149, 165, 166));
         btnDeselectAll.setForeground(Color.WHITE);
@@ -201,11 +201,11 @@ public class StudentInvoiceHistoryPanel extends JPanel {
         JPanel invoiceHeaderPanel = new JPanel(new BorderLayout());
         invoiceHeaderPanel.setBackground(Color.WHITE);
 
-        JLabel lblInvoiceTitle = new JLabel("📄 Chi tiết hóa đơn");
+        JLabel lblInvoiceTitle = new JLabel("Invoice Details");
         lblInvoiceTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblInvoiceTitle.setForeground(new Color(44, 62, 80));
 
-        JButton btnExportInvoice = new JButton("📄 Xuất hóa đơn PDF");
+        JButton btnExportInvoice = new JButton("Export PDF");
         btnExportInvoice.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnExportInvoice.setBackground(new Color(52, 152, 219));
         btnExportInvoice.setForeground(Color.WHITE);
@@ -308,15 +308,15 @@ public class StudentInvoiceHistoryPanel extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this,
-                "Lỗi khi tải dữ liệu: " + e.getMessage(),
-                "Lỗi",
+                "Error loading data: " + e.getMessage(),
+                "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void populateClassFilter() {
         classFilterCombo.removeAllItems();
-        classFilterCombo.addItem("Tất cả lớp học");
+        classFilterCombo.addItem("All Classes");
 
         Set<String> classNames = new HashSet<>();
         for (Payment payment : allPayments) {
@@ -336,7 +336,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
     private void filterPaymentsByClass() {
         String selectedClass = (String) classFilterCombo.getSelectedItem();
 
-        if (selectedClass == null || selectedClass.equals("Tất cả lớp học")) {
+        if (selectedClass == null || selectedClass.equals("All Classes")) {
             filteredPayments = new ArrayList<>(allPayments);
         } else {
             filteredPayments = allPayments.stream()
@@ -403,7 +403,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
 
         Payment selectedPayment = rowToPaymentMap.get(selectedRow);
         if (selectedPayment == null || selectedPayment.getInvoice() == null) {
-            invoiceDetailTableModel.addRow(new Object[]{"Thông báo", "Thanh toán này không liên kết với hóa đơn nào"});
+            invoiceDetailTableModel.addRow(new Object[]{"Info", "No invoice linked to this payment"});
             return;
         }
 
@@ -416,29 +416,29 @@ public class StudentInvoiceHistoryPanel extends JPanel {
 
             // Display invoice details
             invoiceDetailTableModel.addRow(new Object[]{"Invoice ID", invoice.getId()});
-            invoiceDetailTableModel.addRow(new Object[]{"Lớp học", invoice.getEnrollment().getClassEntity().getClassName()});
-            invoiceDetailTableModel.addRow(new Object[]{"Khóa học",
+            invoiceDetailTableModel.addRow(new Object[]{"Class", invoice.getEnrollment().getClassEntity().getClassName()});
+            invoiceDetailTableModel.addRow(new Object[]{"Course",
                 invoice.getEnrollment().getClassEntity().getCourse() != null ?
                 invoice.getEnrollment().getClassEntity().getCourse().getCourseName() : "N/A"});
-            invoiceDetailTableModel.addRow(new Object[]{"Giáo viên",
+            invoiceDetailTableModel.addRow(new Object[]{"Teacher",
                 invoice.getEnrollment().getClassEntity().getTeacher() != null ?
                 invoice.getEnrollment().getClassEntity().getTeacher().getFullName() : "N/A"});
-            invoiceDetailTableModel.addRow(new Object[]{"Tổng học phí", formatCurrency(invoice.getTotalAmount())});
-            invoiceDetailTableModel.addRow(new Object[]{"Đã thanh toán", formatCurrency(totalPaid)});
-            invoiceDetailTableModel.addRow(new Object[]{"Còn lại", formatCurrency(remaining)});
-            invoiceDetailTableModel.addRow(new Object[]{"Ngày phát hành",
+            invoiceDetailTableModel.addRow(new Object[]{"Total Fee", formatCurrency(invoice.getTotalAmount())});
+            invoiceDetailTableModel.addRow(new Object[]{"Paid", formatCurrency(totalPaid)});
+            invoiceDetailTableModel.addRow(new Object[]{"Remaining", formatCurrency(remaining)});
+            invoiceDetailTableModel.addRow(new Object[]{"Issue Date",
                 invoice.getIssueDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))});
-            invoiceDetailTableModel.addRow(new Object[]{"Trạng thái hóa đơn", invoice.getStatus().toString()});
+            invoiceDetailTableModel.addRow(new Object[]{"Invoice Status", invoice.getStatus().toString()});
 
             if (invoice.getNote() != null && !invoice.getNote().isEmpty()) {
-                invoiceDetailTableModel.addRow(new Object[]{"Ghi chú", invoice.getNote()});
+                invoiceDetailTableModel.addRow(new Object[]{"Note", invoice.getNote()});
             }
 
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this,
-                "Lỗi khi tải chi tiết hóa đơn: " + e.getMessage(),
-                "Lỗi",
+                "Error loading invoice details: " + e.getMessage(),
+                "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -474,8 +474,8 @@ public class StudentInvoiceHistoryPanel extends JPanel {
 
         if (selectedPayments.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "Vui lòng chọn ít nhất một thanh toán để xuất!",
-                    "Thông báo",
+                    "Please select at least one payment to export!",
+                    "Notice",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -493,15 +493,15 @@ public class StudentInvoiceHistoryPanel extends JPanel {
 
         if (uniqueInvoices.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "Các thanh toán đã chọn không có hóa đơn liên kết!",
-                    "Thông báo",
+                    "Selected payments have no linked invoices!",
+                    "Notice",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Lưu hóa đơn và thanh toán PDF");
+            fileChooser.setDialogTitle("Save Invoice & Payment PDF");
 
             if (uniqueInvoices.size() == 1) {
                 fileChooser.setSelectedFile(new File("Invoice_Payment_" + uniqueInvoices.get(0).getId() + ".pdf"));
@@ -539,22 +539,22 @@ public class StudentInvoiceHistoryPanel extends JPanel {
 
                 if (successCount > 0) {
                     JOptionPane.showMessageDialog(this,
-                            String.format("Xuất thành công %d/%d hóa đơn PDF (bao gồm thông tin thanh toán)!\nĐường dẫn: %s",
+                            String.format("Exported %d/%d invoice PDF(s) (including payment info)!\nPath: %s",
                                     successCount, uniqueInvoices.size(), fileToSave.getParent()),
-                            "Thành công",
+                            "Success",
                             JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     JOptionPane.showMessageDialog(this,
-                            "Không thể xuất hóa đơn nào!",
-                            "Lỗi",
+                            "Failed to export any invoices!",
+                            "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this,
-                    "Lỗi khi xuất PDF: " + e.getMessage(),
-                    "Lỗi",
+                    "Error exporting PDF: " + e.getMessage(),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -566,7 +566,7 @@ public class StudentInvoiceHistoryPanel extends JPanel {
 
             if (reportStream == null) {
                 // If template doesn't exist, create a simple programmatic report
-                throw new Exception("Không tìm thấy template hóa đơn (invoice_template.jrxml)");
+                throw new Exception("Invoice template not found (invoice_template.jrxml)");
             }
 
             // Compile the report

@@ -44,6 +44,10 @@ public class TeacherDashboardPanel extends JPanel {
         loadData();
     }
 
+    public void reload() {
+        loadData();
+    }
+
     private void buildUI() {
         // Title
         JPanel headerPanel = new JPanel(new BorderLayout());

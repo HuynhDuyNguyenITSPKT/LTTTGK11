@@ -46,8 +46,8 @@ public class InvoicePanel extends JPanel {
         toolbar.setBackground(new Color(30, 136, 229));
         toolbar.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
-        JButton btnEdit = createButton("Sửa", new Color(255, 167, 38));
-        JButton btnDelete = createButton("Xóa", new Color(244, 67, 54));
+        JButton btnEdit = createButton("Edit", new Color(255, 167, 38));
+        JButton btnDelete = createButton("Delete", new Color(244, 67, 54));
         JButton btnRefresh = createButton("Refresh", new Color(120, 144, 156));
 
         toolbar.add(btnEdit);
@@ -70,7 +70,7 @@ public class InvoicePanel extends JPanel {
         JButton btnFilter = createButton("Filter", new Color(33, 150, 243));
         toolbar.add(btnFilter);
 
-        JButton btnShowUnpaid = createButton("Chưa thanh toán", new Color(255, 87, 34));
+        JButton btnShowUnpaid = createButton("Unpaid", new Color(255, 87, 34));
         toolbar.add(btnShowUnpaid);
 
         add(toolbar, BorderLayout.NORTH);
@@ -111,7 +111,7 @@ public class InvoicePanel extends JPanel {
         return btn;
     }
 
-    private void reload() {
+    public void reload() {
 
         try {
 
@@ -161,7 +161,7 @@ public class InvoicePanel extends JPanel {
             InvoiceFormDialog dlg =
                     new InvoiceFormDialog(
                             (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Sửa Invoice",
+                            "Edit Invoice",
                             invoice,
                             studentService.getAll()
                     );
@@ -188,7 +188,7 @@ public class InvoicePanel extends JPanel {
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Bạn chắc chắn muốn xóa?",
+                "Are you sure you want to delete this?",
                 "Confirm",
                 JOptionPane.YES_NO_OPTION
         );

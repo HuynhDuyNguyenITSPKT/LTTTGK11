@@ -45,8 +45,11 @@ public class TeacherSchedulePanel extends JPanel {
         loadData();
     }
 
-    private void buildToolbar(){
+    public void reload() {
+        loadData();
+    }
 
+    private void buildToolbar(){
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         toolbar.setBackground(new Color(63,81,181));
 
@@ -79,7 +82,7 @@ public class TeacherSchedulePanel extends JPanel {
         calendarPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
         String[] days = {
-                "Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7","Chủ nhật"
+                "Mon","Tue","Wed","Thu","Fri","Sat","Sun"
         };
 
         for(int i=0;i<7;i++){

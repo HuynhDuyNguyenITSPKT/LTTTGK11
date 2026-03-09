@@ -25,7 +25,7 @@ public class CustomHeader extends JPanel {
         JLabel lblSeparator = new JLabel("|");
         lblSeparator.setForeground(new Color(200, 200, 200));
 
-        JLabel lblWelcome = new JLabel("Xin chào, " + userName);
+        JLabel lblWelcome = new JLabel("Welcome, " + userName);
         lblWelcome.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblWelcome.setForeground(new Color(100, 100, 100));
 
@@ -37,7 +37,7 @@ public class CustomHeader extends JPanel {
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 12));
         rightPanel.setOpaque(false);
 
-        JButton btnLogout = new JButton("Đăng xuất");
+        JButton btnLogout = new JButton("Log Out");
         btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogout.putClientProperty(FlatClientProperties.STYLE, 
             "buttonType:borderless; " +

@@ -48,9 +48,9 @@ public class EnrollmentPanel extends JPanel {
         toolbar.setBackground(new Color(30,136,229));
         toolbar.setBorder(BorderFactory.createEmptyBorder(8,10,8,10));
 
-        JButton btnAdd = createButton("Thêm", new Color(76,175,80));
-        JButton btnEdit = createButton("Sửa", new Color(255,167,38));
-        JButton btnDelete = createButton("Xóa", new Color(244,67,54));
+        JButton btnAdd = createButton("Add", new Color(76,175,80));
+        JButton btnEdit = createButton("Edit", new Color(255,167,38));
+        JButton btnDelete = createButton("Delete", new Color(244,67,54));
         JButton btnRefresh = createButton("Refresh", new Color(120,144,156));
 
         toolbar.add(btnAdd);
@@ -105,7 +105,7 @@ public class EnrollmentPanel extends JPanel {
         return btn;
     }
 
-    private void reload(){
+    public void reload(){
 
         try{
 
@@ -139,7 +139,7 @@ public class EnrollmentPanel extends JPanel {
             EnrollmentFormDialog dlg =
                     new EnrollmentFormDialog(
                             (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Thêm Enrollment",
+                            "Add Enrollment",
                             null,
                             studentService.getAll(),
                             classService.getAll()
@@ -152,12 +152,11 @@ public class EnrollmentPanel extends JPanel {
                 service.create(dlg.getEnrollment());
                 reload();
 
-                // Thông báo Invoice đã được tạo tự động
                 JOptionPane.showMessageDialog(
                         this,
-                        "Enrollment đã được tạo thành công!\n" +
-                        "Hóa đơn (Invoice) đã được tự động tạo cho enrollment này.\n" +
-                        "Vui lòng vào mục 'Invoices' để xem chi tiết.",
+                        "Enrollment created successfully!\n" +
+                        "An Invoice has been automatically generated for this enrollment.\n" +
+                        "Go to 'Invoices' to view details.",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE
                 );
@@ -182,7 +181,7 @@ public class EnrollmentPanel extends JPanel {
             EnrollmentFormDialog dlg =
                     new EnrollmentFormDialog(
                             (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Sửa Enrollment",
+                            "Edit Enrollment",
                             e,
                             studentService.getAll(),
                             classService.getAll()
@@ -210,7 +209,7 @@ public class EnrollmentPanel extends JPanel {
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Bạn chắc chắn muốn xóa?",
+                "Are you sure you want to delete this?",
                 "Confirm",
                 JOptionPane.YES_NO_OPTION
         );

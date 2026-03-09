@@ -52,13 +52,17 @@ public class StudentCourseRegisterPanel extends JPanel {
         loadCourses();
     }
 
+    public void reload() {
+        loadCourses();
+    }
+
     private void buildUI(){
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(BACKGROUND);
         header.setBorder(new EmptyBorder(20,20,10,20));
 
-        JLabel title = new JLabel("ĐĂNG KÝ KHÓA HỌC");
+        JLabel title = new JLabel("COURSE REGISTRATION");
         title.setFont(new Font("Segoe UI",Font.BOLD,26));
 
         JPanel right = new JPanel();
@@ -179,7 +183,7 @@ public class StudentCourseRegisterPanel extends JPanel {
         desc.setFont(new Font("Segoe UI",Font.PLAIN,12));
         desc.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JButton btnView = createPrimaryButton("Xem lớp");
+        JButton btnView = createPrimaryButton("View Classes");
         btnView.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnView.addActionListener(e -> showClasses(c));
 
@@ -231,7 +235,7 @@ public class StudentCourseRegisterPanel extends JPanel {
 
             JDialog dialog = new JDialog(
                     (Frame) SwingUtilities.getWindowAncestor(this),
-                    "Danh sách lớp",true);
+                    "Class List",true);
 
             dialog.setSize(450,420);
             dialog.setLocationRelativeTo(this);
@@ -284,8 +288,8 @@ public class StudentCourseRegisterPanel extends JPanel {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnPanel.setOpaque(false);
 
-        JButton btnSchedule = createPrimaryButton("Xem lịch");
-        JButton btnRegister = createPrimaryButton("Đăng ký");
+        JButton btnSchedule = createPrimaryButton("View Schedule");
+        JButton btnRegister = createPrimaryButton("Register");
 
         btnSchedule.addActionListener(e -> showSchedules(c));
         btnRegister.addActionListener(e -> register(c));
@@ -313,7 +317,7 @@ public class StudentCourseRegisterPanel extends JPanel {
 
             JDialog dialog = new JDialog(
                     (Frame) SwingUtilities.getWindowAncestor(this),
-                    "Lịch học",true);
+                    "Schedule",true);
 
             dialog.setSize(380,350);
             dialog.setLocationRelativeTo(this);
@@ -363,8 +367,8 @@ public class StudentCourseRegisterPanel extends JPanel {
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Bạn muốn đăng ký lớp: "+clazz.getClassName()+" ?",
-                "Xác nhận",
+                "Register for class: "+clazz.getClassName()+" ?",
+                "Confirmation",
                 JOptionPane.YES_NO_OPTION
         );
 
@@ -373,7 +377,7 @@ public class StudentCourseRegisterPanel extends JPanel {
         try{
 
             enrollmentService.register(studentId, clazz);
-            JOptionPane.showMessageDialog(this,"Đăng ký thành công!");
+            JOptionPane.showMessageDialog(this,"Registration successful!");
 
         }catch(Exception ex){
 

@@ -121,7 +121,7 @@ public class TeacherPanel extends JPanel {
         return btn;
     }
 
-    private void reload() {
+    public void reload() {
         try {
             String keyword = txtSearch.getText().trim();
             TeacherStatus status = (TeacherStatus) cboStatus.getSelectedItem();

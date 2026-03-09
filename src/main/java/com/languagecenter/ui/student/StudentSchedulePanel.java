@@ -78,7 +78,7 @@ public class StudentSchedulePanel extends JPanel {
         calendarPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
         String[] days = {
-                "Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7","Chủ nhật"
+                "Mon","Tue","Wed","Thu","Fri","Sat","Sun"
         };
 
         for(int i=0;i<7;i++){

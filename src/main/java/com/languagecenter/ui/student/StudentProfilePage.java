@@ -36,17 +36,17 @@ public class StudentProfilePage extends JPanel {
         g.insets = new Insets(10, 10, 10, 10);
         g.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel title = new JLabel("HỒ SƠ CÁ NHÂN HỌC VIÊN");
+        JLabel title = new JLabel("STUDENT PROFILE");
         title.setFont(new Font("Segoe UI", Font.BOLD, 22));
         g.gridwidth = 2; card.add(title, g);
 
         g.gridwidth = 1;
-        addLabelAndField(card, g, "Họ tên:", new JLabel(student.getFullName()), 1);
-        addLabelAndField(card, g, "Số điện thoại:", txtPhone = new JTextField(student.getPhone()), 2);
+        addLabelAndField(card, g, "Full Name:", new JLabel(student.getFullName()), 1);
+        addLabelAndField(card, g, "Phone:", txtPhone = new JTextField(student.getPhone()), 2);
         addLabelAndField(card, g, "Email:", txtEmail = new JTextField(student.getEmail()), 3);
-        addLabelAndField(card, g, "Địa chỉ:", txtAddress = new JTextField(student.getAddress()), 4);
+        addLabelAndField(card, g, "Address:", txtAddress = new JTextField(student.getAddress()), 4);
 
-        JButton btnUpdate = new JButton("Lưu thay đổi");
+        JButton btnUpdate = new JButton("Save Changes");
         btnUpdate.putClientProperty(FlatClientProperties.STYLE, "background:#673ab7; foreground:#ffffff; font:bold");
         btnUpdate.addActionListener(e -> {
             try {
@@ -54,11 +54,10 @@ public class StudentProfilePage extends JPanel {
                 student.setEmail(txtEmail.getText().trim());
                 student.setAddress(txtAddress.getText().trim());
 
-                // Gọi service update (password = null để giữ nguyên mật khẩu cũ)
                 studentService.update(student, username, null);
-                JOptionPane.showMessageDialog(this, "Cập nhật thông tin thành công!");
+                JOptionPane.showMessageDialog(this, "Profile updated successfully!");
             } catch(Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
             }
         });
 

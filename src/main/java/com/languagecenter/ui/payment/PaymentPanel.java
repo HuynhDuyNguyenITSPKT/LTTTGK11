@@ -51,9 +51,9 @@ public class PaymentPanel extends JPanel {
         toolbar.setBackground(new Color(30, 136, 229));
         toolbar.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
-        JButton btnAdd = createButton("Thêm", new Color(76, 175, 80));
-        JButton btnEdit = createButton("Sửa", new Color(255, 167, 38));
-        JButton btnDelete = createButton("Xóa", new Color(244, 67, 54));
+        JButton btnAdd = createButton("Add", new Color(76, 175, 80));
+        JButton btnEdit = createButton("Edit", new Color(255, 167, 38));
+        JButton btnDelete = createButton("Delete", new Color(244, 67, 54));
         JButton btnRefresh = createButton("Refresh", new Color(120, 144, 156));
 
         toolbar.add(btnAdd);
@@ -119,7 +119,7 @@ public class PaymentPanel extends JPanel {
         return btn;
     }
 
-    private void reload() {
+    public void reload() {
 
         try {
 
@@ -158,7 +158,7 @@ public class PaymentPanel extends JPanel {
             PaymentFormDialog dlg =
                     new PaymentFormDialog(
                             (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Thêm Payment",
+                            "Add Payment",
                             null,
                             studentService.getAll(),
                             invoiceService.getAll(),
@@ -174,7 +174,7 @@ public class PaymentPanel extends JPanel {
                 // Kiểm tra payment phải có invoice
                 if (payment.getInvoice() == null) {
                     JOptionPane.showMessageDialog(this,
-                            "Payment phải có Invoice!",
+                            "Payment must have an Invoice!",
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
                     return;
@@ -184,7 +184,7 @@ public class PaymentPanel extends JPanel {
                 reload();
 
                 JOptionPane.showMessageDialog(this,
-                        "Payment đã được tạo!\nInvoice status sẽ tự động cập nhật nếu đã thanh toán đủ.",
+                        "Payment created!\nInvoice status will be updated if fully paid.",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE);
             }
@@ -208,7 +208,7 @@ public class PaymentPanel extends JPanel {
             PaymentFormDialog dlg =
                     new PaymentFormDialog(
                             (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Sửa Payment",
+                            "Edit Payment",
                             payment,
                             studentService.getAll(),
                             invoiceService.getAll(),
@@ -223,7 +223,7 @@ public class PaymentPanel extends JPanel {
                 reload();
 
                 JOptionPane.showMessageDialog(this,
-                        "Payment đã được cập nhật!\nInvoice status đã được kiểm tra lại.",
+                        "Payment updated!\nInvoice status has been re-checked.",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE);
             }
@@ -242,7 +242,7 @@ public class PaymentPanel extends JPanel {
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Bạn chắc chắn muốn xóa?\nInvoice status sẽ được kiểm tra lại sau khi xóa.",
+                "Are you sure you want to delete?\nInvoice status will be re-checked after deletion.",
                 "Confirm",
                 JOptionPane.YES_NO_OPTION
         );

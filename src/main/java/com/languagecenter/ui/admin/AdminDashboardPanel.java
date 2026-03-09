@@ -32,6 +32,13 @@ public class AdminDashboardPanel extends JPanel {
         buildUI();
     }
 
+    public void reload() {
+        removeAll();
+        buildUI();
+        revalidate();
+        repaint();
+    }
+
     private void buildUI() {
         // Title
         JPanel headerPanel = new JPanel(new BorderLayout());
