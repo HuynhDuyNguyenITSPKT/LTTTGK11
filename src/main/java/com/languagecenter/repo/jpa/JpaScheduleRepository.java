@@ -102,4 +102,22 @@ public class JpaScheduleRepository implements ScheduleRepository {
                 .setParameter("teacherId", teacherId)
                 .getResultList();
     }
+
+    @Override
+    public boolean checkTeacherScheduleConflict(EntityManager em) {
+
+        Long count = em.createQuery("""
+    select count(distinct t.id)
+    from Schedule s1, Schedule s2
+    join s1.classEntity c1
+    join c1.teacher t
+    join s2.classEntity c2
+    where s1.studyDate = s2.studyDate
+    and c1.teacher.id = c2.teacher.id
+    and s1.id < s2.id
+    and (s1.startTime < s2.endTime and s1.endTime > s2.startTime)
+""", Long.class).getSingleResult();
+
+        return count == 0;
+    }
 }

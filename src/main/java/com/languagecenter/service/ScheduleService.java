@@ -4,6 +4,7 @@ import com.languagecenter.db.TransactionManager;
 import com.languagecenter.model.Class;
 import com.languagecenter.model.Schedule;
 import com.languagecenter.repo.ScheduleRepository;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class ScheduleService {
         return tx.runInTransaction(repo::findAll);
     }
 
+    @Transactional
     public void create(Schedule schedule) throws Exception {
 
         tx.runInTransaction(em -> {
@@ -46,6 +48,13 @@ public class ScheduleService {
                 throw new Exception("Phòng đã có lịch trong khung giờ này!");
 
             repo.create(em, schedule);
+
+            boolean conflict1 = repo.checkTeacherScheduleConflict(
+                    em
+            );
+
+            if(conflict1!=true)  throw new Exception("giáo viên có lịch trong khung giờ này!");
+
             return null;
         });
     }
