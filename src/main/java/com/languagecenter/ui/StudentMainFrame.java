@@ -83,7 +83,7 @@ public class StudentMainFrame extends JFrame {
         sidebar.add(createMenuBtn("Tuition Payment", "PAYMENT"));
         sidebar.add(createMenuBtn("Invoice & Payment", "HISTORY"));
         sidebar.add(createMenuBtn("My Results",        "RESULTS"));
-        sidebar.add(createMenuBtn("Điểm danh",          "ATTENDANCE"));
+        sidebar.add(createMenuBtn("Attendance",        "ATTENDANCE"));
         sidebar.add(createMenuBtn("My Profile",        "PROFILE"));
         sidebar.add(createMenuBtn("Enroll Class",      "ENROLLMENT"));
 
