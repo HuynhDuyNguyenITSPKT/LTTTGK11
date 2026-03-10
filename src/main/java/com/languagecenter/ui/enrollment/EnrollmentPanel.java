@@ -44,14 +44,14 @@ public class EnrollmentPanel extends JPanel {
 
     private void buildToolbar(){
 
-        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        toolbar.setBackground(new Color(30,136,229));
-        toolbar.setBorder(BorderFactory.createEmptyBorder(8,10,8,10));
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        toolbar.setOpaque(false);
+        toolbar.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
 
-        JButton btnAdd = createButton("Add", new Color(76,175,80));
-        JButton btnEdit = createButton("Edit", new Color(255,167,38));
-        JButton btnDelete = createButton("Delete", new Color(244,67,54));
-        JButton btnRefresh = createButton("Refresh", new Color(120,144,156));
+        JButton btnAdd = createButton("Add", new Color(34, 197, 94));
+        JButton btnEdit = createButton("Edit", new Color(245, 158, 11));
+        JButton btnDelete = createButton("Delete", new Color(239, 68, 68));
+        JButton btnRefresh = createButton("Refresh", new Color(100, 116, 139));
 
         toolbar.add(btnAdd);
         toolbar.add(btnEdit);
@@ -64,7 +64,7 @@ public class EnrollmentPanel extends JPanel {
         toolbar.add(new JLabel(" Class:"));
         toolbar.add(txtClass);
 
-        JButton btnFilter = createButton("Filter", new Color(33,150,243));
+        JButton btnFilter = createButton("Filter", new Color(79, 70, 229));
         toolbar.add(btnFilter);
 
         add(toolbar,BorderLayout.NORTH);
@@ -100,7 +100,10 @@ public class EnrollmentPanel extends JPanel {
         btn.setBackground(color);
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
         btn.setBorder(BorderFactory.createEmptyBorder(6,14,6,14));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         return btn;
     }

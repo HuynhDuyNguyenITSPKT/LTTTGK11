@@ -15,6 +15,7 @@ import com.languagecenter.ui.invoice.InvoicePanel;
 import com.languagecenter.ui.payment.PaymentPanel;
 import com.languagecenter.ui.admin.AdminDashboardPanel;
 import com.languagecenter.ui.result.ResultPanel;
+import com.languagecenter.ui.admin.AdminAttendancePanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -49,6 +50,7 @@ public class MainFrame extends JFrame {
     private InvoicePanel invoicePanel;
     private PaymentPanel paymentPanel;
     private ResultPanel resultPanel;
+    private AdminAttendancePanel attendancePanel;
 
     public MainFrame(UserAccount acc, AuthService as, StudentService ss, TeacherService ts,
                      CourseService cs, RoomService rs, ClassService cls,
@@ -84,7 +86,7 @@ public class MainFrame extends JFrame {
         JPanel sidebar = new JPanel();
         sidebar.setPreferredSize(new Dimension(240, 0));
         sidebar.setBackground(new Color(44, 62, 80));
-        sidebar.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0)); // FlowLayout chính
+        sidebar.setLayout(new BorderLayout());
 
         // Header chứa Logo và Chữ (Sử dụng BoxLayout để xếp chồng dọc)
         JPanel brandPanel = new JPanel();
@@ -116,20 +118,33 @@ public class MainFrame extends JFrame {
         lblLogoText.setAlignmentX(Component.CENTER_ALIGNMENT);
         brandPanel.add(lblLogoText);
 
-        sidebar.add(brandPanel);
+        sidebar.add(brandPanel, BorderLayout.NORTH);
+
+        // Scrollable menu buttons panel
+        JPanel menuPanel = new JPanel();
+        menuPanel.setBackground(new Color(44, 62, 80));
+        menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
 
         // Menu Buttons
-        sidebar.add(createMenuButton("Dashboard", "DASH"));
-        sidebar.add(createMenuButton("Students", "STUDENT"));
-        sidebar.add(createMenuButton("Teachers", "TEACHER"));
-        sidebar.add(createMenuButton("Courses", "COURSE"));
-        sidebar.add(createMenuButton("Rooms", "ROOM"));
-        sidebar.add(createMenuButton("Classes", "CLASS"));
-        sidebar.add(createMenuButton("Enrollments", "ENROLL"));
-        sidebar.add(createMenuButton("Schedules", "SCHEDULE"));
-        sidebar.add(createMenuButton("Invoices", "INVOICE"));
-        sidebar.add(createMenuButton("Payments", "PAY"));
-        sidebar.add(createMenuButton("Results",  "RESULT"));
+        menuPanel.add(createMenuButton("Dashboard", "DASH"));
+        menuPanel.add(createMenuButton("Students", "STUDENT"));
+        menuPanel.add(createMenuButton("Teachers", "TEACHER"));
+        menuPanel.add(createMenuButton("Courses", "COURSE"));
+        menuPanel.add(createMenuButton("Rooms", "ROOM"));
+        menuPanel.add(createMenuButton("Classes", "CLASS"));
+        menuPanel.add(createMenuButton("Enrollments", "ENROLL"));
+        menuPanel.add(createMenuButton("Schedules", "SCHEDULE"));
+        menuPanel.add(createMenuButton("Invoices", "INVOICE"));
+        menuPanel.add(createMenuButton("Payments", "PAY"));
+        menuPanel.add(createMenuButton("Results",  "RESULT"));
+        menuPanel.add(createMenuButton("Attendance", "ATTEND"));
+
+        JScrollPane menuScroll = new JScrollPane(menuPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        menuScroll.setBorder(null);
+        menuScroll.getViewport().setBackground(new Color(44, 62, 80));
+        sidebar.add(menuScroll, BorderLayout.CENTER);
 
         // --- 3. CONTENT PANEL ---
         dashboardPanel = new AdminDashboardPanel(ss, ts, cls, es, is, ps);
@@ -143,6 +158,7 @@ public class MainFrame extends JFrame {
         invoicePanel   = new InvoicePanel(is, ss);
         paymentPanel   = new PaymentPanel(ps, ss, is);
         resultPanel    = new ResultPanel(resultService, ss, cls);
+        attendancePanel = new AdminAttendancePanel(attendanceService, cls, sche);
 
         contentPanel.add(dashboardPanel, "DASH");
         contentPanel.add(studentPanel, "STUDENT");
@@ -155,6 +171,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(invoicePanel,    "INVOICE");
         contentPanel.add(paymentPanel,    "PAY");
         contentPanel.add(resultPanel,     "RESULT");
+        contentPanel.add(attendancePanel, "ATTEND");
 
         add(topBar, BorderLayout.NORTH);
         add(sidebar, BorderLayout.WEST);
@@ -166,7 +183,8 @@ public class MainFrame extends JFrame {
 
     private JButton createMenuButton(String text, String cardName) {
         JButton btn = new JButton("   " + text);
-        btn.setPreferredSize(new Dimension(220, 50));
+        btn.setPreferredSize(new Dimension(240, 50));
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
         btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setFocusPainted(false);
@@ -197,6 +215,7 @@ public class MainFrame extends JFrame {
             case "INVOICE"  -> { if (invoicePanel    != null) invoicePanel.reload(); }
             case "PAY"      -> { if (paymentPanel    != null) paymentPanel.reload(); }
             case "RESULT"   -> { if (resultPanel     != null) resultPanel.reload();  }
+            case "ATTEND"   -> { if (attendancePanel != null) attendancePanel.reload(); }
         }
     }
 

@@ -5,6 +5,8 @@ import com.languagecenter.model.Student;
 import com.languagecenter.model.enums.InvoiceStatus;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -13,159 +15,199 @@ public class InvoiceFormDialog extends JDialog {
 
     private final JComboBox<Student> cboStudent = new JComboBox<>();
     private final JTextField txtTotalAmount = new JTextField();
-    private final JTextField txtIssueDate = new JTextField();
-    private final JComboBox<InvoiceStatus> cboStatus =
-            new JComboBox<>(InvoiceStatus.values());
+    private final JTextField txtIssueDate   = new JTextField();
+    private final JComboBox<InvoiceStatus> cboStatus = new JComboBox<>(InvoiceStatus.values());
     private final JTextArea txtNote = new JTextArea(3, 20);
 
     private boolean saved = false;
     private final Invoice invoice;
+    private final boolean isEdit;
 
     public InvoiceFormDialog(Frame owner,
-                            String title,
-                            Invoice existing,
-                            List<Student> students) {
-
+                             String title,
+                             Invoice existing,
+                             List<Student> students) {
         super(owner, title, true);
 
         this.invoice = existing != null ? existing : new Invoice();
+        this.isEdit  = existing != null;
 
         students.forEach(cboStudent::addItem);
 
-        buildUI();
-
+        // Populate fields before building UI so values are ready
         if (existing != null) {
-            cboStudent.setSelectedItem(existing.getStudent());
-            txtTotalAmount.setText(existing.getTotalAmount().toString());
+            for (int i = 0; i < cboStudent.getItemCount(); i++) {
+                if (cboStudent.getItemAt(i).getId().equals(existing.getStudent().getId())) {
+                    cboStudent.setSelectedIndex(i);
+                    break;
+                }
+            }
+            txtTotalAmount.setText(String.format("%,.0f", existing.getTotalAmount()));
             txtIssueDate.setText(existing.getIssueDate().toString());
             cboStatus.setSelectedItem(existing.getStatus());
             txtNote.setText(existing.getNote() != null ? existing.getNote() : "");
-
-            // Disable student khi update vì invoice đã gắn với student cố định
             cboStudent.setEnabled(false);
+        } else {
+            txtIssueDate.setText(LocalDate.now().toString());
+            cboStatus.setSelectedItem(InvoiceStatus.Issued);
         }
 
-        setSize(450, 350);
+        // Amount is always read-only (auto-calculated from enrollment)
+        txtTotalAmount.setEditable(false);
+        txtTotalAmount.setBackground(new Color(241, 245, 249));
+        txtTotalAmount.setForeground(new Color(71, 85, 105));
+        txtTotalAmount.setFont(new Font("SansSerif", Font.BOLD, 13));
+        txtTotalAmount.setToolTipText("Số tiền được tính tự động từ đăng ký học");
+
+        buildUI();
+
+        setSize(480, 460);
         setLocationRelativeTo(owner);
+        setResizable(false);
     }
 
     private void buildUI() {
+        // ── Colored header bar ──────────────────────────────────
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(new Color(30, 64, 175));
+        header.setBorder(new EmptyBorder(14, 20, 14, 20));
+        JLabel lblTitle = new JLabel(isEdit ? "Chỉnh sửa Hóa đơn" : "Tạo Hóa đơn");
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 16));
+        lblTitle.setForeground(Color.WHITE);
+        JLabel lblSub = new JLabel(isEdit ? "Cập nhật trạng thái và ghi chú" : "Nhập thông tin hóa đơn");
+        lblSub.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblSub.setForeground(new Color(147, 197, 253));
+        JPanel titleStack = new JPanel();
+        titleStack.setOpaque(false);
+        titleStack.setLayout(new BoxLayout(titleStack, BoxLayout.Y_AXIS));
+        titleStack.add(lblTitle);
+        titleStack.add(Box.createVerticalStrut(2));
+        titleStack.add(lblSub);
+        header.add(titleStack, BorderLayout.CENTER);
 
-        setLayout(new GridBagLayout());
+        // ── Form body ────────────────────────────────────────────
+        JPanel body = new JPanel(new GridBagLayout());
+        body.setBackground(Color.WHITE);
+        body.setBorder(new EmptyBorder(20, 24, 10, 24));
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        ((JComponent) getContentPane()).setBorder(
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        );
+        gbc.insets = new Insets(6, 0, 6, 0);
 
         int row = 0;
 
         // Student
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Student:"), gbc);
+        addRow(body, gbc, row++, makeLabel("Học viên"), cboStudent);
 
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(cboStudent, gbc);
-
-        row++;
-
-        // Total Amount
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Total Amount:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(txtTotalAmount, gbc);
-
-        row++;
+        // Total Amount (read-only)
+        JPanel amountRow = new JPanel(new BorderLayout(6, 0));
+        amountRow.setOpaque(false);
+        amountRow.add(txtTotalAmount, BorderLayout.CENTER);
+        JLabel lockIcon = new JLabel("🔒");
+        lockIcon.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lockIcon.setToolTipText("Không được chỉnh sửa — tự động từ đăng ký");
+        amountRow.add(lockIcon, BorderLayout.EAST);
+        addRow(body, gbc, row++, makeLabel("Tổng tiền (VNĐ)"), amountRow);
 
         // Issue Date
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Issue Date (YYYY-MM-DD):"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(txtIssueDate, gbc);
-
-        row++;
+        styleField(txtIssueDate);
+        addRow(body, gbc, row++, makeLabel("Ngày lập (YYYY-MM-DD)"), txtIssueDate);
 
         // Status
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Status:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(cboStatus, gbc);
-
-        row++;
+        styleCombo(cboStatus);
+        addRow(body, gbc, row++, makeLabel("Trạng thái"), cboStatus);
 
         // Note
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(new JLabel("Note:"), gbc);
+        txtNote.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtNote.setLineWrap(true);
+        txtNote.setWrapStyleWord(true);
+        txtNote.setBorder(new MatteBorder(1, 1, 1, 1, new Color(203, 213, 225)));
+        JScrollPane scrollNote = new JScrollPane(txtNote);
+        scrollNote.setPreferredSize(new Dimension(0, 70));
+        addRow(body, gbc, row++, makeLabel("Ghi chú"), scrollNote);
 
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weighty = 1;
-        JScrollPane scrollPane = new JScrollPane(txtNote);
-        add(scrollPane, gbc);
+        // ── Button bar ───────────────────────────────────────────
+        JPanel btnBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 12));
+        btnBar.setBackground(new Color(248, 250, 252));
+        btnBar.setBorder(new MatteBorder(1, 0, 0, 0, new Color(226, 232, 240)));
 
-        row++;
+        JButton btnCancel = createBtn("Hủy", new Color(100, 116, 139));
+        JButton btnSave   = createBtn("Lưu thay đổi", new Color(30, 64, 175));
 
-        // Button Save
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.gridwidth = 2;
-        gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.CENTER;
+        btnCancel.addActionListener(e -> dispose());
+        btnSave.addActionListener(e -> onSave());
 
-        JButton btnSave = new JButton("Save");
-        btnSave.setPreferredSize(new Dimension(100, 30));
+        btnBar.add(btnCancel);
+        btnBar.add(btnSave);
 
-        btnSave.addActionListener(e -> {
-            try {
-                invoice.setStudent((Student) cboStudent.getSelectedItem());
-                invoice.setTotalAmount(Double.parseDouble(txtTotalAmount.getText().trim()));
-                invoice.setIssueDate(LocalDate.parse(txtIssueDate.getText().trim()));
-                invoice.setStatus((InvoiceStatus) cboStatus.getSelectedItem());
-                invoice.setNote(txtNote.getText().trim());
+        // ── Compose ──────────────────────────────────────────────
+        setLayout(new BorderLayout());
+        add(header, BorderLayout.NORTH);
+        add(body,   BorderLayout.CENTER);
+        add(btnBar, BorderLayout.SOUTH);
+    }
 
-                saved = true;
-                dispose();
-
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Invalid input!\nDate format: YYYY-MM-DD\nAmount must be a number",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
+    private void onSave() {
+        try {
+            invoice.setStudent((Student) cboStudent.getSelectedItem());
+            // Amount is readonly — keep existing value; parse only for new (shouldn't happen since amount comes from enrollment)
+            if (invoice.getTotalAmount() == null) {
+                invoice.setTotalAmount(Double.parseDouble(txtTotalAmount.getText().replaceAll("[^\\d.]", "")));
             }
-        });
+            invoice.setIssueDate(LocalDate.parse(txtIssueDate.getText().trim()));
+            invoice.setStatus((InvoiceStatus) cboStatus.getSelectedItem());
+            invoice.setNote(txtNote.getText().trim());
 
-        add(btnSave, gbc);
+            saved = true;
+            dispose();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Dữ liệu không hợp lệ!\nĐịnh dạng ngày: YYYY-MM-DD",
+                    "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    public boolean isSaved() {
-        return saved;
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private void addRow(JPanel panel, GridBagConstraints gbc, int row, JLabel label, Component field) {
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0; gbc.gridwidth = 1;
+        panel.add(label, gbc);
+        gbc.gridx = 1; gbc.weightx = 1;
+        panel.add(field, gbc);
     }
 
-    public Invoice getInvoice() {
-        return invoice;
+    private JLabel makeLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 12));
+        lbl.setForeground(new Color(71, 85, 105));
+        lbl.setPreferredSize(new Dimension(170, 28));
+        return lbl;
     }
+
+    private void styleField(JTextField tf) {
+        tf.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        tf.setBorder(new MatteBorder(1, 1, 1, 1, new Color(203, 213, 225)));
+        tf.setPreferredSize(new Dimension(0, 32));
+    }
+
+    private void styleCombo(JComboBox<?> cb) {
+        cb.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        cb.setBackground(Color.WHITE);
+    }
+
+    private JButton createBtn(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btn.setBorder(new EmptyBorder(8, 20, 8, 20));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    public boolean isSaved() { return saved; }
+    public Invoice getInvoice() { return invoice; }
 }
+

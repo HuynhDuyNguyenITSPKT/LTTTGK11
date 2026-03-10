@@ -9,6 +9,8 @@ import com.languagecenter.model.enums.PaymentStatus;
 import com.languagecenter.service.PaymentService;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,140 +19,117 @@ import java.util.stream.Collectors;
 
 public class PaymentFormDialog extends JDialog {
 
-    private final JComboBox<Student> cboStudent = new JComboBox<>();
-    private final JComboBox<Invoice> cboInvoice = new JComboBox<>();
-    private final JLabel lblInvoiceInfo = new JLabel();
-    private final JTextField txtAmount = new JTextField();
-    private final JTextField txtPaymentDate = new JTextField();
-    private final JComboBox<PaymentMethod> cboPaymentMethod =
-            new JComboBox<>(PaymentMethod.values());
-    private final JComboBox<PaymentStatus> cboStatus =
-            new JComboBox<>(PaymentStatus.values());
-    private final JTextField txtReferenceCode = new JTextField();
+    private final JComboBox<Student>       cboStudent     = new JComboBox<>();
+    private final JComboBox<Invoice>       cboInvoice     = new JComboBox<>();
+    private final JLabel                   lblInvoiceInfo = new JLabel(" ");
+    private final JTextField               txtAmount      = new JTextField();
+    private final JTextField               txtPaymentDate = new JTextField();
+    private final JComboBox<PaymentMethod> cboPaymentMethod = new JComboBox<>(PaymentMethod.values());
+    private final JComboBox<PaymentStatus> cboStatus        = new JComboBox<>(PaymentStatus.values());
+    private final JTextField               txtReferenceCode = new JTextField();
 
     private boolean saved = false;
-    private final Payment payment;
+    private final Payment        payment;
     private final PaymentService paymentService;
+    private final List<Invoice>  allInvoices;
+    private final boolean        isEdit;
 
-    private final List<Invoice> allInvoices;
-
-    private final DateTimeFormatter dateTimeFormat =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public PaymentFormDialog(Frame owner,
-                            String title,
-                            Payment existing,
-                            List<Student> students,
-                            List<Invoice> invoices,
-                            PaymentService paymentService) {
-
+                             String title,
+                             Payment existing,
+                             List<Student> students,
+                             List<Invoice> invoices,
+                             PaymentService paymentService) {
         super(owner, title, true);
 
-        this.payment = existing != null ? existing : new Payment();
+        this.payment        = existing != null ? existing : new Payment();
         this.paymentService = paymentService;
-        this.allInvoices = invoices;
+        this.allInvoices    = invoices;
+        this.isEdit         = existing != null;
 
-        // Load students
         students.forEach(cboStudent::addItem);
 
-        buildUI();
-
+        // ── Pre-populate ──────────────────────────────────────────────────────
         if (existing != null) {
-            // Editing existing payment
-            // Tìm student theo ID thay vì setSelectedItem trực tiếp
             if (existing.getStudent() != null) {
                 for (int i = 0; i < cboStudent.getItemCount(); i++) {
-                    Student s = cboStudent.getItemAt(i);
-                    if (s.getId().equals(existing.getStudent().getId())) {
+                    if (cboStudent.getItemAt(i).getId().equals(existing.getStudent().getId())) {
                         cboStudent.setSelectedIndex(i);
                         break;
                     }
                 }
             }
-
             filterInvoicesByStudent();
-
-            // Tìm invoice theo ID thay vì setSelectedItem trực tiếp
             if (existing.getInvoice() != null) {
                 for (int i = 0; i < cboInvoice.getItemCount(); i++) {
-                    Invoice inv = cboInvoice.getItemAt(i);
-                    if (inv.getId().equals(existing.getInvoice().getId())) {
+                    if (cboInvoice.getItemAt(i).getId().equals(existing.getInvoice().getId())) {
                         cboInvoice.setSelectedIndex(i);
                         break;
                     }
                 }
             }
-
             updateInvoiceInfo();
-            txtAmount.setText(existing.getAmount().toString());
-            txtPaymentDate.setText(existing.getPaymentDate().format(dateTimeFormat));
+            txtAmount.setText(existing.getAmount() != null ? String.format("%.0f", existing.getAmount()) : "");
+            txtPaymentDate.setText(existing.getPaymentDate().format(DATE_FMT));
             cboPaymentMethod.setSelectedItem(existing.getPaymentMethod());
             cboStatus.setSelectedItem(existing.getStatus());
             txtReferenceCode.setText(existing.getReferenceCode() != null ? existing.getReferenceCode() : "");
-
-            // Disable student khi update
             cboStudent.setEnabled(false);
         } else {
-            // New payment
-            txtPaymentDate.setText(LocalDateTime.now().format(dateTimeFormat));
+            txtPaymentDate.setText(LocalDateTime.now().format(DATE_FMT));
             cboStatus.setSelectedItem(PaymentStatus.Completed);
+            filterInvoicesByStudent();
         }
 
-        // Add listener to Student combo - filter invoices
-        cboStudent.addActionListener(e -> {
-            filterInvoicesByStudent();
-            updateInvoiceInfo();
-        });
+        cboStudent.addActionListener(e -> { filterInvoicesByStudent(); updateInvoiceInfo(); });
+        cboInvoice.addActionListener(e -> updateInvoiceInfo());
 
-        // Add listener to Invoice combo - update info and amount
-        cboInvoice.addActionListener(e -> {
-            updateInvoiceInfo();
-        });
+        buildUI();
 
-        setSize(500, 500);
+        setSize(520, 560);
         setLocationRelativeTo(owner);
+        setResizable(false);
     }
 
+    // ── Logic ─────────────────────────────────────────────────────────────────
+
     private void filterInvoicesByStudent() {
-        Student selectedStudent = (Student) cboStudent.getSelectedItem();
+        Student sel = (Student) cboStudent.getSelectedItem();
         cboInvoice.removeAllItems();
+        if (sel == null) return;
 
-        if (selectedStudent == null) {
-            return;
-        }
-
-        // Filter invoices: chỉ hiển thị invoice của student và chưa trả đủ (status != Paid)
-        List<Invoice> unpaidInvoices = allInvoices.stream()
+        List<Invoice> filtered = allInvoices.stream()
                 .filter(inv -> inv.getStudent() != null
-                        && inv.getStudent().getId().equals(selectedStudent.getId())
+                        && inv.getStudent().getId().equals(sel.getId())
                         && inv.getStatus() != InvoiceStatus.Paid)
                 .collect(Collectors.toList());
 
-        // Nếu đang edit và invoice hiện tại không có trong danh sách (do đã Paid), thêm vào
-        if (payment.getId() != null && payment.getInvoice() != null) {
-            boolean containsCurrent = unpaidInvoices.stream()
-                    .anyMatch(inv -> inv.getId().equals(payment.getInvoice().getId()));
-            if (!containsCurrent && payment.getInvoice().getStudent() != null
-                    && payment.getInvoice().getStudent().getId().equals(selectedStudent.getId())) {
-                unpaidInvoices.add(0, payment.getInvoice()); // Thêm vào đầu danh sách
+        // Keep current invoice even if Paid (edit mode safety)
+        if (isEdit && payment.getInvoice() != null) {
+            boolean found = filtered.stream().anyMatch(i -> i.getId().equals(payment.getInvoice().getId()));
+            if (!found && payment.getInvoice().getStudent() != null
+                       && payment.getInvoice().getStudent().getId().equals(sel.getId())) {
+                filtered.add(0, payment.getInvoice());
             }
         }
 
-        unpaidInvoices.forEach(cboInvoice::addItem);
+        filtered.forEach(cboInvoice::addItem);
+        applyInvoiceRenderer();
+    }
 
-        // Custom renderer cho Invoice ComboBox
+    private void applyInvoiceRenderer() {
         cboInvoice.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value,
-                                                         int index, boolean isSelected, boolean cellHasFocus) {
+                    int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof Invoice inv) {
-                    String className = "N/A";
-                    if (inv.getEnrollment() != null && inv.getEnrollment().getClassEntity() != null) {
-                        className = inv.getEnrollment().getClassEntity().getClassName();
-                    }
-                    setText(String.format("#%d - %s - %,.0f đ [%s]",
-                            inv.getId(), className, inv.getTotalAmount(), inv.getStatus()));
+                    String cls = inv.getEnrollment() != null && inv.getEnrollment().getClassEntity() != null
+                            ? inv.getEnrollment().getClassEntity().getClassName() : "N/A";
+                    setText(String.format("#%d — %s — %,.0f đ  [%s]",
+                            inv.getId(), cls, inv.getTotalAmount(), inv.getStatus()));
                 }
                 return this;
             }
@@ -158,207 +137,191 @@ public class PaymentFormDialog extends JDialog {
     }
 
     private void updateInvoiceInfo() {
-        Invoice selectedInvoice = (Invoice) cboInvoice.getSelectedItem();
-        if (selectedInvoice != null) {
-            try {
-                Double remaining = paymentService.getRemainingAmount(selectedInvoice.getId());
-
-                String className = "N/A";
-                if (selectedInvoice.getEnrollment() != null
-                    && selectedInvoice.getEnrollment().getClassEntity() != null) {
-                    className = selectedInvoice.getEnrollment().getClassEntity().getClassName();
-                }
-
-                lblInvoiceInfo.setText(String.format(
-                    "<html>Class: %s<br/>Total: %,.0f VNĐ<br/><b>Remaining: %,.0f VNĐ</b></html>",
-                    className, selectedInvoice.getTotalAmount(), remaining));
-
-                // Auto fill amount với số tiền còn thiếu (chỉ khi tạo mới)
-                if (payment.getId() == null && txtAmount.getText().isEmpty()) {
-                    txtAmount.setText(String.format("%.0f", remaining));
-                }
-
-            } catch (Exception ex) {
-                lblInvoiceInfo.setText("Error loading invoice info");
-            }
-        } else {
-            lblInvoiceInfo.setText("No invoice selected");
+        Invoice inv = (Invoice) cboInvoice.getSelectedItem();
+        if (inv == null) { lblInvoiceInfo.setText("<html><i>Chưa chọn hóa đơn</i></html>"); return; }
+        try {
+            Double remaining = paymentService.getRemainingAmount(inv.getId());
+            String cls = inv.getEnrollment() != null && inv.getEnrollment().getClassEntity() != null
+                    ? inv.getEnrollment().getClassEntity().getClassName() : "N/A";
+            lblInvoiceInfo.setText(String.format(
+                "<html><b>Lớp:</b> %s &nbsp;&nbsp; <b>Tổng:</b> %,.0f đ" +
+                "&nbsp;&nbsp; <font color='#b45309'><b>Còn lại: %,.0f đ</b></font></html>",
+                cls, inv.getTotalAmount(), remaining));
+            if (!isEdit && txtAmount.getText().isBlank())
+                txtAmount.setText(String.format("%.0f", remaining));
+        } catch (Exception ex) {
+            lblInvoiceInfo.setText("<html><font color='red'>Lỗi tải hóa đơn</font></html>");
         }
     }
 
+    // ── Build UI ──────────────────────────────────────────────────────────────
+
     private void buildUI() {
+        // ── Header ───────────────────────────────────────────────
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(new Color(17, 94, 89));
+        header.setBorder(new EmptyBorder(14, 20, 14, 20));
 
-        setLayout(new GridBagLayout());
+        JPanel titleStack = new JPanel();
+        titleStack.setOpaque(false);
+        titleStack.setLayout(new BoxLayout(titleStack, BoxLayout.Y_AXIS));
+
+        JLabel lblTitle = new JLabel(isEdit ? "Chỉnh sửa Thanh toán" : "Tạo Thanh toán mới");
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 16));
+        lblTitle.setForeground(Color.WHITE);
+
+        JLabel lblSub = new JLabel(isEdit ? "Cập nhật thông tin giao dịch" : "Nhập thông tin thanh toán");
+        lblSub.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblSub.setForeground(new Color(153, 246, 228));
+
+        titleStack.add(lblTitle);
+        titleStack.add(Box.createVerticalStrut(2));
+        titleStack.add(lblSub);
+        header.add(titleStack, BorderLayout.CENTER);
+
+        // ── Invoice info banner ───────────────────────────────────
+        lblInvoiceInfo.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        lblInvoiceInfo.setForeground(new Color(120, 53, 15));
+        lblInvoiceInfo.setOpaque(true);
+        lblInvoiceInfo.setBackground(new Color(255, 251, 235));
+        lblInvoiceInfo.setBorder(new EmptyBorder(8, 16, 8, 16));
+
+        // ── Form body ─────────────────────────────────────────────
+        JPanel body = new JPanel(new GridBagLayout());
+        body.setBackground(Color.WHITE);
+        body.setBorder(new EmptyBorder(16, 24, 8, 24));
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        ((JComponent) getContentPane()).setBorder(
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        );
+        gbc.insets = new Insets(5, 0, 5, 0);
 
         int row = 0;
 
-        // Student
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Student:"), gbc);
+        styleCombo(cboStudent);
+        addRow(body, gbc, row++, lbl("Học viên"), cboStudent);
 
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(cboStudent, gbc);
-
-        row++;
-
-        // Invoice
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Invoice:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(cboInvoice, gbc);
-
-        row++;
-
-        // Invoice Info (read-only)
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.gridwidth = 2;
-        gbc.weightx = 1;
-        lblInvoiceInfo.setFont(lblInvoiceInfo.getFont().deriveFont(12f));
-        lblInvoiceInfo.setForeground(new Color(50, 50, 150));
-        lblInvoiceInfo.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-        add(lblInvoiceInfo, gbc);
-        gbc.gridwidth = 1;
-
-        row++;
+        addRow(body, gbc, row++, lbl("Hóa đơn"), cboInvoice);
 
         // Amount
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Amount:"), gbc);
+        styleField(txtAmount);
+        addRow(body, gbc, row++, lbl("Số tiền (VNĐ)"), txtAmount);
 
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(txtAmount, gbc);
+        // Payment date
+        styleField(txtPaymentDate);
+        addRow(body, gbc, row++, lbl("Ngày TT (yyyy-MM-dd HH:mm)"), txtPaymentDate);
 
-        row++;
-
-        // Payment Date
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Date (yyyy-MM-dd HH:mm):"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(txtPaymentDate, gbc);
-
-        row++;
-
-        // Payment Method
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Payment Method:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(cboPaymentMethod, gbc);
-
-        row++;
+        // Method
+        styleCombo(cboPaymentMethod);
+        addRow(body, gbc, row++, lbl("Phương thức TT"), cboPaymentMethod);
 
         // Status
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Status:"), gbc);
+        styleCombo(cboStatus);
+        addRow(body, gbc, row++, lbl("Trạng thái"), cboStatus);
 
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(cboStatus, gbc);
+        // Reference code
+        styleField(txtReferenceCode);
+        txtReferenceCode.setToolTipText("Mã giao dịch ngân hàng / chuyển khoản (nếu có)");
+        addRow(body, gbc, row++, lbl("Mã tham chiếu"), txtReferenceCode);
 
-        row++;
+        // ── Button bar ────────────────────────────────────────────
+        JPanel btnBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 12));
+        btnBar.setBackground(new Color(248, 250, 252));
+        btnBar.setBorder(new MatteBorder(1, 0, 0, 0, new Color(226, 232, 240)));
 
-        // Reference Code
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        add(new JLabel("Reference Code:"), gbc);
+        JButton btnCancel = createBtn("Hủy",          new Color(100, 116, 139));
+        JButton btnSave   = createBtn("Lưu thanh toán", new Color(17, 94, 89));
 
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        add(txtReferenceCode, gbc);
+        btnCancel.addActionListener(e -> dispose());
+        btnSave.addActionListener(e -> onSave());
 
-        row++;
+        btnBar.add(btnCancel);
+        btnBar.add(btnSave);
 
-        // Button Save
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.CENTER;
+        // ── Compose ───────────────────────────────────────────────
+        setLayout(new BorderLayout());
+        add(header,        BorderLayout.NORTH);
 
-        JButton btnSave = new JButton("Save");
-        btnSave.setPreferredSize(new Dimension(100, 30));
+        JPanel centerWrap = new JPanel(new BorderLayout());
+        centerWrap.setBackground(Color.WHITE);
+        centerWrap.add(lblInvoiceInfo, BorderLayout.NORTH);
+        centerWrap.add(body,           BorderLayout.CENTER);
 
-        btnSave.addActionListener(e -> {
-            try {
-                Student selectedStudent = (Student) cboStudent.getSelectedItem();
-                Invoice selectedInvoice = (Invoice) cboInvoice.getSelectedItem();
+        add(centerWrap, BorderLayout.CENTER);
+        add(btnBar,     BorderLayout.SOUTH);
+    }
 
-                if (selectedStudent == null) {
-                    JOptionPane.showMessageDialog(this,
-                        "Please select a Student!",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
+    private void onSave() {
+        try {
+            Student selStudent = (Student) cboStudent.getSelectedItem();
+            Invoice selInvoice = (Invoice) cboInvoice.getSelectedItem();
 
-                if (selectedInvoice == null) {
-                    JOptionPane.showMessageDialog(this,
-                        "Please select an Invoice!",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                // Tự động set student và enrollment từ invoice
-                payment.setInvoice(selectedInvoice);
-                payment.setStudent(selectedInvoice.getStudent());
-                payment.setEnrollment(selectedInvoice.getEnrollment());
-
-                payment.setAmount(Double.parseDouble(txtAmount.getText().trim()));
-                payment.setPaymentDate(LocalDateTime.parse(txtPaymentDate.getText().trim(), dateTimeFormat));
-                payment.setPaymentMethod((PaymentMethod) cboPaymentMethod.getSelectedItem());
-                payment.setStatus((PaymentStatus) cboStatus.getSelectedItem());
-                payment.setReferenceCode(txtReferenceCode.getText().trim());
-
-                saved = true;
-                dispose();
-
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Invalid input!\nDate format: yyyy-MM-dd HH:mm\nAmount must be a number",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
+            if (selStudent == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn Học viên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-        });
+            if (selInvoice == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn Hóa đơn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-        add(btnSave, gbc);
+            payment.setInvoice(selInvoice);
+            payment.setStudent(selInvoice.getStudent());
+            payment.setEnrollment(selInvoice.getEnrollment());
+            payment.setAmount(Double.parseDouble(txtAmount.getText().trim().replaceAll("[^\\d.]", "")));
+            payment.setPaymentDate(LocalDateTime.parse(txtPaymentDate.getText().trim(), DATE_FMT));
+            payment.setPaymentMethod((PaymentMethod) cboPaymentMethod.getSelectedItem());
+            payment.setStatus((PaymentStatus) cboStatus.getSelectedItem());
+            payment.setReferenceCode(txtReferenceCode.getText().trim());
+
+            saved = true;
+            dispose();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Dữ liệu không hợp lệ!\nĐịnh dạng ngày: yyyy-MM-dd HH:mm\nSố tiền phải là số",
+                    "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    public boolean isSaved() {
-        return saved;
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private void addRow(JPanel panel, GridBagConstraints gbc, int row, JLabel label, Component field) {
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0; gbc.gridwidth = 1;
+        panel.add(label, gbc);
+        gbc.gridx = 1; gbc.weightx = 1;
+        panel.add(field, gbc);
     }
 
-    public Payment getPayment() {
-        return payment;
+    private JLabel lbl(String text) {
+        JLabel l = new JLabel(text);
+        l.setFont(new Font("SansSerif", Font.BOLD, 12));
+        l.setForeground(new Color(71, 85, 105));
+        l.setPreferredSize(new Dimension(185, 28));
+        return l;
     }
+
+    private void styleField(JTextField tf) {
+        tf.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        tf.setBorder(new MatteBorder(1, 1, 1, 1, new Color(203, 213, 225)));
+        tf.setPreferredSize(new Dimension(0, 32));
+    }
+
+    private void styleCombo(JComboBox<?> cb) {
+        cb.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        cb.setBackground(Color.WHITE);
+    }
+
+    private JButton createBtn(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btn.setBorder(new EmptyBorder(8, 20, 8, 20));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    public boolean isSaved() { return saved; }
+    public Payment getPayment() { return payment; }
 }

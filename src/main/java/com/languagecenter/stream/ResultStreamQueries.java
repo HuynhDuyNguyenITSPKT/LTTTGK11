@@ -3,6 +3,7 @@ package com.languagecenter.stream;
 import com.languagecenter.model.Result;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 
 public class ResultStreamQueries {
@@ -27,6 +28,14 @@ public class ResultStreamQueries {
                 .toList();
     }
 
+    /** Filter by exact class ID */
+    public static List<Result> filterByClassId(List<Result> data, Long classId) {
+        return data.stream()
+                .filter(r -> r.getClassEntity() != null &&
+                             r.getClassEntity().getId().equals(classId))
+                .toList();
+    }
+
     /** Filter by grade (exact, case-insensitive) */
     public static List<Result> filterByGrade(List<Result> data, String grade) {
         String g = grade.toLowerCase();
@@ -42,7 +51,7 @@ public class ResultStreamQueries {
                 .toList();
     }
 
-    /** Filter results where score <= max */
+    /** Filter results where score is within [min, max] range */
     public static List<Result> filterByScoreRange(List<Result> data, BigDecimal min, BigDecimal max) {
         return data.stream()
                 .filter(r -> r.getScore() != null
@@ -51,7 +60,16 @@ public class ResultStreamQueries {
                 .toList();
     }
 
-    /** Average score of a list (returns null if empty) */
+    /** Sort results alphabetically by student full name (A→Z) */
+    public static List<Result> sortByStudentName(List<Result> data) {
+        return data.stream()
+                .sorted(Comparator.comparing(
+                        r -> r.getStudent() != null ? r.getStudent().getFullName() : "",
+                        String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    /** Average score of a list (returns BigDecimal.ZERO if empty) */
     public static BigDecimal averageScore(List<Result> data) {
         return data.stream()
                 .filter(r -> r.getScore() != null)

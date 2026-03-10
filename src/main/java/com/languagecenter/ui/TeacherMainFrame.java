@@ -84,7 +84,7 @@ public class TeacherMainFrame extends JFrame {
         // CONTENT
         dashboardPanel  = new TeacherDashboardPanel(acc.getTeacher().getId(), classService, enrollmentService);
         schedulePanel   = new TeacherSchedulePanel(scheduleService, acc.getTeacher().getId(), enrollmentService);
-        attendancePanel = new AttendancePanel(acc.getTeacher().getId(), classService, enrollmentService, attendanceService);
+        attendancePanel = new AttendancePanel(acc.getTeacher().getId(), classService, enrollmentService, attendanceService, scheduleService);
         resultPanel     = new TeacherResultPanel(acc.getTeacher().getId(), classService, enrollmentService, resultService);
 
         contentPanel.add(dashboardPanel, "DASH");

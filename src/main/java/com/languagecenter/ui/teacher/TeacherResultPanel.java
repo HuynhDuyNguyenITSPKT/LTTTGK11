@@ -7,10 +7,13 @@ import com.languagecenter.model.Student;
 import com.languagecenter.service.ClassService;
 import com.languagecenter.service.EnrollmentService;
 import com.languagecenter.service.ResultService;
+import com.languagecenter.stream.ResultStreamQueries;
 import com.languagecenter.ui.result.ResultFormDialog;
+import com.languagecenter.util.ResultExcelExporter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
@@ -75,13 +78,15 @@ public class TeacherResultPanel extends JPanel {
         cboClass.setPreferredSize(new Dimension(280, 35));
         cboClass.addActionListener(e -> loadResultsForSelectedClass());
 
-        JButton btnAdd  = createButton("Add Result",  new Color(76,  175,  80));
-        JButton btnEdit = createButton("Edit Result",  new Color(255, 167, 38));
+        JButton btnAdd    = createButton("Add Result",    new Color(76,  175,  80));
+        JButton btnEdit   = createButton("Edit Result",   new Color(255, 167, 38));
+        JButton btnExport = createButton("Export Excel",  new Color(21, 128, 61));
 
         filterBar.add(lblClass);
         filterBar.add(cboClass);
         filterBar.add(btnAdd);
         filterBar.add(btnEdit);
+        filterBar.add(btnExport);
 
         add(filterBar, BorderLayout.BEFORE_FIRST_LINE);
 
@@ -91,6 +96,7 @@ public class TeacherResultPanel extends JPanel {
 
         btnAdd.addActionListener(e -> onAdd());
         btnEdit.addActionListener(e -> onEdit());
+        btnExport.addActionListener(e -> onExport());
     }
 
     private void buildTable() {
@@ -137,7 +143,9 @@ public class TeacherResultPanel extends JPanel {
         ClassItem selected = (ClassItem) cboClass.getSelectedItem();
         if (selected == null) { tableModel.setData(List.of()); return; }
         try {
-            currentResults = resultService.getByClass(selected.classId);
+            List<Result> raw = resultService.getByClass(selected.classId);
+            // Sort alphabetically by student name
+            currentResults = ResultStreamQueries.sortByStudentName(raw);
             tableModel.setData(currentResults);
         } catch (Exception e) {
             e.printStackTrace();
@@ -174,6 +182,36 @@ public class TeacherResultPanel extends JPanel {
     }
 
     // ─── Actions ──────────────────────────────────────────────────────────────
+
+    private void onExport() {
+        ClassItem selected = (ClassItem) cboClass.getSelectedItem();
+        if (selected == null) {
+            JOptionPane.showMessageDialog(this, "Please select a class first.",
+                    "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        if (currentResults.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No results to export for this class.",
+                    "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        JFileChooser fc = new JFileChooser();
+        fc.setSelectedFile(new java.io.File("KetQua_" + selected.className.replaceAll("[^\\w]", "_") + ".xlsx"));
+        fc.setFileFilter(new FileNameExtensionFilter("Excel Workbook (*.xlsx)", "xlsx"));
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+
+        String path = fc.getSelectedFile().getAbsolutePath();
+        if (!path.toLowerCase().endsWith(".xlsx")) path += ".xlsx";
+        try {
+            ResultExcelExporter.export(currentResults, selected.className, path);
+            JOptionPane.showMessageDialog(this,
+                    "Exported successfully!\n" + path,
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Export failed: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     private void onAdd() {
         Class clazz = getSelectedClass();
