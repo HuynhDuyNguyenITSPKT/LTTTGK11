@@ -7,8 +7,9 @@ import com.languagecenter.service.ScheduleService;
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 
 public class TeacherSchedulePanel extends JPanel {
 
@@ -23,9 +24,11 @@ public class TeacherSchedulePanel extends JPanel {
 
     private LocalDate currentWeekStart;
 
-    // map tính tiết
     private Map<Long,Integer> lessonIndexMap = new HashMap<>();
     private Map<Long,Integer> totalLessonMap = new HashMap<>();
+
+    private final DateTimeFormatter dayFormatter =
+            DateTimeFormatter.ofPattern("dd/MM");
 
     public TeacherSchedulePanel(ScheduleService service, Long teacherId, EnrollmentService enrollmentService) {
 
@@ -34,7 +37,7 @@ public class TeacherSchedulePanel extends JPanel {
         this.enrollmentService = enrollmentService;
 
         setLayout(new BorderLayout());
-        setBackground(new Color(245,245,245));
+        setBackground(new Color(245,247,250));
 
         LocalDate today = LocalDate.now();
         currentWeekStart = today.minusDays(today.getDayOfWeek().getValue() - 1);
@@ -50,54 +53,65 @@ public class TeacherSchedulePanel extends JPanel {
     }
 
     private void buildToolbar(){
-        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        toolbar.setBackground(new Color(63,81,181));
 
-        JButton prevBtn = new JButton("◀");
-        JButton nextBtn = new JButton("▶");
-
-        prevBtn.addActionListener(e -> changeWeek(-1));
-        nextBtn.addActionListener(e -> changeWeek(1));
+        JPanel toolbar = new JPanel(new BorderLayout());
+        toolbar.setBorder(BorderFactory.createEmptyBorder(10,20,10,20));
+        toolbar.setBackground(new Color(33,150,243));
 
         JLabel title = new JLabel("Teacher Schedule");
+        title.setFont(new Font("Segoe UI",Font.BOLD,18));
         title.setForeground(Color.WHITE);
-        title.setFont(new Font("Arial",Font.BOLD,18));
+
+        JPanel nav = new JPanel();
+        nav.setOpaque(false);
+
+        JButton prev = new JButton("◀");
+        JButton next = new JButton("▶");
+
+        prev.addActionListener(e -> changeWeek(-1));
+        next.addActionListener(e -> changeWeek(1));
 
         weekLabel = new JLabel();
         weekLabel.setForeground(Color.WHITE);
+        weekLabel.setFont(new Font("Segoe UI",Font.BOLD,14));
 
-        toolbar.add(title);
-        toolbar.add(Box.createHorizontalStrut(20));
-        toolbar.add(prevBtn);
-        toolbar.add(nextBtn);
-        toolbar.add(Box.createHorizontalStrut(10));
-        toolbar.add(weekLabel);
+        nav.add(prev);
+        nav.add(next);
+        nav.add(Box.createHorizontalStrut(10));
+        nav.add(weekLabel);
+
+        toolbar.add(title,BorderLayout.WEST);
+        toolbar.add(nav,BorderLayout.EAST);
 
         add(toolbar,BorderLayout.NORTH);
     }
 
     private void buildCalendar(){
 
-        calendarPanel = new JPanel(new GridLayout(1,7,5,5));
-        calendarPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-
-        String[] days = {
-                "Mon","Tue","Wed","Thu","Fri","Sat","Sun"
-        };
+        calendarPanel = new JPanel(new GridLayout(1,7,10,10));
+        calendarPanel.setBorder(BorderFactory.createEmptyBorder(15,15,15,15));
+        calendarPanel.setBackground(new Color(245,247,250));
 
         for(int i=0;i<7;i++){
 
-            JPanel dayPanel = new JPanel();
-            dayPanel.setLayout(new BoxLayout(dayPanel,BoxLayout.Y_AXIS));
+            JPanel dayPanel = new JPanel(new BorderLayout());
             dayPanel.setBackground(Color.WHITE);
             dayPanel.setBorder(BorderFactory.createLineBorder(new Color(220,220,220)));
 
-            JLabel lbl = new JLabel(days[i],SwingConstants.CENTER);
-            lbl.setFont(new Font("Arial",Font.BOLD,14));
-            lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+            JLabel header = new JLabel("",SwingConstants.CENTER);
+            header.setFont(new Font("Segoe UI",Font.BOLD,14));
+            header.setBorder(BorderFactory.createEmptyBorder(8,0,8,0));
 
-            dayPanel.add(lbl);
-            dayPanel.add(Box.createVerticalStrut(10));
+            JPanel list = new JPanel();
+            list.setLayout(new BoxLayout(list,BoxLayout.Y_AXIS));
+            list.setBackground(Color.WHITE);
+
+            JScrollPane scroll = new JScrollPane(list);
+            scroll.setBorder(null);
+            scroll.getVerticalScrollBar().setUnitIncrement(10);
+
+            dayPanel.add(header,BorderLayout.NORTH);
+            dayPanel.add(scroll,BorderLayout.CENTER);
 
             calendarPanel.add(dayPanel);
         }
@@ -124,7 +138,6 @@ public class TeacherSchedulePanel extends JPanel {
     private void changeWeek(int step){
 
         currentWeekStart = currentWeekStart.plusWeeks(step);
-
         renderSchedules();
     }
 
@@ -132,15 +145,32 @@ public class TeacherSchedulePanel extends JPanel {
 
         LocalDate endWeek = currentWeekStart.plusDays(6);
 
-        weekLabel.setText(currentWeekStart + " → " + endWeek);
+        weekLabel.setText(
+                currentWeekStart.format(dayFormatter)
+                        +" → "+
+                        endWeek.format(dayFormatter)
+        );
 
         for(int i=0;i<7;i++){
 
+            LocalDate date = currentWeekStart.plusDays(i);
+
             JPanel dayPanel = (JPanel) calendarPanel.getComponent(i);
 
-            while(dayPanel.getComponentCount() > 2){
-                dayPanel.remove(2);
-            }
+            JLabel header = (JLabel) dayPanel.getComponent(0);
+            JScrollPane scroll = (JScrollPane) dayPanel.getComponent(1);
+
+            JPanel list = (JPanel) scroll.getViewport().getView();
+            list.removeAll();
+
+            String dayName = date.getDayOfWeek().toString().substring(0,3);
+
+            header.setText(dayName+" "+date.format(dayFormatter));
+
+            if(date.equals(LocalDate.now()))
+                header.setForeground(new Color(33,150,243));
+            else
+                header.setForeground(Color.BLACK);
         }
 
         for(Schedule s : schedules){
@@ -153,15 +183,18 @@ public class TeacherSchedulePanel extends JPanel {
             int dayIndex = date.getDayOfWeek().getValue() - 1;
 
             JPanel dayPanel = (JPanel) calendarPanel.getComponent(dayIndex);
+            JScrollPane scroll = (JScrollPane) dayPanel.getComponent(1);
 
-            dayPanel.add(createScheduleCard(s));
+            JPanel list = (JPanel) scroll.getViewport().getView();
+
+            list.add(createScheduleCard(s));
+            list.add(Box.createVerticalStrut(8));
         }
 
         revalidate();
         repaint();
     }
 
-    // tính tiết
     private void calculateLessonIndex(){
 
         Map<Long,List<Schedule>> classSchedules = new HashMap<>();
@@ -202,58 +235,70 @@ public class TeacherSchedulePanel extends JPanel {
 
     private JPanel createScheduleCard(Schedule s){
 
-        JPanel card = new JPanel();
-        card.setLayout(new BoxLayout(card,BoxLayout.Y_AXIS));
+        JPanel card = new JPanel(new BorderLayout());
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE,80));
 
-        card.setMaximumSize(new Dimension(200,90));
-        card.setBackground(new Color(200,230,201));
-        card.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
+        card.setBackground(Color.WHITE);
+
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0,5,0,0,new Color(33,150,243)),
+                BorderFactory.createEmptyBorder(8,10,8,10)
+        ));
 
         String className = s.getClassEntity().getClassName();
 
         int lesson = lessonIndexMap.getOrDefault(s.getId(),1);
         int total = totalLessonMap.getOrDefault(s.getId(),1);
 
-        long studentCount = 0;
+        long tempStudentCount = 0;
 
         try{
-            studentCount = enrollmentService.countStudentsByClass(
-                    s.getClassEntity().getId()
-            );
-        }catch(Exception ex){
+            tempStudentCount = enrollmentService
+                    .countStudentsByClass(s.getClassEntity().getId());
+        }
+        catch(Exception ex){
             ex.printStackTrace();
         }
 
+        final long studentCount = tempStudentCount;
         int maxStudent = s.getClassEntity().getMaxStudent();
 
         JLabel title = new JLabel(className);
-        title.setFont(new Font("Arial",Font.BOLD,12));
+        title.setFont(new Font("Segoe UI",Font.BOLD,13));
 
-        JLabel time = new JLabel(
-                "⏰ "+s.getStartTime()+" - "+s.getEndTime()
-        );
+        JLabel time = new JLabel("⏰ "+s.getStartTime()+" - "+s.getEndTime());
 
-        JLabel lessonLbl = new JLabel(
-                "📚 Tiết "+lesson+" / "+total
-        );
+        JLabel lessonLbl = new JLabel("📚 Lesson "+lesson+" / "+total);
 
-        JLabel studentLbl = new JLabel(
-                "👨‍🎓 "+studentCount+" / "+maxStudent
-        );
+        JLabel studentLbl = new JLabel("👨‍🎓 "+studentCount+" / "+maxStudent);
 
         JLabel room = new JLabel(
                 "🏫 "+(s.getRoom()!=null ? s.getRoom().getRoomName() : "")
         );
 
-        card.add(title);
-        card.add(time);
-        card.add(lessonLbl);
-        card.add(studentLbl);
-        card.add(room);
+        JPanel info = new JPanel();
+        info.setLayout(new BoxLayout(info,BoxLayout.Y_AXIS));
+        info.setOpaque(false);
+
+        info.add(title);
+        info.add(time);
+        info.add(lessonLbl);
+        info.add(studentLbl);
+        info.add(room);
+
+        card.add(info,BorderLayout.CENTER);
 
         card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         card.addMouseListener(new java.awt.event.MouseAdapter(){
+
+            public void mouseEntered(java.awt.event.MouseEvent e){
+                card.setBackground(new Color(245,245,245));
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent e){
+                card.setBackground(Color.WHITE);
+            }
 
             public void mouseClicked(java.awt.event.MouseEvent evt){
 
@@ -261,7 +306,7 @@ public class TeacherSchedulePanel extends JPanel {
                         TeacherSchedulePanel.this,
                         "Class: "+className+"\n"+
                                 "Lesson: "+lesson+" / "+total+"\n"+
-                                "Students: "+maxStudent+"\n"+
+                                "Students: "+studentCount+" / "+maxStudent+"\n"+
                                 "Time: "+s.getStartTime()+" - "+s.getEndTime()+"\n"+
                                 "Room: "+(s.getRoom()!=null?s.getRoom().getRoomName():"")
                 );

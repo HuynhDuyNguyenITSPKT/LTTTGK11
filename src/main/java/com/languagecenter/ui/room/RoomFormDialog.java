@@ -49,32 +49,71 @@ public class RoomFormDialog extends JDialog {
 
     private void buildUI(){
 
-        JPanel form = new JPanel(new GridLayout(4,2,6,6));
+        JPanel container = new JPanel(new BorderLayout(10,10));
+        container.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+        container.setBackground(Color.WHITE);
 
-        form.add(new JLabel("Room Name"));
-        form.add(txtName);
+        JPanel form = new JPanel();
+        form.setLayout(new GridLayout(4,1,12,12));
+        form.setBackground(Color.WHITE);
 
-        form.add(new JLabel("Capacity"));
-        form.add(txtCapacity);
+        form.add(createField("Room Name", txtName));
+        form.add(createField("Capacity", txtCapacity));
+        form.add(createField("Location", txtLocation));
+        form.add(createField("Status", cboStatus));
 
-        form.add(new JLabel("Location"));
-        form.add(txtLocation);
-
-        form.add(new JLabel("Status"));
-        form.add(cboStatus);
-
-        JButton btnSave = new JButton("Save");
-        JButton btnCancel = new JButton("Cancel");
+        JButton btnSave = createButton("Save", new Color(34,197,94));
+        JButton btnCancel = createButton("Cancel", new Color(239,68,68));
 
         btnSave.addActionListener(e -> onSave());
         btnCancel.addActionListener(e -> dispose());
 
-        JPanel actions = new JPanel();
-        actions.add(btnSave);
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,5));
+        actions.setBackground(Color.WHITE);
         actions.add(btnCancel);
+        actions.add(btnSave);
 
-        add(form,BorderLayout.CENTER);
-        add(actions,BorderLayout.SOUTH);
+        container.add(form,BorderLayout.CENTER);
+        container.add(actions,BorderLayout.SOUTH);
+
+        setContentPane(container);
+    }
+
+    private JPanel createField(String label, JComponent field){
+
+        JPanel panel = new JPanel(new BorderLayout(5,5));
+        panel.setBackground(Color.WHITE);
+
+        JLabel lb = new JLabel(label);
+        lb.setFont(new Font("SansSerif",Font.BOLD,13));
+
+        field.setFont(new Font("SansSerif",Font.PLAIN,13));
+        field.setPreferredSize(new Dimension(200,30));
+
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200,200,200)),
+                BorderFactory.createEmptyBorder(5,8,5,8)
+        ));
+
+        panel.add(lb,BorderLayout.NORTH);
+        panel.add(field,BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JButton createButton(String text, Color color){
+
+        JButton btn = new JButton(text);
+
+        btn.setBackground(color);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setFont(new Font("SansSerif",Font.BOLD,12));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(90,32));
+
+        return btn;
     }
 
     private void onSave(){

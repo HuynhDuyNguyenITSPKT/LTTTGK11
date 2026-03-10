@@ -7,6 +7,7 @@ import com.languagecenter.model.enums.EnrollmentStatus;
 import com.languagecenter.model.enums.ResultStatus;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -40,83 +41,171 @@ public class EnrollmentFormDialog extends JDialog {
         students.forEach(cboStudent::addItem);
         classes.forEach(cboClass::addItem);
 
+        setupRenderers();
         buildUI();
 
         if(existing != null){
-
-            cboStudent.setSelectedItem(existing.getStudent());
-            cboClass.setSelectedItem(existing.getClassEntity());
-
-            txtDate.setText(existing.getEnrollmentDate().toString());
-
-            cboStatus.setSelectedItem(existing.getStatus());
-            cboResult.setSelectedItem(existing.getResult());
+            fillData(existing);
+        } else {
+            txtDate.setText(LocalDate.now().toString());
         }
 
-        setSize(400,320);
+        pack();
+        setResizable(false);
         setLocationRelativeTo(owner);
+    }
+
+    private void setupRenderers(){
+
+        ListCellRenderer<Object> renderer =
+                new DefaultListCellRenderer(){
+
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list,Object value,int index,
+                    boolean isSelected,boolean cellHasFocus){
+
+                if(value instanceof Student s)
+                    value = s.getFullName();
+
+                else if(value instanceof Class c)
+                    value = c.getClassName();
+
+                return super.getListCellRendererComponent(
+                        list,value,index,isSelected,cellHasFocus);
+            }
+        };
+
+        cboStudent.setRenderer(renderer);
+        cboClass.setRenderer(renderer);
     }
 
     private void buildUI(){
 
-        setLayout(new GridLayout(6,2,10,10));
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBorder(new EmptyBorder(20,20,20,20));
+        root.setBackground(new Color(245,247,251));
 
-        ((JComponent)getContentPane()).setBorder(
-                BorderFactory.createEmptyBorder(10,10,10,10)
-        );
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
 
-        add(new JLabel("Student"));
-        add(cboStudent);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10,10,10,10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
 
-        add(new JLabel("Class"));
-        add(cboClass);
+        addField(form,"Student",cboStudent,gbc,0);
+        addField(form,"Class",cboClass,gbc,1);
+        addField(form,"Enrollment Date",txtDate,gbc,2);
+        addField(form,"Status",cboStatus,gbc,3);
+        addField(form,"Result",cboResult,gbc,4);
 
-        add(new JLabel("Enrollment Date (YYYY-MM-DD)"));
-        add(txtDate);
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
+        actions.setOpaque(false);
 
-        add(new JLabel("Status"));
-        add(cboStatus);
+        JButton btnCancel = createButton("Cancel",new Color(156,163,175));
+        JButton btnSave = createButton("Save",new Color(34,197,94));
 
-        add(new JLabel("Result"));
-        add(cboResult);
+        btnCancel.addActionListener(e->dispose());
 
-        JButton btnSave = new JButton("Save");
+        btnSave.addActionListener(e->onSave());
 
-        btnSave.addActionListener(e -> {
+        actions.add(btnCancel);
+        actions.add(btnSave);
 
-            try{
+        root.add(form,BorderLayout.CENTER);
+        root.add(actions,BorderLayout.SOUTH);
 
-                enrollment.setStudent((Student) cboStudent.getSelectedItem());
-                enrollment.setClassEntity((Class) cboClass.getSelectedItem());
+        setContentPane(root);
+    }
 
-                enrollment.setEnrollmentDate(
-                        LocalDate.parse(txtDate.getText().trim())
-                );
+    private void addField(JPanel panel,
+                          String label,
+                          JComponent field,
+                          GridBagConstraints gbc,
+                          int row){
 
-                enrollment.setStatus(
-                        (EnrollmentStatus) cboStatus.getSelectedItem()
-                );
+        gbc.gridy = row;
 
-                enrollment.setResult(
-                        (ResultStatus) cboResult.getSelectedItem()
-                );
+        gbc.gridx = 0;
+        gbc.weightx = 0;
 
-                saved = true;
-                dispose();
+        JLabel lb = new JLabel(label);
+        lb.setFont(new Font("Segoe UI",Font.BOLD,12));
 
-            }catch(Exception ex){
+        panel.add(lb,gbc);
 
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Sai định dạng ngày!\nYYYY-MM-DD",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
+        gbc.gridx = 1;
+        gbc.weightx = 1;
 
-        add(new JLabel());
-        add(btnSave);
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(210,210,210)),
+                BorderFactory.createEmptyBorder(6,8,6,8)
+        ));
+
+        field.setFont(new Font("Segoe UI",Font.PLAIN,12));
+
+        panel.add(field,gbc);
+    }
+
+    private JButton createButton(String text, Color color){
+
+        JButton btn = new JButton(text);
+
+        btn.setBackground(color);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Segoe UI",Font.BOLD,12));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(90,34));
+
+        return btn;
+    }
+
+    private void onSave(){
+
+        try{
+
+            enrollment.setStudent((Student)cboStudent.getSelectedItem());
+            enrollment.setClassEntity((Class)cboClass.getSelectedItem());
+
+            enrollment.setEnrollmentDate(
+                    LocalDate.parse(txtDate.getText().trim())
+            );
+
+            enrollment.setStatus(
+                    (EnrollmentStatus)cboStatus.getSelectedItem()
+            );
+
+            enrollment.setResult(
+                    (ResultStatus)cboResult.getSelectedItem()
+            );
+
+            saved = true;
+            dispose();
+
+        }catch(Exception ex){
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Date format must be YYYY-MM-DD",
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    private void fillData(Enrollment e){
+
+        cboStudent.setSelectedItem(e.getStudent());
+        cboClass.setSelectedItem(e.getClassEntity());
+
+        if(e.getEnrollmentDate()!=null)
+            txtDate.setText(e.getEnrollmentDate().toString());
+
+        cboStatus.setSelectedItem(e.getStatus());
+        cboResult.setSelectedItem(e.getResult());
     }
 
     public boolean isSaved(){

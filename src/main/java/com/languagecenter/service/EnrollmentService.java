@@ -5,6 +5,7 @@ import com.languagecenter.model.Enrollment;
 import com.languagecenter.model.Invoice;
 import com.languagecenter.model.Student;
 import com.languagecenter.model.Class;
+import com.languagecenter.model.enums.ClassStatus;
 import com.languagecenter.model.enums.EnrollmentStatus;
 import com.languagecenter.model.enums.InvoiceStatus;
 import com.languagecenter.model.enums.ResultStatus;
@@ -65,6 +66,10 @@ public class EnrollmentService {
                 InvoiceStatus.Issued,      // status = Issued
                 "Hóa đơn học phí khóa " + e.getClassEntity().getClassName()  // note
             );
+            
+            if (e.getClassEntity().getStatus() != ClassStatus.Open){
+                throw new Exception("Lớp không mở để đăng ký!");
+            }
 
             invoiceRepo.create(em, invoice);
 
@@ -107,6 +112,10 @@ public class EnrollmentService {
     public void register(Long studentId, Class clazz) throws Exception {
 
         tx.runInTransaction(em -> {
+
+            if (clazz.getStatus() != ClassStatus.Open){
+                throw new Exception("Lớp không mở để đăng ký!");
+            }
 
             boolean exists = repo.existsStudentInCourse(
                     em,
