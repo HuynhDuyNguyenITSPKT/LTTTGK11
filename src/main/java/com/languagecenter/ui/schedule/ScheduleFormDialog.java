@@ -165,18 +165,33 @@ public class ScheduleFormDialog extends JDialog {
 
     private void fillData(Schedule existing){
 
-        cboClass.setSelectedItem(existing.getClassEntity());
-        cboRoom.setSelectedItem(existing.getRoom());
-
-        if(existing.getStudyDate()!=null)
-            txtDate.setText(existing.getStudyDate().toString());
-
-        if(existing.getStartTime()!=null)
-            txtStart.setText(existing.getStartTime().toString());
-
-        if(existing.getEndTime()!=null)
-            txtEnd.setText(existing.getEndTime().toString());
+    // Class
+    for(int i = 0; i < cboClass.getItemCount(); i++){
+        Class c = cboClass.getItemAt(i);
+        if(c.getId().equals(existing.getClassEntity().getId())){
+            cboClass.setSelectedIndex(i);
+            break;
+        }
     }
+
+    // Room
+    for(int i = 0; i < cboRoom.getItemCount(); i++){
+        Room r = cboRoom.getItemAt(i);
+        if(r.getId().equals(existing.getRoom().getId())){
+            cboRoom.setSelectedIndex(i);
+            break;
+        }
+    }
+
+    if(existing.getStudyDate()!=null)
+        txtDate.setText(existing.getStudyDate().toString());
+
+    if(existing.getStartTime()!=null)
+        txtStart.setText(existing.getStartTime().toString());
+
+    if(existing.getEndTime()!=null)
+        txtEnd.setText(existing.getEndTime().toString());
+}
 
     public boolean isSaved(){
         return saved;

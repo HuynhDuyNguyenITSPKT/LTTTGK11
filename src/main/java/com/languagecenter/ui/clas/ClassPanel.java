@@ -178,52 +178,90 @@ public class ClassPanel extends JPanel {
     }
 
     private void onEdit() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Please select a class to edit!", "Notice", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        Class selectedClass = tableModel.getClassAt(selectedRow);
-        try {
-            ClassFormDialog dlg = new ClassFormDialog(
-                    (Frame) SwingUtilities.getWindowAncestor(this), "Edit Class", selectedClass,
-                    courseService.getAll(), teacherService.getAll(), roomService.getAll()
-            );
-            dlg.setVisible(true);
-            if (dlg.isSaved()) {
-                try {
-                    classService.update(dlg.getClazz());
-                    reload();
-                    JOptionPane.showMessageDialog(this, "Class updated successfully!");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
-        }
+
+    int viewRow = table.getSelectedRow();
+
+    if (viewRow < 0) {
+        JOptionPane.showMessageDialog(this,
+                "Please select a class to edit!",
+                "Notice",
+                JOptionPane.WARNING_MESSAGE);
+        return;
     }
 
-    private void onDelete() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Please select a class to delete!");
-            return;
+    // convert view index -> model index
+    int modelRow = table.convertRowIndexToModel(viewRow);
+
+    Class selectedClass = tableModel.getClassAt(modelRow);
+
+    try {
+
+        ClassFormDialog dlg = new ClassFormDialog(
+                (Frame) SwingUtilities.getWindowAncestor(this),
+                "Edit Class",
+                selectedClass,
+                courseService.getAll(),
+                teacherService.getAll(),
+                roomService.getAll()
+        );
+
+        dlg.setVisible(true);
+
+        if (dlg.isSaved()) {
+
+            classService.update(dlg.getClazz());
+
+            reload();
+
+            JOptionPane.showMessageDialog(this,
+                    "Class updated successfully!");
         }
-        Class selectedClass = tableModel.getClassAt(selectedRow);
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Are you sure you want to delete class " + selectedClass.getClassName() + "?",
-                "Confirm Delete", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            try {
-                classService.delete(selectedClass.getId());
-                reload();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Cannot delete: " + ex.getMessage());
-            }
+
+    } catch (Exception ex) {
+
+        ex.printStackTrace();
+
+        JOptionPane.showMessageDialog(this,
+                "Error: " + ex.getMessage());
+    }
+}
+
+    private void onDelete() {
+
+    int viewRow = table.getSelectedRow();
+
+    if (viewRow < 0) {
+        JOptionPane.showMessageDialog(this,
+                "Please select a class to delete!");
+        return;
+    }
+
+    // convert view index -> model index
+    int modelRow = table.convertRowIndexToModel(viewRow);
+
+    Class selectedClass = tableModel.getClassAt(modelRow);
+
+    int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to delete class "
+                    + selectedClass.getClassName() + "?",
+            "Confirm Delete",
+            JOptionPane.YES_NO_OPTION);
+
+    if (confirm == JOptionPane.YES_OPTION) {
+
+        try {
+
+            classService.delete(selectedClass.getId());
+
+            reload();
+
+        } catch (Exception ex) {
+
+            JOptionPane.showMessageDialog(this,
+                    "Cannot delete: " + ex.getMessage());
         }
     }
+}
 
     private void onAdd() {
         try {

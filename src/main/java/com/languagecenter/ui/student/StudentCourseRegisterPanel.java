@@ -3,6 +3,7 @@ package com.languagecenter.ui.student;
 import com.languagecenter.model.Class;
 import com.languagecenter.model.Course;
 import com.languagecenter.model.Schedule;
+import com.languagecenter.model.enums.ClassStatus;
 import com.languagecenter.service.*;
 
 import javax.swing.*;
@@ -284,6 +285,9 @@ public class StudentCourseRegisterPanel extends JPanel {
         );
 
         JLabel max = new JLabel("Max: "+c.getMaxStudent());
+        JLabel status = new JLabel("Status: " + c.getStatus());
+        status.setForeground(getStatusColor(c.getStatus()));
+        status.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnPanel.setOpaque(false);
@@ -302,6 +306,7 @@ public class StudentCourseRegisterPanel extends JPanel {
         card.add(teacher);
         card.add(date);
         card.add(max);
+        card.add(status);
         card.add(Box.createVerticalStrut(10));
         card.add(btnPanel);
 
@@ -361,6 +366,31 @@ public class StudentCourseRegisterPanel extends JPanel {
         card.add(room);
 
         return card;
+    }
+
+    private Color getStatusColor(ClassStatus status){
+
+        if(status == null) return Color.GRAY;
+
+        switch (status){
+
+            case Planned:
+                return new Color(59,130,246); // blue
+
+            case Open:
+                return new Color(34,197,94); // green
+
+            case Ongoing:
+                return new Color(168,85,247); // purple
+
+            case Completed:
+                return new Color(107,114,128); // gray
+
+            case Cancelled:
+                return new Color(239,68,68); // red
+        }
+
+        return Color.GRAY;
     }
 
     private void register(Class clazz){

@@ -229,23 +229,44 @@ public class ClassFormDialog extends JDialog {
 
     private void fillData(Class c){
 
-        txtName.setText(c.getClassName());
-        cboCourse.setSelectedItem(c.getCourse());
-        cboTeacher.setSelectedItem(c.getTeacher());
-        cboRoom.setSelectedItem(c.getRoom());
+    txtName.setText(c.getClassName());
 
-        if(c.getStartDate()!=null)
-            spnStartDate.setValue(
-                    java.sql.Date.valueOf(c.getStartDate()));
-
-        if(c.getEndDate()!=null)
-            spnEndDate.setValue(
-                    java.sql.Date.valueOf(c.getEndDate()));
-
-        spnMaxStudent.setValue(c.getMaxStudent());
-        cboStatus.setSelectedItem(c.getStatus());
+    // Course
+    for(int i = 0; i < cboCourse.getItemCount(); i++){
+        Course course = cboCourse.getItemAt(i);
+        if(course.getId().equals(c.getCourse().getId())){
+            cboCourse.setSelectedIndex(i);
+            break;
+        }
     }
 
+    // Teacher
+    for(int i = 0; i < cboTeacher.getItemCount(); i++){
+        Teacher teacher = cboTeacher.getItemAt(i);
+        if(teacher.getId().equals(c.getTeacher().getId())){
+            cboTeacher.setSelectedIndex(i);
+            break;
+        }
+    }
+
+    // Room
+    for(int i = 0; i < cboRoom.getItemCount(); i++){
+        Room room = cboRoom.getItemAt(i);
+        if(room.getId().equals(c.getRoom().getId())){
+            cboRoom.setSelectedIndex(i);
+            break;
+        }
+    }
+
+    if(c.getStartDate()!=null)
+        spnStartDate.setValue(java.sql.Date.valueOf(c.getStartDate()));
+
+    if(c.getEndDate()!=null)
+        spnEndDate.setValue(java.sql.Date.valueOf(c.getEndDate()));
+
+    spnMaxStudent.setValue(c.getMaxStudent());
+    cboStatus.setSelectedItem(c.getStatus());
+}
     public boolean isSaved(){
         return saved;
     }

@@ -198,15 +198,30 @@ public class EnrollmentFormDialog extends JDialog {
 
     private void fillData(Enrollment e){
 
-        cboStudent.setSelectedItem(e.getStudent());
-        cboClass.setSelectedItem(e.getClassEntity());
-
-        if(e.getEnrollmentDate()!=null)
-            txtDate.setText(e.getEnrollmentDate().toString());
-
-        cboStatus.setSelectedItem(e.getStatus());
-        cboResult.setSelectedItem(e.getResult());
+    // Student
+    for(int i = 0; i < cboStudent.getItemCount(); i++){
+        Student s = cboStudent.getItemAt(i);
+        if(s.getId().equals(e.getStudent().getId())){
+            cboStudent.setSelectedIndex(i);
+            break;
+        }
     }
+
+    // Class
+    for(int i = 0; i < cboClass.getItemCount(); i++){
+        Class c = cboClass.getItemAt(i);
+        if(c.getId().equals(e.getClassEntity().getId())){
+            cboClass.setSelectedIndex(i);
+            break;
+        }
+    }
+
+    if(e.getEnrollmentDate()!=null)
+        txtDate.setText(e.getEnrollmentDate().toString());
+
+    cboStatus.setSelectedItem(e.getStatus());
+    cboResult.setSelectedItem(e.getResult());
+}
 
     public boolean isSaved(){
         return saved;
