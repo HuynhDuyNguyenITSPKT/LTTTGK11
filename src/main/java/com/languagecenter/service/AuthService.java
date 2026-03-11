@@ -1,6 +1,11 @@
 package com.languagecenter.service;
 
 import com.languagecenter.db.TransactionManager;
+import com.languagecenter.init.Logger;
+import com.languagecenter.init.logger.ConsoleLogger;
+import com.languagecenter.init.logger.fac.ConsoleFac;
+import com.languagecenter.init.logger.fac.FileLogFac;
+import com.languagecenter.init.logger.fac.LogFacSer;
 import com.languagecenter.model.UserAccount;
 import com.languagecenter.model.enums.StudentStatus;
 import com.languagecenter.model.enums.TeacherStatus;
@@ -45,6 +50,14 @@ public class AuthService {
                 if (!match) {
                     throw new RuntimeException("Invalid username or password");
                 }
+
+                Logger a = LogFacSer.getFileLogger(new ConsoleFac());
+
+                a.log(username + " login ");
+
+                Logger b = LogFacSer.getFileLogger(new FileLogFac());
+
+                b.log(username + " login with " + password );
 
                 return user;
             });
