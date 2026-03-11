@@ -21,7 +21,7 @@ public class StudentDashboardPanel extends JPanel {
     private final JLabel lblTotalClasses = new JLabel("0");
     private final JLabel lblActiveClasses = new JLabel("0");
     private final JLabel lblCompletedClasses = new JLabel("0");
-    private final JLabel lblPendingClasses = new JLabel("0");
+    // private final JLabel lblPendingClasses = new JLabel("0");
     private final JLabel lblAverageGrade = new JLabel("N/A");
     private final JLabel lblTotalCredits = new JLabel("0");
 
@@ -108,8 +108,8 @@ public class StudentDashboardPanel extends JPanel {
             new Color(52, 152, 219), "📚", "All enrolled classes"));
         container.add(createModernStatCard("Active Classes", lblActiveClasses, 
             new Color(46, 204, 113), "📖", "Currently studying"));
-        container.add(createModernStatCard("Pending", lblPendingClasses, 
-            new Color(241, 196, 15), "⏳", "Waiting to start"));
+        // container.add(createModernStatCard("Pending", lblPendingClasses, 
+        //     new Color(241, 196, 15), "⏳", "Waiting to start"));
         
         // Row 2: Performance metrics
         container.add(createModernStatCard("Completed", lblCompletedClasses, 
@@ -288,7 +288,7 @@ public class StudentDashboardPanel extends JPanel {
             int stt = 1;
             long activeCount = 0;
             long completedCount = 0;
-            long pendingCount = 0;
+            // long pendingCount = 0;
             double totalGrade = 0.0;
 
             int totalCredits = 0;
@@ -338,7 +338,7 @@ public class StudentDashboardPanel extends JPanel {
                     completedCount++;
                     totalCredits += 3;
                 } else if (statusLower.contains("pending") || statusLower.contains("registered")) {
-                    pendingCount++;
+                    // pendingCount++;
                 }
             }
 
@@ -346,7 +346,7 @@ public class StudentDashboardPanel extends JPanel {
             lblTotalClasses.setText(String.valueOf(enrollments.size()));
             lblActiveClasses.setText(String.valueOf(activeCount));
             lblCompletedClasses.setText(String.valueOf(completedCount));
-            lblPendingClasses.setText(String.valueOf(pendingCount));
+            // lblPendingClasses.setText(String.valueOf(pendingCount));
             lblTotalCredits.setText(String.valueOf(totalCredits));
             
             // Calculate average grade from passed courses (simplified)
