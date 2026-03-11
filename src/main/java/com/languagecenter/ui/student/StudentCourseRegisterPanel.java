@@ -375,6 +375,9 @@ public class StudentCourseRegisterPanel extends JPanel {
     JButton btnSchedule = createPrimaryButton("Schedule");
     JButton btnRegister = createSecondaryButton("Register");
 
+    btnSchedule.addActionListener(e -> showSchedules(c));
+    btnRegister.addActionListener(e -> register(c));
+
     btnPanel.add(btnSchedule);
     btnPanel.add(btnRegister);
 
