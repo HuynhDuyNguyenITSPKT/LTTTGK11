@@ -58,14 +58,23 @@ public class EnrollmentService {
             // Lấy học phí từ Course
             Double courseFee = e.getClassEntity().getCourse().getFee();
 
-            Invoice invoice = new Invoice(
-                e,                          // enrollment
-                e.getStudent(),            // student
-                courseFee,                 // totalAmount = course fee
-                LocalDate.now(),           // issueDate = now
-                InvoiceStatus.Issued,      // status = Issued
-                "Hóa đơn học phí khóa " + e.getClassEntity().getClassName()  // note
-            );
+//            Invoice invoice = new Invoice(
+//                e,                          // enrollment
+//                e.getStudent(),            // student
+//                courseFee,                 // totalAmount = course fee
+//                LocalDate.now(),           // issueDate = now
+//                InvoiceStatus.Issued,      // status = Issued
+//                "Hóa đơn học phí khóa " + e.getClassEntity().getClassName()  // note
+//            );
+
+            Invoice invoice = Invoice.builder()
+                    .enrollment(e)
+                    .student(e.getStudent())
+                    .totalAmount(courseFee)
+                    .issueDate(LocalDate.now())
+                    .status(InvoiceStatus.Issued)
+                    .note("Hóa đơn học phí khóa " + e.getClassEntity().getClassName())
+                    .build();
             
             if (e.getClassEntity().getStatus() != ClassStatus.Open){
                 throw new Exception("Lớp không mở để đăng ký!");

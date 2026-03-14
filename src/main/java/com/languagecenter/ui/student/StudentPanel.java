@@ -1,6 +1,7 @@
 package com.languagecenter.ui.student;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import com.languagecenter.export.*;
 import com.languagecenter.model.Student;
 import com.languagecenter.model.UserAccount;
 import com.languagecenter.model.enums.StudentStatus;
@@ -56,6 +57,10 @@ public class StudentPanel extends JPanel {
         JButton btnEdit = createBtn("Edit", "#2980b9", btnSize);
         JButton btnDelete = createBtn("Delete", "#e74c3c", btnSize);
         JButton btnRefresh = createBtn("Refresh", "#7f8c8d", btnSize);
+        JButton btnExport = createBtn("Export", "#8e44ad", btnSize);
+        toolBar.add(btnExport);
+
+        btnExport.addActionListener(e -> onExport());
 
         toolBar.add(btnAdd); toolBar.addSeparator();
         toolBar.add(btnView); toolBar.addSeparator();
@@ -93,6 +98,60 @@ public class StudentPanel extends JPanel {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btn.putClientProperty(FlatClientProperties.STYLE, "background:" + color + "; foreground:#fff");
         return btn;
+    }
+
+    private void onExport() {
+
+        int option = JOptionPane.showOptionDialog(
+                this,
+                "Choose export format",
+                "Export",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                new String[]{"PDF", "Excel", "CSV"},
+                "PDF"
+        );
+
+        try {
+
+            List<Student> students = studentService.getAll();
+
+            JFileChooser chooser = new JFileChooser();
+
+            if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+
+                String path = chooser.getSelectedFile().getAbsolutePath();
+
+                ExportStrategy strategy = null;
+
+                switch (option) {
+                    case 0 -> {
+                        path += ".pdf";
+                        strategy = new PdfExportStrategy();
+                    }
+                    case 1 -> {
+                        path += ".xlsx";
+                        strategy = new ExcelExportStrategy();
+                    }
+                    case 2 -> {
+                        path += ".csv";
+                        strategy = new CsvExportStrategy();
+                    }
+                }
+
+                if (strategy != null) {
+
+                    ExportService service = new ExportService(strategy);
+                    service.export(students, path);
+
+                    JOptionPane.showMessageDialog(this, "Export success!");
+                }
+            }
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
     }
 
     public void reload() {

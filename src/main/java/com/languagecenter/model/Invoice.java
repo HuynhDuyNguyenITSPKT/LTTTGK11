@@ -114,4 +114,59 @@ public class Invoice {
     public void setNote(String note) {
         this.note = note;
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private Enrollment enrollment;
+        private Student student;
+        private Double totalAmount;
+        private LocalDate issueDate;
+        private InvoiceStatus status;
+        private String note;
+
+        public Builder enrollment(Enrollment enrollment) {
+            this.enrollment = enrollment;
+            return this;
+        }
+
+        public Builder student(Student student) {
+            this.student = student;
+            return this;
+        }
+
+        public Builder totalAmount(Double totalAmount) {
+            this.totalAmount = totalAmount;
+            return this;
+        }
+
+        public Builder issueDate(LocalDate issueDate) {
+            this.issueDate = issueDate;
+            return this;
+        }
+
+        public Builder status(InvoiceStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder note(String note) {
+            this.note = note;
+            return this;
+        }
+
+        public Invoice build() {
+            return new Invoice(
+                    enrollment,
+                    student,
+                    totalAmount,
+                    issueDate,
+                    status,
+                    note
+            );
+        }
+    }
 }
