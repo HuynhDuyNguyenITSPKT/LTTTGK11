@@ -113,8 +113,8 @@ public class RoomPanel extends JPanel {
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        // Renderer cho cột trạng thái (Cột số 4)
-        table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+        // Renderer cho cột trạng thái (Cột số 5)
+        table.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
                 JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);

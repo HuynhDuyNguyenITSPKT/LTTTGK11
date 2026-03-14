@@ -59,12 +59,16 @@ public class AdminAttendancePanel extends JPanel {
         loadClasses();
     }
 
+    /**
+     * Reloads attendance data by refreshing the class list.
+     */
     public void reload() {
         loadClasses();
     }
 
-    // ── UI construction ───────────────────────────────────────
-
+    /**
+     * Builds the entire UI layout including filters, statistics, and attendance table.
+     */
     private void buildUI() {
         // Title
         JLabel lblTitle = new JLabel("Attendance Overview");
@@ -158,8 +162,10 @@ public class AdminAttendancePanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    // ── Data loading ──────────────────────────────────────────
-
+    /**
+     * Loads all classes from the database and populates the class dropdown.
+     * Initializes schedule loading upon successful load.
+     */
     private void loadClasses() {
         try {
             List<Class> classes = classService.getAll();
@@ -178,6 +184,9 @@ public class AdminAttendancePanel extends JPanel {
         }
     }
 
+    /**
+     * Loads schedule dates for the selected class and populates the schedule dropdown.
+     */
     private void loadScheduleDates() {
         cboSchedule.removeAllItems();
         lblInfo.setText(" ");
@@ -197,12 +206,19 @@ public class AdminAttendancePanel extends JPanel {
         }
     }
 
+    /**
+     * Updates the information label with room and time details from the selected schedule.
+     */
     private void updateInfo() {
         ScheduleItem item = (ScheduleItem) cboSchedule.getSelectedItem();
         if (item == null) { lblInfo.setText(" "); return; }
         lblInfo.setText("Room: " + item.room + "  |  Time: " + item.startTime + " \u2013 " + item.endTime);
     }
 
+    /**
+     * Loads attendance records for the selected class and schedule date.
+     * Populates the attendance table and updates statistics.
+     */
     private void loadAttendance() {
         ClassItem    cls = (ClassItem)    cboClass.getSelectedItem();
         ScheduleItem sch = (ScheduleItem) cboSchedule.getSelectedItem();
@@ -245,6 +261,11 @@ public class AdminAttendancePanel extends JPanel {
         }
     }
 
+    /**
+     * Updates statistics labels (total, present, absent, late) based on attendance records.
+     *
+     * @param records list of attendance records to analyze
+     */
     private void updateStats(List<Attendance> records) {
         long total   = records.size();
         long present = records.stream().filter(a -> a.getStatus() == AttendanceStatus.Present).count();
@@ -256,13 +277,17 @@ public class AdminAttendancePanel extends JPanel {
         lblLate   .setText("Late: "    + late);
     }
 
+    /**
+     * Resets all statistics labels to zero.
+     */
     private void resetStats() {
         lblTotal.setText("Total: 0"); lblPresent.setText("Present: 0");
         lblAbsent.setText("Absent: 0"); lblLate.setText("Late: 0");
     }
 
-    // ── Row renderer ──────────────────────────────────────────
-
+    /**
+     * Custom table cell renderer for attendance rows with color coding by status.
+     */
     private static class AttendanceRowRenderer extends DefaultTableCellRenderer {
         private static final Color COLOR_PRESENT = new Color(220, 252, 231);
         private static final Color COLOR_ABSENT  = new Color(254, 226, 226);
@@ -289,8 +314,9 @@ public class AdminAttendancePanel extends JPanel {
         }
     }
 
-    // ── Inner helper types ────────────────────────────────────
-
+    /**
+     * Represents a class item for combobox display.
+     */
     private static class ClassItem {
         final Long classId;
         final String className;
@@ -298,6 +324,9 @@ public class AdminAttendancePanel extends JPanel {
         @Override public String toString() { return className; }
     }
 
+    /**
+     * Represents a schedule item with formatted date and time information.
+     */
     private static class ScheduleItem {
         final java.time.LocalDate studyDate;
         final String room, startTime, endTime;

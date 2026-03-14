@@ -10,7 +10,7 @@ import java.util.List;
 public class PaymentTableModel extends AbstractTableModel {
 
     private final String[] columns = {
-            "ID", "Student", "Invoice ID", "Amount", "Payment Date", "Method", "Status", "Reference"
+            "STT", "ID", "Student", "Invoice ID", "Amount", "Payment Date", "Method", "Status", "Reference"
     };
 
     private List<Payment> data = new ArrayList<>();
@@ -48,15 +48,15 @@ public class PaymentTableModel extends AbstractTableModel {
         Payment payment = data.get(row);
 
         return switch (col) {
-            case 0 -> payment.getId();
-            case 1 -> payment.getStudent() != null ? payment.getStudent().getFullName() : "N/A";
-            case 2 -> payment.getInvoice() != null ?
-                    payment.getInvoice().getId() : "N/A";
-            case 3 -> String.format("%,.0f đ", payment.getAmount());
-            case 4 -> payment.getPaymentDate().format(dateFormat);
-            case 5 -> payment.getPaymentMethod();
-            case 6 -> payment.getStatus();
-            case 7 -> payment.getReferenceCode() != null ? payment.getReferenceCode() : "";
+            case 0 -> row + 1;
+            case 1 -> payment.getId();
+            case 2 -> payment.getStudent() != null ? payment.getStudent().getFullName() : "N/A";
+            case 3 -> payment.getInvoice() != null ? payment.getInvoice().getId() : "N/A";
+            case 4 -> String.format("%,.0f đ", payment.getAmount());
+            case 5 -> payment.getPaymentDate().format(dateFormat);
+            case 6 -> payment.getPaymentMethod();
+            case 7 -> payment.getStatus();
+            case 8 -> payment.getReferenceCode() != null ? payment.getReferenceCode() : "";
             default -> "";
         };
     }

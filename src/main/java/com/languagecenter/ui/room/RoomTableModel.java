@@ -9,7 +9,7 @@ import java.util.List;
 public class RoomTableModel extends AbstractTableModel {
 
     private final String[] columns = {
-            "ID","Room Name","Capacity","Location","Status"
+            "STT","ID","Room Name","Capacity","Location","Status"
     };
 
     private List<Room> data = new ArrayList<>();
@@ -47,13 +47,14 @@ public class RoomTableModel extends AbstractTableModel {
         Room r = data.get(row);
 
         return switch(col){
-
-            case 0 -> r.getId();
-            case 1 -> r.getRoomName();
-            case 2 -> r.getCapacity();
-            case 3 -> r.getLocation();
-            case 4 -> r.getStatus();
+            case 0 -> row + 1;
+            case 1 -> r.getId();
+            case 2 -> r.getRoomName();
+            case 3 -> r.getCapacity();
+            case 4 -> r.getLocation();
+            case 5 -> r.getStatus();
             default -> "";
         };
+
     }
 }

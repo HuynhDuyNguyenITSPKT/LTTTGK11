@@ -9,7 +9,7 @@ import java.util.List;
 public class ResultTableModel extends AbstractTableModel {
 
     private final String[] columns = {
-            "ID", "Student", "Class", "Score", "Grade", "Comment"
+            "STT", "ID", "Student", "Class", "Score", "Grade", "Comment"
     };
 
     private List<Result> data = new ArrayList<>();
@@ -31,12 +31,13 @@ public class ResultTableModel extends AbstractTableModel {
     public Object getValueAt(int row, int col) {
         Result r = data.get(row);
         return switch (col) {
-            case 0 -> r.getId();
-            case 1 -> r.getStudent() != null ? r.getStudent().getFullName() : "";
-            case 2 -> r.getClassEntity() != null ? r.getClassEntity().getClassName() : "";
-            case 3 -> r.getScore() != null ? r.getScore().toPlainString() : "";
-            case 4 -> r.getGrade() != null ? r.getGrade() : "";
-            case 5 -> r.getComment() != null ? r.getComment() : "";
+            case 0 -> row + 1;
+            case 1 -> r.getId();
+            case 2 -> r.getStudent() != null ? r.getStudent().getFullName() : "";
+            case 3 -> r.getClassEntity() != null ? r.getClassEntity().getClassName() : "";
+            case 4 -> r.getScore() != null ? r.getScore().toPlainString() : "";
+            case 5 -> r.getGrade() != null ? r.getGrade() : "";
+            case 6 -> r.getComment() != null ? r.getComment() : "";
             default -> "";
         };
     }

@@ -10,12 +10,26 @@ import com.languagecenter.repo.PaymentRepository;
 
 import java.util.List;
 
+/**
+ * Xử lý nghiệp vụ thanh toán (Payment).
+ * <p>
+ * Class chỉ chịu trách nhiệm quản lý thanh toán, tự động cập nhật
+ * các thông tin liên đới trong Hóa đơn một cách chặt chẽ.
+ * </p>
+ */
 public class PaymentService {
 
     private final PaymentRepository paymentRepo;
     private final InvoiceRepository invoiceRepo;
     private final TransactionManager tx;
 
+    /**
+     * Khởi tạo service bằng Dependency Injection cho repo và transaction manager.
+     *
+     * @param paymentRepo Repository Thanh toán
+     * @param invoiceRepo Repository Hoá đơn
+     * @param tx          Công cụ quản lý giao dịch
+     */
     public PaymentService(PaymentRepository paymentRepo,
                          InvoiceRepository invoiceRepo,
                          TransactionManager tx) {
@@ -24,16 +38,33 @@ public class PaymentService {
         this.tx = tx;
     }
 
+    /**
+     * Lấy toàn bộ giao dịch thanh toán hiện có.
+     *
+     * @return Danh sách Payment
+     * @throws Exception Lỗi mạng
+     */
     public List<Payment> getAll() throws Exception {
         return tx.runInTransaction(paymentRepo::findAll);
     }
 
+    /**
+     * Lấy giao dịch theo ID.
+     *
+     * @param id Khóa chính của Payment
+     * @return Payment tìm được
+     * @throws Exception Lỗi thao tác
+     */
     public Payment getById(Long id) throws Exception {
         return tx.runInTransaction(em -> paymentRepo.findById(em, id));
     }
 
     /**
-     * Lấy số tiền còn thiếu cho một invoice
+     * Tính số tiền thanh toán còn thiếu từ một hóa đơn.
+     *
+     * @param invoiceId ID của hóa đơn
+     * @return Số tiền chưa thanh toán
+     * @throws Exception Trả về lỗi khi hóa đơn không có
      */
     public Double getRemainingAmount(Long invoiceId) throws Exception {
         return tx.runInTransaction(em -> {
@@ -48,42 +79,36 @@ public class PaymentService {
     }
 
     /**
-     * Tạo payment mới và tự động kiểm tra xem Invoice đã được thanh toán đầy đủ chưa.
-     * Nếu tổng tiền thanh toán >= tổng tiền hóa đơn, cập nhật Invoice status = Paid
-     * CHẶN nếu thanh toán dư
+     * Thực hiện thanh toán mới và thay đổi tự động trạng thái hóa đơn.
+     * Nếu tiền thừa, hệ thống sẽ thực hiện ngăn chặn thao tác.
+     *
+     * @param payment Thống tin thanh toán được nhập
+     * @throws Exception Các lỗi về thiếu hóa đơn, nhập thừa tiền...
      */
     public void create(Payment payment) throws Exception {
         tx.runInTransaction(em -> {
-
-            // Đảm bảo enrollment được set từ invoice
             if (payment.getInvoice() != null && payment.getEnrollment() == null) {
                 payment.setEnrollment(payment.getInvoice().getEnrollment());
             }
 
-            // Đảm bảo student được set từ invoice
             if (payment.getInvoice() != null && payment.getStudent() == null) {
                 payment.setStudent(payment.getInvoice().getStudent());
             }
 
-            // Validate: payment phải có invoice
             if (payment.getInvoice() == null) {
                 throw new Exception("Payment phải có Invoice!");
             }
 
             Long invoiceId = payment.getInvoice().getId();
-
-            // Lấy invoice
             Invoice invoice = invoiceRepo.findById(em, invoiceId);
 
             if (invoice == null) {
                 throw new Exception("Invoice không tồn tại!");
             }
 
-            // Tính tổng tiền đã thanh toán (chỉ tính payment status = Completed)
             Double totalPaid = paymentRepo.getTotalPaidByInvoiceId(em, invoiceId);
-
-            // Kiểm tra nếu thanh toán dư
             Double newTotal = totalPaid + payment.getAmount();
+            
             if (newTotal > invoice.getTotalAmount()) {
                 Double remaining = invoice.getTotalAmount() - totalPaid;
                 throw new Exception(
@@ -96,17 +121,12 @@ public class PaymentService {
                 );
             }
 
-            // Insert payment
             paymentRepo.create(em, payment);
 
-            // Cập nhật lại totalPaid sau khi insert
             totalPaid = paymentRepo.getTotalPaidByInvoiceId(em, invoiceId);
 
-            // Kiểm tra nếu đã thanh toán đủ
             if (totalPaid >= invoice.getTotalAmount()
                 && invoice.getStatus() != InvoiceStatus.Paid) {
-
-                // Cập nhật invoice status = Paid
                 invoice.setStatus(InvoiceStatus.Paid);
                 invoiceRepo.update(em, invoice);
             }
@@ -115,6 +135,12 @@ public class PaymentService {
         });
     }
 
+    /**
+     * Sửa chi tiết trên biên lai thanh toán và tính toán lại công nợ vào hóa đơn.
+     *
+     * @param payment Dữ liệu cần cập nhật thuộc biên lai 
+     * @throws Exception Lỗi trùng dữ liệu hoặc đã bị đổi trạng thái vĩnh viễn
+     */
     public void update(Payment payment) throws Exception {
         tx.runInTransaction(em -> {
             Payment existingPayment = paymentRepo.findById(em, payment.getId());
@@ -122,17 +148,14 @@ public class PaymentService {
                 throw new Exception("Không thể cập nhật payment đã hoàn thành!");
             }
 
-            // Đảm bảo enrollment được set từ invoice
             if (payment.getInvoice() != null && payment.getEnrollment() == null) {
                 payment.setEnrollment(payment.getInvoice().getEnrollment());
             }
 
-            // Đảm bảo student được set từ invoice
             if (payment.getInvoice() != null && payment.getStudent() == null) {
                 payment.setStudent(payment.getInvoice().getStudent());
             }
 
-            // Validate payment phải có invoice
             if (payment.getInvoice() == null) {
                 throw new Exception("Payment phải có Invoice!");
             }
@@ -144,15 +167,12 @@ public class PaymentService {
                 throw new Exception("Invoice không tồn tại!");
             }
 
-            // Lấy payment cũ để trừ amount cũ
             Payment oldPayment = paymentRepo.findById(em, payment.getId());
             Double oldAmount = (oldPayment != null) ? oldPayment.getAmount() : 0.0;
 
-            // Tính tổng tiền đã thanh toán (không bao gồm payment hiện tại)
             Double totalPaid = paymentRepo.getTotalPaidByInvoiceId(em, invoiceId);
-            totalPaid = totalPaid - oldAmount; // Trừ đi amount cũ
+            totalPaid = totalPaid - oldAmount;
 
-            // Kiểm tra nếu thanh toán dư
             Double newTotal = totalPaid + payment.getAmount();
             if (newTotal > invoice.getTotalAmount()) {
                 Double remaining = invoice.getTotalAmount() - totalPaid;
@@ -166,21 +186,16 @@ public class PaymentService {
                 );
             }
 
-            // Update payment
             paymentRepo.update(em, payment);
 
-            // Kiểm tra lại invoice status
             totalPaid = paymentRepo.getTotalPaidByInvoiceId(em, invoiceId);
 
-            // Nếu đã thanh toán đủ → Paid
             if (totalPaid >= invoice.getTotalAmount()) {
                 if (invoice.getStatus() != InvoiceStatus.Paid) {
                     invoice.setStatus(InvoiceStatus.Paid);
                     invoiceRepo.update(em, invoice);
                 }
-            }
-            // Nếu chưa thanh toán đủ và hiện tại là Paid → chuyển về Issued
-            else if (invoice.getStatus() == InvoiceStatus.Paid) {
+            } else if (invoice.getStatus() == InvoiceStatus.Paid) {
                 invoice.setStatus(InvoiceStatus.Issued);
                 invoiceRepo.update(em, invoice);
             }
@@ -189,29 +204,29 @@ public class PaymentService {
         });
     }
 
+    /**
+     * Thu hồi lại thanh toán và đổi thông tin hóa đơn nếu tiền lùi về.
+     *
+     * @param id Payment ID
+     * @throws Exception Lỗi thao tác
+     */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {
 
             Payment payment = paymentRepo.findById(em, id);
 
             if (payment != null) {
-                Long invoiceId = payment.getInvoice() != null ?
-                    payment.getInvoice().getId() : null;
+                Long invoiceId = payment.getInvoice() != null ? payment.getInvoice().getId() : null;
 
-                // Xóa payment
                 paymentRepo.delete(em, id);
 
-                // Kiểm tra lại invoice status
                 if (invoiceId != null) {
                     Invoice invoice = invoiceRepo.findById(em, invoiceId);
 
                     if (invoice != null) {
                         Double totalPaid = paymentRepo.getTotalPaidByInvoiceId(em, invoiceId);
 
-                        // Nếu sau khi xóa mà chưa đủ tiền, chuyển về Issued
-                        if (totalPaid < invoice.getTotalAmount()
-                            && invoice.getStatus() == InvoiceStatus.Paid) {
-
+                        if (totalPaid < invoice.getTotalAmount() && invoice.getStatus() == InvoiceStatus.Paid) {
                             invoice.setStatus(InvoiceStatus.Issued);
                             invoiceRepo.update(em, invoice);
                         }

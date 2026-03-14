@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClassTableModel extends AbstractTableModel {
-    private final String[] columns = {"ID", "Tên lớp", "Khóa học", "Giáo viên", "Phòng", "Sĩ số", "Trạng thái"};
+    private final String[] columns = {"STT", "ID", "Tên lớp", "Khóa học", "Giáo viên", "Phòng", "Sĩ số", "Trạng thái"};
     private List<Class> data = new ArrayList<>();
 
     public void setData(List<Class> data) {
@@ -26,13 +26,14 @@ public class ClassTableModel extends AbstractTableModel {
     public Object getValueAt(int row, int col) {
         Class c = data.get(row);
         return switch(col) {
-            case 0 -> c.getId();
-            case 1 -> c.getClassName();
-            case 2 -> c.getCourse() != null ? c.getCourse().getCourseName() : "N/A";
-            case 3 -> c.getTeacher() != null ? c.getTeacher().getFullName() : "Chưa phân công";
-            case 4 -> c.getRoom() != null ? c.getRoom().getRoomName() : "N/A";
-            case 5 -> c.getMaxStudent();
-            case 6 -> c.getStatus();
+            case 0 -> row + 1;
+            case 1 -> c.getId();
+            case 2 -> c.getClassName();
+            case 3 -> c.getCourse() != null ? c.getCourse().getCourseName() : "N/A";
+            case 4 -> c.getTeacher() != null ? c.getTeacher().getFullName() : "Chưa phân công";
+            case 5 -> c.getRoom() != null ? c.getRoom().getRoomName() : "N/A";
+            case 6 -> c.getMaxStudent();
+            case 7 -> c.getStatus();
             default -> "";
         };
     }

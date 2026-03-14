@@ -10,7 +10,7 @@ import java.util.List;
 public class EnrollmentTableModel extends AbstractTableModel {
 
     private final String[] columns = {
-            "ID","Student","Class","Date","Status","Result"
+            "STT","ID","Student","Class","Date","Status","Result"
     };
 
     private List<Enrollment> data = new ArrayList<>();
@@ -48,13 +48,13 @@ public class EnrollmentTableModel extends AbstractTableModel {
         Enrollment e = data.get(row);
 
         return switch(col){
-
-            case 0 -> e.getId();
-            case 1 -> e.getStudent().getFullName();
-            case 2 -> e.getClassEntity().getClassName();
-            case 3 -> e.getEnrollmentDate().format(dateFormat);
-            case 4 -> e.getStatus();
-            case 5 -> e.getResult();
+            case 0 -> row + 1;
+            case 1 -> e.getId();
+            case 2 -> e.getStudent().getFullName();
+            case 3 -> e.getClassEntity().getClassName();
+            case 4 -> e.getEnrollmentDate().format(dateFormat);
+            case 5 -> e.getStatus();
+            case 6 -> e.getResult() == null ? "" : e.getResult();
             default -> "";
         };
     }
