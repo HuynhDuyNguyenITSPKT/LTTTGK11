@@ -10,7 +10,9 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SchedulePanel extends JPanel {
 
@@ -20,6 +22,7 @@ public class SchedulePanel extends JPanel {
 
     private final ScheduleTableModel tableModel = new ScheduleTableModel();
     private final JTable table = new JTable(tableModel);
+    private ScheduleFormDialog formDialog;
 
     private List<Schedule> allData;
 
@@ -51,11 +54,15 @@ public class SchedulePanel extends JPanel {
 
         JButton btnAdd = createButton("Add", new Color(34, 197, 94));
         JButton btnEdit = createButton("Edit", new Color(245, 158, 11));
+        JButton btnView = createButton("View", new Color(14,165,233));
+        JButton btnExport = createButton("Export PDF", new Color(99,102,241));
         JButton btnDelete = createButton("Delete", new Color(239, 68, 68));
         JButton btnRefresh = createButton("Refresh", new Color(100, 116, 139));
 
         toolbar.add(btnAdd);
         toolbar.add(btnEdit);
+        toolbar.add(btnView);
+        toolbar.add(btnExport);
         toolbar.add(btnDelete);
         toolbar.add(btnRefresh);
 
@@ -73,6 +80,8 @@ public class SchedulePanel extends JPanel {
         btnRefresh.addActionListener(e -> reload());
         btnAdd.addActionListener(e -> onAdd());
         btnEdit.addActionListener(e -> onEdit());
+        btnView.addActionListener(e -> onView());
+        btnExport.addActionListener(e -> onExportPdf());
         btnDelete.addActionListener(e -> onDelete());
         btnFilter.addActionListener(e -> applyFilter());
 
@@ -146,22 +155,22 @@ public class SchedulePanel extends JPanel {
 
         try{
 
-            ScheduleFormDialog dlg =
-                    new ScheduleFormDialog(
-                            (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Add Schedule",
-                            null,
-                            classService.getAll(),
-                            roomService.getAll()
-                    );
+            if(formDialog==null){
+                formDialog = new ScheduleFormDialog(
+                        (Frame) SwingUtilities.getWindowAncestor(this),
+                        "Schedule",
+                        null,
+                        classService.getAll(),
+                        roomService.getAll()
+                );
+            }
 
-            dlg.setVisible(true);
+            formDialog.prepare(null, "Add Schedule", false);
+            formDialog.setVisible(true);
 
-            if(dlg.isSaved()){
-
-                service.create(dlg.getSchedule());
+            if(formDialog.isSaved()){
+                service.create(formDialog.getSchedule());
                 reload();
-
             }
 
         }catch(Exception ex){
@@ -182,28 +191,106 @@ public class SchedulePanel extends JPanel {
 
         try{
 
-            ScheduleFormDialog dlg =
-                    new ScheduleFormDialog(
-                            (Frame) SwingUtilities.getWindowAncestor(this),
-                            "Edit Schedule",
-                            s,
-                            classService.getAll(),
-                            roomService.getAll()
-                    );
+            if(formDialog==null){
+                formDialog = new ScheduleFormDialog(
+                        (Frame) SwingUtilities.getWindowAncestor(this),
+                        "Schedule",
+                        null,
+                        classService.getAll(),
+                        roomService.getAll()
+                );
+            }
 
-            dlg.setVisible(true);
+            formDialog.prepare(s, "Edit Schedule", false);
+            formDialog.setVisible(true);
 
-            if(dlg.isSaved()){
-
-                service.update(dlg.getSchedule());
+            if(formDialog.isSaved()){
+                service.update(formDialog.getSchedule());
                 reload();
-
             }
 
         }catch(Exception ex){
 
             JOptionPane.showMessageDialog(this,ex.getMessage());
 
+        }
+
+    }
+
+    private void onView(){
+
+        int row = table.getSelectedRow();
+        if(row<0) return;
+
+        Schedule s = tableModel.getScheduleAt(row);
+
+        try{
+            if(formDialog==null){
+                formDialog = new ScheduleFormDialog(
+                        (Frame) SwingUtilities.getWindowAncestor(this),
+                        "Schedule",
+                        null,
+                        classService.getAll(),
+                        roomService.getAll()
+                );
+            }
+
+            formDialog.prepare(s, "View Schedule", true);
+            formDialog.setVisible(true);
+
+        }catch(Exception ex){
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
+
+    }
+
+    private void onExportPdf(){
+
+        try{
+            // choose class
+            java.util.List<com.languagecenter.model.Class> classes = classService.getAll();
+            JComboBox<com.languagecenter.model.Class> cbo = new JComboBox<>();
+            classes.forEach(cbo::addItem);
+
+            int res = JOptionPane.showConfirmDialog(this, cbo, "Select class to export", JOptionPane.OK_CANCEL_OPTION);
+            if(res != JOptionPane.OK_OPTION) return;
+
+            com.languagecenter.model.Class selected = (com.languagecenter.model.Class) cbo.getSelectedItem();
+            if(selected==null) return;
+
+            // filter schedules
+            java.util.List<Schedule> all = service.getAll();
+            java.util.List<Map<String,Object>> rows = new java.util.ArrayList<>();
+            for(Schedule s : all){
+                if(s.getClassEntity()!=null && s.getClassEntity().getId().equals(selected.getId())){
+                    Map<String,Object> m = new HashMap<>();
+                    m.put("date", s.getStudyDate()!=null? s.getStudyDate().toString(): "");
+                    m.put("start", s.getStartTime()!=null? s.getStartTime().toString(): "");
+                    m.put("end", s.getEndTime()!=null? s.getEndTime().toString(): "");
+                    m.put("room", s.getRoom()!=null? s.getRoom().getRoomName(): "");
+                    rows.add(m);
+                }
+            }
+
+            if(rows.isEmpty()){
+                JOptionPane.showMessageDialog(this, "Không có lịch cho lớp này.");
+                return;
+            }
+
+            JFileChooser chooser = new JFileChooser();
+            String base = selected.getClassName() != null ? selected.getClassName().replaceAll("\\s+","_") : "class";
+            chooser.setSelectedFile(new java.io.File("schedule_" + base + ".pdf"));
+            int fc = chooser.showSaveDialog(this);
+            if(fc != JFileChooser.APPROVE_OPTION) return;
+
+            java.io.File out = chooser.getSelectedFile();
+
+            com.languagecenter.util.ReportUtil.exportScheduleByClass(rows, selected.getClassName(), out);
+
+            JOptionPane.showMessageDialog(this, "Export PDF thành công: " + out.getAbsolutePath());
+
+        }catch(Exception ex){
+            JOptionPane.showMessageDialog(this, "Lỗi khi xuất PDF: " + ex.getMessage());
         }
 
     }

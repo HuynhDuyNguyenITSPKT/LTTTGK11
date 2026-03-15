@@ -15,13 +15,17 @@ public class ScheduleFormDialog extends JDialog {
 
     private final JComboBox<Class> cboClass = new JComboBox<>();
     private final JComboBox<Room> cboRoom = new JComboBox<>();
-
     private final JTextField txtDate = new JTextField();
     private final JTextField txtStart = new JTextField();
     private final JTextField txtEnd = new JTextField();
+    private final JTextField txtFrom = new JTextField();
 
-    private boolean saved=false;
-    private final Schedule schedule;
+    private List<Class> classes;
+    private List<Room> rooms;
+    private JButton btnSave;
+
+    private boolean saved = false;
+    private Schedule schedule;
 
     public ScheduleFormDialog(Frame owner,
                               String title,
@@ -31,20 +35,21 @@ public class ScheduleFormDialog extends JDialog {
 
         super(owner,title,true);
 
-        this.schedule = existing!=null ? existing : new Schedule();
+        this.classes = classes;
+        this.rooms = rooms;
 
+        // populate combos
         classes.forEach(cboClass::addItem);
         rooms.forEach(cboRoom::addItem);
 
         setupRenderer();
         buildUI();
+        setupFromField();
 
         if(existing!=null){
-            fillData(existing);
+            prepare(existing, title, false);
         }else{
-            txtDate.setText(LocalDate.now().toString());
-            txtStart.setText("08:00");
-            txtEnd.setText("10:00");
+            prepare(null, title, false);
         }
 
         pack();
@@ -88,19 +93,19 @@ public class ScheduleFormDialog extends JDialog {
         gbc.insets = new Insets(10,10,10,10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        addField(form,"Class",cboClass,gbc,0);
-        addField(form,"Room",cboRoom,gbc,1);
-        addField(form,"Date (YYYY-MM-DD)",txtDate,gbc,2);
-        addField(form,"Start Time (HH:MM)",txtStart,gbc,3);
-        addField(form,"End Time (HH:MM)",txtEnd,gbc,4);
+        addField(form,"From (search)",txtFrom,gbc,0);
+        addField(form,"Class",cboClass,gbc,1);
+        addField(form,"Room",cboRoom,gbc,2);
+        addField(form,"Date (YYYY-MM-DD)",txtDate,gbc,3);
+        addField(form,"Start Time (HH:MM)",txtStart,gbc,4);
+        addField(form,"End Time (HH:MM)",txtEnd,gbc,5);
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
         JButton btnCancel = new JButton("Cancel");
-        JButton btnSave = new JButton("Save");
+        btnSave = new JButton("Save");
 
         btnCancel.addActionListener(e -> dispose());
-
         btnSave.addActionListener(e -> onSave());
 
         actions.add(btnCancel);
@@ -110,6 +115,39 @@ public class ScheduleFormDialog extends JDialog {
         root.add(actions,BorderLayout.SOUTH);
 
         setContentPane(root);
+    }
+
+    private void setupFromField(){
+
+        // When user presses Enter in From, search class names and select first match
+        txtFrom.addActionListener(e -> searchAndSelectClass());
+
+        // When user changes class selection, update the From text to match
+        cboClass.addActionListener(e -> {
+            Class selected = (Class) cboClass.getSelectedItem();
+            if(selected!=null){
+                txtFrom.setText(selected.getClassName());
+            }
+        });
+    }
+
+    private void searchAndSelectClass(){
+
+        String q = txtFrom.getText().trim().toLowerCase();
+        if(q.isBlank()) return;
+
+        for(int i = 0; i < cboClass.getItemCount(); i++){
+            Class c = cboClass.getItemAt(i);
+            if(c.getClassName()!=null && c.getClassName().toLowerCase().contains(q)){
+                cboClass.setSelectedIndex(i);
+                return;
+            }
+        }
+
+        // not found -> show small notice
+        JOptionPane.showMessageDialog(this,
+                "Không tìm thấy lớp phù hợp: " + txtFrom.getText(),
+                "Tìm kiếm", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void addField(JPanel panel,
@@ -165,33 +203,34 @@ public class ScheduleFormDialog extends JDialog {
 
     private void fillData(Schedule existing){
 
-    // Class
-    for(int i = 0; i < cboClass.getItemCount(); i++){
-        Class c = cboClass.getItemAt(i);
-        if(c.getId().equals(existing.getClassEntity().getId())){
-            cboClass.setSelectedIndex(i);
-            break;
+        // Class
+        for(int i = 0; i < cboClass.getItemCount(); i++){
+            Class c = cboClass.getItemAt(i);
+            if(c.getId().equals(existing.getClassEntity().getId())){
+                cboClass.setSelectedIndex(i);
+                txtFrom.setText(c.getClassName());
+                break;
+            }
         }
-    }
 
-    // Room
-    for(int i = 0; i < cboRoom.getItemCount(); i++){
-        Room r = cboRoom.getItemAt(i);
-        if(r.getId().equals(existing.getRoom().getId())){
-            cboRoom.setSelectedIndex(i);
-            break;
+        // Room
+        for(int i = 0; i < cboRoom.getItemCount(); i++){
+            Room r = cboRoom.getItemAt(i);
+            if(r.getId().equals(existing.getRoom().getId())){
+                cboRoom.setSelectedIndex(i);
+                break;
+            }
         }
+
+        if(existing.getStudyDate()!=null)
+            txtDate.setText(existing.getStudyDate().toString());
+
+        if(existing.getStartTime()!=null)
+            txtStart.setText(existing.getStartTime().toString());
+
+        if(existing.getEndTime()!=null)
+            txtEnd.setText(existing.getEndTime().toString());
     }
-
-    if(existing.getStudyDate()!=null)
-        txtDate.setText(existing.getStudyDate().toString());
-
-    if(existing.getStartTime()!=null)
-        txtStart.setText(existing.getStartTime().toString());
-
-    if(existing.getEndTime()!=null)
-        txtEnd.setText(existing.getEndTime().toString());
-}
 
     public boolean isSaved(){
         return saved;
@@ -200,4 +239,39 @@ public class ScheduleFormDialog extends JDialog {
     public Schedule getSchedule(){
         return schedule;
     }
+
+    public void prepare(Schedule existing, String title, boolean readOnly){
+
+        setTitle(title);
+
+        this.schedule = existing!=null ? existing : new Schedule();
+
+        // repopulate combos to ensure current lists
+        cboClass.removeAllItems();
+        classes.forEach(cboClass::addItem);
+
+        cboRoom.removeAllItems();
+        rooms.forEach(cboRoom::addItem);
+
+        if(existing!=null){
+            fillData(existing);
+        }else{
+            txtFrom.setText("");
+            txtDate.setText(LocalDate.now().toString());
+            txtStart.setText("08:00");
+            txtEnd.setText("10:00");
+        }
+
+        // read-only mode
+        btnSave.setVisible(!readOnly);
+        cboClass.setEnabled(!readOnly);
+        cboRoom.setEnabled(!readOnly);
+        txtDate.setEditable(!readOnly);
+        txtStart.setEditable(!readOnly);
+        txtEnd.setEditable(!readOnly);
+        txtFrom.setEditable(!readOnly);
+
+        this.saved = false;
+    }
+
 }
