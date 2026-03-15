@@ -120,6 +120,16 @@ public class EnrollmentService {
      */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {
+            // Remove or cancel any invoice tied to this enrollment first to avoid FK constraint
+            try {
+                com.languagecenter.model.Invoice inv = invoiceRepo.findByEnrollmentId(em, id);
+                if (inv != null) {
+                    invoiceRepo.delete(em, inv.getId());
+                }
+            } catch (Exception ignored) {
+                // best-effort: continue to delete enrollment
+            }
+
             repo.delete(em,id);
             return null;
         });

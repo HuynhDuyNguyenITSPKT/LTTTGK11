@@ -1,6 +1,7 @@
 package com.languagecenter.ui.student;
 
 import com.languagecenter.model.Class;
+import com.languagecenter.model.Enrollment;
 import com.languagecenter.model.Course;
 import com.languagecenter.model.Schedule;
 import com.languagecenter.model.enums.ClassStatus;
@@ -89,6 +90,11 @@ public class StudentCourseRegisterPanel extends JPanel {
 
         right.add(txtSearch);
         right.add(btnSearch);
+        
+        JButton btnMyRegs = createSecondaryButton("My Registrations");
+        btnMyRegs.setPreferredSize(new Dimension(150, 38));
+        btnMyRegs.addActionListener(e -> showMyRegistrations());
+        right.add(btnMyRegs);
 
         header.add(title, BorderLayout.WEST);
         header.add(right, BorderLayout.EAST);
@@ -317,6 +323,127 @@ public class StudentCourseRegisterPanel extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void showMyRegistrations() {
+        try {
+            List<Enrollment> all = enrollmentService.getAll();
+
+            List<Enrollment> mine = all.stream()
+                    .filter(e -> e.getStudent() != null && e.getStudent().getId().equals(studentId))
+                    .collect(Collectors.toList());
+
+            JDialog dialog = new JDialog(
+                    (Frame) SwingUtilities.getWindowAncestor(this),
+                    "My Registrations", true);
+
+            dialog.setSize(600, 520);
+            dialog.setLocationRelativeTo(this);
+
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.setBackground(BACKGROUND);
+
+            JPanel container = new JPanel();
+            container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+            container.setBackground(BACKGROUND);
+            container.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+            if (mine.isEmpty()) {
+                JLabel emptyLabel = new JLabel("You have no registrations");
+                emptyLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+                emptyLabel.setForeground(TEXT_SECONDARY);
+                emptyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                container.add(Box.createVerticalStrut(50));
+                container.add(emptyLabel);
+            } else {
+                mine.forEach(enrollment -> {
+                    container.add(createEnrollmentCard(enrollment, dialog));
+                    container.add(Box.createVerticalStrut(12));
+                });
+            }
+
+            JScrollPane scroll = new JScrollPane(container);
+            scroll.setBorder(null);
+            scroll.getVerticalScrollBar().setUnitIncrement(16);
+            scroll.getViewport().setBackground(BACKGROUND);
+
+            mainPanel.add(scroll, BorderLayout.CENTER);
+            dialog.add(mainPanel);
+            dialog.setVisible(true);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private JPanel createEnrollmentCard(Enrollment enrollment, JDialog parentDialog) {
+        Class c = enrollment.getClassEntity();
+
+        JPanel card = new JPanel(new BorderLayout(20, 0));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER, 1, true),
+                new EmptyBorder(12, 16, 12, 16)));
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+
+        JPanel left = new JPanel();
+        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
+        left.setOpaque(false);
+
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        header.setOpaque(false);
+        JLabel name = new JLabel(c.getClassName());
+        name.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.add(name);
+        header.add(createStatusBadge(c.getStatus()));
+
+        JLabel enrolledOn = new JLabel("Enrolled: " + enrollment.getEnrollmentDate());
+        enrolledOn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        enrolledOn.setForeground(TEXT_SECONDARY);
+
+        left.add(header);
+        left.add(Box.createVerticalStrut(8));
+        left.add(enrolledOn);
+
+        JPanel right = new JPanel();
+        right.setOpaque(false);
+        right.setLayout(new GridBagLayout());
+
+        JButton btnCancel = createSecondaryButton("Cancel");
+        // Enable cancel only when class status is Open
+        boolean canCancel = c.getStatus() == ClassStatus.Open;
+        btnCancel.setEnabled(canCancel);
+
+        btnCancel.addActionListener(e -> {
+            UIManager.put("OptionPane.messageFont", new Font("Segoe UI", Font.PLAIN, 13));
+            UIManager.put("OptionPane.buttonFont", new Font("Segoe UI", Font.BOLD, 12));
+
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to cancel registration for: " + c.getClassName(),
+                    "Cancel Registration",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+
+            if (confirm != JOptionPane.YES_OPTION) return;
+
+            try {
+                enrollmentService.delete(enrollment.getId());
+                JOptionPane.showMessageDialog(this, "Registration cancelled.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                parentDialog.dispose();
+                showMyRegistrations();
+                reload();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Cancel failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        right.add(btnCancel);
+
+        card.add(left, BorderLayout.CENTER);
+        card.add(right, BorderLayout.EAST);
+
+        return card;
     }
 
     private JPanel createClassCard(Class c) {
