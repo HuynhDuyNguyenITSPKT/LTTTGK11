@@ -22,8 +22,6 @@ public class AttendanceService {
     /**
      * Khởi tạo service với repository và transaction manager sử dụng Dependency Injection.
      *
-     * @param repo Repository truy xuất dữ liệu trạng thái điểm danh
-     * @param tx   Công cụ quản lý giao dịch
      */
     public AttendanceService(AttendanceRepository repo, TransactionManager tx) {
         this.repo = repo;
@@ -33,8 +31,6 @@ public class AttendanceService {
     /**
      * Lấy danh sách toàn bộ điểm danh.
      *
-     * @return Danh sách các đối tượng Attendance
-     * @throws Exception Số lỗi gặp phải khi lấy dữ liệu
      */
     public List<Attendance> getAll() throws Exception {
         return tx.runInTransaction(repo::findAll);
@@ -43,9 +39,6 @@ public class AttendanceService {
     /**
      * Lấy thông tin điểm danh theo ID.
      *
-     * @param id ID của điểm danh cần tìm
-     * @return Đối tượng Attendance nếu tồn tại, ngược lại trả về null
-     * @throws Exception Lỗi xảy ra trong quá trình truy vấn
      */
     public Attendance getById(Long id) throws Exception {
         return tx.runInTransaction(em -> repo.findById(em, id));
@@ -54,8 +47,6 @@ public class AttendanceService {
     /**
      * Tạo mới một đối tượng điểm danh.
      *
-     * @param attendance Đối tượng Attendance cần tạo
-     * @throws Exception Nếu học sinh đã được điểm danh trong ngày này và lớp này, hoặc lỗi hệ thống
      */
     public void create(Attendance attendance) throws Exception {
         tx.runInTransaction(em -> {
@@ -78,8 +69,6 @@ public class AttendanceService {
     /**
      * Cập nhật thông tin điểm danh.
      *
-     * @param attendance Đối tượng Attendance chứa thông tin cập nhật
-     * @throws Exception Nếu lỗi cập nhật dữ liệu vào DB
      */
     public void update(Attendance attendance) throws Exception {
         tx.runInTransaction(em -> {
@@ -91,8 +80,6 @@ public class AttendanceService {
     /**
      * Xóa thông tin điểm danh.
      *
-     * @param id ID của điểm danh cần xóa
-     * @throws Exception Lỗi trong quá trình xóa dữ liệu
      */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {
@@ -104,9 +91,6 @@ public class AttendanceService {
     /**
      * Lấy danh sách điểm danh theo mã lớp.
      *
-     * @param classId ID lớp học
-     * @return Danh sách điểm danh thuộc lớp được chỉ định
-     * @throws Exception Lỗi khi truy vấn
      */
     public List<Attendance> getByClassId(Long classId) throws Exception {
         return tx.runInTransaction(em -> repo.findByClassId(em, classId));
@@ -115,9 +99,6 @@ public class AttendanceService {
     /**
      * Lấy danh sách điểm danh của học sinh.
      *
-     * @param studentId ID học sinh
-     * @return Danh sách điểm danh của học sinh đó
-     * @throws Exception Lỗi trong quá trình thực thi khối truy vấn
      */
     public List<Attendance> getByStudentId(Long studentId) throws Exception {
         return tx.runInTransaction(em -> repo.findByStudentId(em, studentId));
@@ -126,10 +107,6 @@ public class AttendanceService {
     /**
      * Lấy thông tin điểm danh của một lớp nào đó trong một ngày cụ thể.
      *
-     * @param classId Mã lớp học
-     * @param date    Ngày được điểm danh
-     * @return Danh sách các điểm danh khớp điều kiện
-     * @throws Exception Lỗi kết nối
      */
     public List<Attendance> getByClassAndDate(Long classId, LocalDate date) throws Exception {
         return tx.runInTransaction(em -> repo.findByClassAndDate(em, classId, date));
@@ -138,10 +115,6 @@ public class AttendanceService {
     /**
      * Đếm tổng số điểm danh của lớp trong một ngày.
      *
-     * @param classId Mã lớp
-     * @param date    Ngày kiểm tra điểm danh
-     * @return Tổng số lượng điểm danh
-     * @throws Exception Lỗi khi truy vấn số lượng
      */
     public long countByClassAndDate(Long classId, LocalDate date) throws Exception {
         return tx.runInTransaction(em -> repo.countByClassAndDate(em, classId, date));

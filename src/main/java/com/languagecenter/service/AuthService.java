@@ -22,8 +22,6 @@ public class AuthService {
     /**
      * Khởi tạo service bảo mật với repository.
      *
-     * @param repo Repository tài khoản truy vấn
-     * @param tx   Công cụ quản lý giao dịch DB
      */
     public AuthService(UserAccountRepository repo, TransactionManager tx) {
         this.repo = repo;
@@ -33,10 +31,6 @@ public class AuthService {
     /**
      * Thực hiện kiểm tra thông tin đăng nhập từ input.
      *
-     * @param username Tên đăng nhập
-     * @param password Mật khẩu thô (sẽ được kiểm tra với mã băm)
-     * @return Thông tin tài khoản người dùng nếu thành công
-     * @throws Exception Các lỗi về bảo mật như tài khoản bị khó, thông tin sai, v.v.
      */
     public UserAccount login(String username, String password) throws Exception {
 

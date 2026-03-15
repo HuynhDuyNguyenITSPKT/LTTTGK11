@@ -8,9 +8,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Ví dụ các query dùng Java Stream cho Teacher.
- * Input: List<Teacher>
- * Output: List<Teacher>
+ * Các thao tác lọc và tìm kiếm cho Giáo viên.
  */
 public final class TeacherStreamQueries {
 
@@ -21,7 +19,7 @@ public final class TeacherStreamQueries {
     }
 
     /**
-     * Search teacher by name (contains, ignore case)
+     * Tìm kiếm giáo viên theo tên.
      */
     public static List<Teacher> searchByName(List<Teacher> teachers, String keyword) {
         String k = safeLower(keyword).trim();
@@ -31,7 +29,7 @@ public final class TeacherStreamQueries {
     }
 
     /**
-     * Filter teacher by status
+     * Lọc giáo viên theo trạng thái.
      */
     public static List<Teacher> filterByStatus(List<Teacher> teachers, TeacherStatus status) {
 
@@ -41,7 +39,7 @@ public final class TeacherStreamQueries {
     }
 
     /**
-     * Filter teacher by specialty
+     * Lọc giáo viên theo chuyên môn.
      */
     public static List<Teacher> filterBySpecialty(List<Teacher> teachers, String keyword) {
         String k = safeLower(keyword).trim();

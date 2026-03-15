@@ -21,8 +21,6 @@ public class InvoiceService {
     /**
      * Khởi tạo InvoiceService.
      *
-     * @param repo Repository hoá đơn
-     * @param tx   Công cụ quản lý giao dịch
      */
     public InvoiceService(InvoiceRepository repo, TransactionManager tx) {
         this.repo = repo;
@@ -32,8 +30,6 @@ public class InvoiceService {
     /**
      * Lấy toàn bộ danh sách hóa đơn hiện có.
      *
-     * @return Danh sách các Invoice
-     * @throws Exception Lỗi kết nối
      */
     public List<Invoice> getAll() throws Exception {
         return tx.runInTransaction(repo::findAll);
@@ -42,9 +38,6 @@ public class InvoiceService {
     /**
      * Lấy hóa đơn theo ID.
      *
-     * @param id Khóa chính của bảng hoá đơn
-     * @return Hoá đơn tìm được
-     * @throws Exception Các lỗi thao tác dữ liệu
      */
     public Invoice getById(Long id) throws Exception {
         return tx.runInTransaction(em -> repo.findById(em, id));
@@ -53,9 +46,6 @@ public class InvoiceService {
     /**
      * Lấy hóa đơn dựa theo mã Đăng ký (Enrollment).
      *
-     * @param enrollmentId ID đăng ký khoá học
-     * @return Hoá đơn thuộc Enrollment này
-     * @throws Exception Lỗi thao tác
      */
     public Invoice getByEnrollmentId(Long enrollmentId) throws Exception {
         return tx.runInTransaction(em -> repo.findByEnrollmentId(em, enrollmentId));
@@ -64,9 +54,6 @@ public class InvoiceService {
     /**
      * Lấy danh sách hóa đơn dựa theo học sinh.
      *
-     * @param studentId ID học sinh
-     * @return Danh sách hoá đơn tương ứng
-     * @throws Exception Lỗi thao tác
      */
     public List<Invoice> getByStudentId(Long studentId) throws Exception {
         return tx.runInTransaction(em -> repo.findByStudentId(em, studentId));
@@ -75,8 +62,6 @@ public class InvoiceService {
     /**
      * Thêm mới một hóa đơn vào thư viện CSDL.
      *
-     * @param invoice Thông tin hoá đơn
-     * @throws Exception Lỗi khởi tạo
      */
     public void create(Invoice invoice) throws Exception {
         tx.runInTransaction(em -> {
@@ -88,8 +73,6 @@ public class InvoiceService {
     /**
      * Cập nhật thông tin trên một hoá đơn đã có.
      *
-     * @param invoice Thông tin hoá đơn với dữ liệu mới
-     * @throws Exception Lỗi thao tác update
      */
     public void update(Invoice invoice) throws Exception {
         tx.runInTransaction(em -> {
@@ -101,8 +84,6 @@ public class InvoiceService {
     /**
      * Xóa hoá đơn dựa vào ID.
      *
-     * @param id Định danh hóa đơn
-     * @throws Exception Lỗi ràng buộc hệ thống
      */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {

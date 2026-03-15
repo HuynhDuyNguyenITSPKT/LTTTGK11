@@ -27,10 +27,6 @@ public class StudentService {
     /**
      * Khởi tạo tính năng xử lý liên kết dữ liệu Học Sinh.
      *
-     * @param studentRepo Repo thuộc học sinh
-     * @param teacherRepo Repo thuộc giáo viên (để kiểm tra các trường duy nhất)
-     * @param userRepo    Repo về tài khoản đăng nhập
-     * @param tx          Phân luồng transaction
      */
     public StudentService(StudentRepository studentRepo,
                          TeacherRepository teacherRepo,
@@ -45,8 +41,6 @@ public class StudentService {
     /**
      * Lấy toàn bộ danh sách sinh viên hiện có.
      *
-     * @return Danh sách Student
-     * @throws Exception Lỗi mạng
      */
     public List<Student> getAll() throws Exception{
         return tx.runInTransaction(
@@ -57,10 +51,6 @@ public class StudentService {
     /**
      * Khởi tạo thông tin sinh viên kèm một tài khoản đăng nhập tương ứng.
      *
-     * @param student Thực thể thông tin cá nhân
-     * @param username Tên truy cập mong muốn
-     * @param password Mật khẩu
-     * @throws Exception Trả về khi Username/Email đã tồn tại
      */
     public void create(Student student, String username, String password) throws Exception {
         tx.runInTransaction(em -> {
@@ -94,10 +84,6 @@ public class StudentService {
     /**
      * Sửa đổi dữ liệu của tài khoản cùng thông tin hồ sơ của sinh viên.
      *
-     * @param student Cập nhật thông tin sinh viên
-     * @param username Tên mới
-     * @param password Mật khẩu (nếu có để đổi)
-     * @throws Exception Các lỗi về giới hạn trùng thông tin
      */
     public void update(Student student,
                        String username,
@@ -138,8 +124,6 @@ public class StudentService {
     /**
      * Thu hồi dữ liệu học sinh cùng tài khoản liên kết có trong hệ thống CSDL.
      *
-     * @param id Khóa chính học sinh
-     * @throws Exception Lỗi phá vỡ ràng buộc khóa liên kết
      */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {
@@ -155,9 +139,6 @@ public class StudentService {
     /**
      * Tra cứu tài khoản đăng nhập mà học sinh này đang giữ.
      *
-     * @param id ID định danh cá nhân
-     * @return Tài khoản tham chiếu
-     * @throws Exception Các lỗi từ Database
      */
     public UserAccount findAccountByStudentId(Long id) throws Exception{
         return tx.runInTransaction(em -> userRepo.findByStudentId(em,id));

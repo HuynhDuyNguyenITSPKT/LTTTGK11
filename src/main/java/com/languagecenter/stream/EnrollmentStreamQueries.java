@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 
 public class EnrollmentStreamQueries {
 
+    /**
+     * Lọc danh sách đăng ký theo tên học sinh.
+     */
     public static List<Enrollment> filterByStudent(List<Enrollment> data,String keyword){
 
         if(keyword == null || keyword.isBlank())
@@ -19,6 +22,9 @@ public class EnrollmentStreamQueries {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Lọc danh sách đăng ký theo tên lớp học.
+     */
     public static List<Enrollment> filterByClass(List<Enrollment> data,String keyword){
 
         if(keyword == null || keyword.isBlank())

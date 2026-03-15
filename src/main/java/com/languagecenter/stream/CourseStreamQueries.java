@@ -15,6 +15,9 @@ public final class CourseStreamQueries {
         return s==null ? "" : s.toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Tìm kiếm khóa học theo tên.
+     */
     public static List<Course> searchByName(List<Course> courses,String keyword){
 
         String k = safeLower(keyword).trim();
@@ -24,6 +27,9 @@ public final class CourseStreamQueries {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Lọc khóa học theo trạng thái.
+     */
     public static List<Course> filterByStatus(List<Course> courses, CourseStatus status){
 
         return courses.stream()

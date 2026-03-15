@@ -10,7 +10,7 @@ public class ResultStreamQueries {
 
     private ResultStreamQueries() {}
 
-    /** Filter by student full-name (case-insensitive, partial match) */
+    /** Lọc kết quả theo tên học sinh. */
     public static List<Result> filterByStudent(List<Result> data, String keyword) {
         String kw = keyword.toLowerCase();
         return data.stream()
@@ -19,7 +19,7 @@ public class ResultStreamQueries {
                 .toList();
     }
 
-    /** Filter by class name (case-insensitive, partial match) */
+    /** Lọc kết quả theo tên lớp học. */
     public static List<Result> filterByClass(List<Result> data, String keyword) {
         String kw = keyword.toLowerCase();
         return data.stream()
@@ -28,7 +28,7 @@ public class ResultStreamQueries {
                 .toList();
     }
 
-    /** Filter by exact class ID */
+    /** Lọc kết quả theo mã lớp học. */
     public static List<Result> filterByClassId(List<Result> data, Long classId) {
         return data.stream()
                 .filter(r -> r.getClassEntity() != null &&
@@ -36,7 +36,7 @@ public class ResultStreamQueries {
                 .toList();
     }
 
-    /** Filter by grade (exact, case-insensitive) */
+    /** Lọc kết quả theo đánh giá. */
     public static List<Result> filterByGrade(List<Result> data, String grade) {
         String g = grade.toLowerCase();
         return data.stream()
@@ -44,14 +44,14 @@ public class ResultStreamQueries {
                 .toList();
     }
 
-    /** Filter results where score >= min */
+    /** Lọc kết quả theo điểm số tối thiểu. */
     public static List<Result> filterByMinScore(List<Result> data, BigDecimal min) {
         return data.stream()
                 .filter(r -> r.getScore() != null && r.getScore().compareTo(min) >= 0)
                 .toList();
     }
 
-    /** Filter results where score is within [min, max] range */
+    /** Lọc kết quả theo khoảng điểm số. */
     public static List<Result> filterByScoreRange(List<Result> data, BigDecimal min, BigDecimal max) {
         return data.stream()
                 .filter(r -> r.getScore() != null
@@ -60,7 +60,7 @@ public class ResultStreamQueries {
                 .toList();
     }
 
-    /** Sort results alphabetically by student full name (A→Z) */
+    /** Sắp xếp kết quả theo tên học sinh từ A-Z. */
     public static List<Result> sortByStudentName(List<Result> data) {
         return data.stream()
                 .sorted(Comparator.comparing(
@@ -69,7 +69,7 @@ public class ResultStreamQueries {
                 .toList();
     }
 
-    /** Average score of a list (returns BigDecimal.ZERO if empty) */
+    /** Tính điểm trung bình của danh sách kết quả. */
     public static BigDecimal averageScore(List<Result> data) {
         return data.stream()
                 .filter(r -> r.getScore() != null)

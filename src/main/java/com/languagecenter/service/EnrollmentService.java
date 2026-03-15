@@ -33,9 +33,6 @@ public class EnrollmentService {
     /**
      * Khởi tạo service cung cấp cho việc giao tiếp và cấu hình CSDL ở bảng Enrollment, Invoice.
      *
-     * @param repo        Repository đăng ký học
-     * @param invoiceRepo Repository phục vụ sinh hóa đơn học phí
-     * @param tx          Máy cung cấp Session
      */
     public EnrollmentService(EnrollmentRepository repo,
                             InvoiceRepository invoiceRepo,
@@ -48,8 +45,6 @@ public class EnrollmentService {
     /**
      * Lấy các đăng ký có trong hệ thống hiện tại.
      *
-     * @return Danh sách các bản ghi danh
-     * @throws Exception Lỗi mạng
      */
     public List<Enrollment> getAll() throws Exception {
         return tx.runInTransaction(repo::findAll);
@@ -58,8 +53,6 @@ public class EnrollmentService {
     /**
      * Khởi tạo bản ghi đánh dấu đăng ký vào lớp học. Sẽ tự động khởi tạo hoá đơn thanh toán.
      *
-     * @param e Thực thể Registration với thông tin ngày, người, và lớp
-     * @throws Exception Các lỗi về giới hạn như học sinh đã đăng ký, lớp chưa được mở ...
      */
     public void create(Enrollment e) throws Exception {
         tx.runInTransaction(em -> {
@@ -99,8 +92,6 @@ public class EnrollmentService {
     /**
      * Cập nhật thông tin ghi danh.
      *
-     * @param e Đối tượng Ghi danh
-     * @throws Exception Lỗi cập nhật
      */
     public void update(Enrollment e) throws Exception {
         tx.runInTransaction(em -> {
@@ -115,19 +106,23 @@ public class EnrollmentService {
     /**
      * Xóa đăng ký học dựa theo định danh.
      *
-     * @param id ID đăng ký
-     * @throws Exception Các lỗi xóa dữ liệu khi có bảng tham chiếu
      */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {
-            // Remove or cancel any invoice tied to this enrollment first to avoid FK constraint
+            Invoice inv = null;
             try {
-                com.languagecenter.model.Invoice inv = invoiceRepo.findByEnrollmentId(em, id);
-                if (inv != null) {
-                    invoiceRepo.delete(em, inv.getId());
-                }
+                inv = invoiceRepo.findByEnrollmentId(em, id);
             } catch (Exception ignored) {
-                // best-effort: continue to delete enrollment
+            }
+
+            if (inv != null) {
+                if (inv.getStatus() == InvoiceStatus.Paid) {
+                    throw new Exception("Không thể hủy đăng ký vì hóa đơn học phí đã được thanh toán!");
+                }
+                try {
+                    invoiceRepo.delete(em, inv.getId());
+                } catch (Exception ignored) {
+                }
             }
 
             repo.delete(em,id);
@@ -138,9 +133,6 @@ public class EnrollmentService {
     /**
      * Đếm tổng số học viên trong lớp theo ID lớp.
      *
-     * @param classId Cột định danh Class
-     * @return Số lượng học viên học
-     * @throws Exception Lỗi tính toán
      */
     public long countStudentsByClass(Long classId) throws Exception {
         return tx.runInTransaction(em ->
@@ -151,9 +143,6 @@ public class EnrollmentService {
     /**
      * Đăng ký khóa học dành cho học sinh, với kiểm tra sức chứa và trạng thái thực của lớp.
      *
-     * @param studentId ID học sinh
-     * @param clazz Lớp học cần đăng ký
-     * @throws Exception Lỗi quá giới hạn, lỗi khoá học, lớp học
      */
     @Transactional
     public void register(Long studentId, Class clazz) throws Exception {

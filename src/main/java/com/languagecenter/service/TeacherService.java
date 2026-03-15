@@ -28,10 +28,6 @@ public class TeacherService {
     /**
      * Khởi tạo tính năng xử lý liên kết dữ liệu.
      *
-     * @param teacherRepo Repo giảng viên
-     * @param studentRepo Repo học sinh (cần để rà soát trùng lặp email diện rộng)
-     * @param userRepo    Repo về tài khoản đăng nhập
-     * @param tx          Phân luồng transaction bằng trình điều khiển JPA
      */
     public TeacherService(TeacherRepository teacherRepo,
                           StudentRepository studentRepo,
@@ -46,8 +42,6 @@ public class TeacherService {
     /**
      * Lấy toàn bộ danh sách giáo viên.
      *
-     * @return Tập hợp tài liệu giảng viên
-     * @throws Exception Các lỗi đọc dữ liệu
      */
     public List<Teacher> getAll() throws Exception {
         return tx.runInTransaction(em -> teacherRepo.findAll(em));
@@ -56,10 +50,6 @@ public class TeacherService {
     /**
      * Tuyển dụng thêm/Khởi tạo giáo viên mới cùng với tài khoản cá nhân.
      *
-     * @param teacher   Cấu trúc thông tin Giáo viên
-     * @param username  Tên hiển thị để đăng nhập
-     * @param password  Khóa bảo mật
-     * @throws Exception Lỗi trùng dữ liệu Username hoặc Email toàn hệ thống
      */
     public void create(Teacher teacher,
                        String username,
@@ -98,10 +88,6 @@ public class TeacherService {
     /**
      * Chỉnh sửa thông tin hồ sơ và tài khoản của người dùng là giáo viên.
      *
-     * @param teacher  Hồ sơ được gửi lên sửa
-     * @param username Tên mong muốn mới
-     * @param password Mật khẩu muốn đổi
-     * @throws Exception Trả về khi tên mới bị trùng đối tượng khác
      */
     public void update(Teacher teacher,
                        String username,
@@ -143,8 +129,6 @@ public class TeacherService {
     /**
      * Bãi miễn hoặc xóa bản ghi về giáo viên này.
      *
-     * @param id ID của hồ sơ giáo viên
-     * @throws Exception Lỗi rủi ro CSDL do bảng dính chùm
      */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {
@@ -160,9 +144,6 @@ public class TeacherService {
     /**
      * Tra cứu tài khoản theo định danh giảng viên đó.
      *
-     * @param id ID người dạy
-     * @return Tải khoản tương thích
-     * @throws Exception Lỗi mạng / Thao tác hệ thống
      */
     public UserAccount findAccountByTeacherId(Long id) throws Exception {
         return tx.runInTransaction(em -> userRepo.findByTeacherId(em, id));

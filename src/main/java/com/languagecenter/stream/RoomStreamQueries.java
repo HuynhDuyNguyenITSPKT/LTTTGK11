@@ -15,6 +15,9 @@ public final class RoomStreamQueries {
         return s == null ? "" : s.toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Tìm kiếm phòng học theo tên.
+     */
     public static List<Room> searchByName(List<Room> rooms,String keyword){
 
         String k = safeLower(keyword).trim();
@@ -24,6 +27,9 @@ public final class RoomStreamQueries {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Lọc phòng học theo trạng thái.
+     */
     public static List<Room> filterByStatus(List<Room> rooms, RoomStatus status){
 
         return rooms.stream()

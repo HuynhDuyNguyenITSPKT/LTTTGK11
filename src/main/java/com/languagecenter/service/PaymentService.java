@@ -26,9 +26,6 @@ public class PaymentService {
     /**
      * Khởi tạo service bằng Dependency Injection cho repo và transaction manager.
      *
-     * @param paymentRepo Repository Thanh toán
-     * @param invoiceRepo Repository Hoá đơn
-     * @param tx          Công cụ quản lý giao dịch
      */
     public PaymentService(PaymentRepository paymentRepo,
                          InvoiceRepository invoiceRepo,
@@ -41,8 +38,6 @@ public class PaymentService {
     /**
      * Lấy toàn bộ giao dịch thanh toán hiện có.
      *
-     * @return Danh sách Payment
-     * @throws Exception Lỗi mạng
      */
     public List<Payment> getAll() throws Exception {
         return tx.runInTransaction(paymentRepo::findAll);
@@ -51,9 +46,6 @@ public class PaymentService {
     /**
      * Lấy giao dịch theo ID.
      *
-     * @param id Khóa chính của Payment
-     * @return Payment tìm được
-     * @throws Exception Lỗi thao tác
      */
     public Payment getById(Long id) throws Exception {
         return tx.runInTransaction(em -> paymentRepo.findById(em, id));
@@ -62,9 +54,6 @@ public class PaymentService {
     /**
      * Tính số tiền thanh toán còn thiếu từ một hóa đơn.
      *
-     * @param invoiceId ID của hóa đơn
-     * @return Số tiền chưa thanh toán
-     * @throws Exception Trả về lỗi khi hóa đơn không có
      */
     public Double getRemainingAmount(Long invoiceId) throws Exception {
         return tx.runInTransaction(em -> {
@@ -82,8 +71,6 @@ public class PaymentService {
      * Thực hiện thanh toán mới và thay đổi tự động trạng thái hóa đơn.
      * Nếu tiền thừa, hệ thống sẽ thực hiện ngăn chặn thao tác.
      *
-     * @param payment Thống tin thanh toán được nhập
-     * @throws Exception Các lỗi về thiếu hóa đơn, nhập thừa tiền...
      */
     public void create(Payment payment) throws Exception {
         tx.runInTransaction(em -> {
@@ -138,8 +125,6 @@ public class PaymentService {
     /**
      * Sửa chi tiết trên biên lai thanh toán và tính toán lại công nợ vào hóa đơn.
      *
-     * @param payment Dữ liệu cần cập nhật thuộc biên lai 
-     * @throws Exception Lỗi trùng dữ liệu hoặc đã bị đổi trạng thái vĩnh viễn
      */
     public void update(Payment payment) throws Exception {
         tx.runInTransaction(em -> {
@@ -207,8 +192,6 @@ public class PaymentService {
     /**
      * Thu hồi lại thanh toán và đổi thông tin hóa đơn nếu tiền lùi về.
      *
-     * @param id Payment ID
-     * @throws Exception Lỗi thao tác
      */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {

@@ -23,8 +23,6 @@ public class ScheduleService {
     /**
      * Khởi tạo tính năng xử lý lịch học.
      *
-     * @param repo Repository truy vấn bảng Schedule
-     * @param tx   Công cụ quản lý giao dịch
      */
     public ScheduleService(ScheduleRepository repo, TransactionManager tx) {
         this.repo = repo;
@@ -34,8 +32,6 @@ public class ScheduleService {
     /**
      * Lấy toàn bộ danh sách lịch học hiện tại.
      *
-     * @return Tập hợp lịch học cho toàn hệ thống
-     * @throws Exception Lỗi mạng
      */
     public List<Schedule> getAll() throws Exception {
         return tx.runInTransaction(repo::findAll);
@@ -45,8 +41,6 @@ public class ScheduleService {
      * Cung cấp logic kiểm tra trùng lịch (phòng, giáo viên, thời gian) 
      * trước khi khởi tạo lịch học.
      *
-     * @param schedule Thời gian học dự kiến
-     * @throws Exception Các lỗi về giới hạn thời gian, hoặc đã có lịch giảng dạy
      */
     @Transactional
     public void create(Schedule schedule) throws Exception {
@@ -84,8 +78,6 @@ public class ScheduleService {
     /**
      * Cập nhật thời điểm lịch học bị thay đổi.
      *
-     * @param schedule Nội dung lịch mới
-     * @throws Exception Lỗi DB
      */
     public void update(Schedule schedule) throws Exception {
         tx.runInTransaction(em -> {
@@ -97,8 +89,6 @@ public class ScheduleService {
     /**
      * Hủy hoặc xóa sự kiện lịch học.
      *
-     * @param id ID Lịch học
-     * @throws Exception Lỗi phụ thuộc dữ liệu ngoài
      */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {
@@ -110,9 +100,6 @@ public class ScheduleService {
     /**
      * Lấy danh sách thời khóa biểu đặc thù của người học.
      *
-     * @param studentId Mã Học Sinh
-     * @return Lịch học của học sinh tương ứng
-     * @throws Exception Lỗi hệ thống truy xuất
      */
     public List<Schedule> getScheduleByStudent(Long studentId) throws Exception {
         return tx.runInTransaction(em -> repo.getScheduleByStudent(em, studentId));
@@ -121,9 +108,6 @@ public class ScheduleService {
     /**
      * Lấy danh sách thời khóa biểu đứng lớp cho giáo viên cụ thể.
      *
-     * @param teacherId Mã Giáo viên
-     * @return Thời vụ công tác của Giáo viên
-     * @throws Exception Lỗi truy vấn
      */
     public List<Schedule> getScheduleByTeacher(Long teacherId) throws Exception {
         return tx.runInTransaction(em -> repo.getScheduleByTeacher(em, teacherId));
@@ -132,9 +116,6 @@ public class ScheduleService {
     /**
      * Lọc danh sách lịch dạy dành cho từng Khóa / Lớp học riêng lẻ.
      *
-     * @param classId ID của lớp
-     * @return Danh sách các buổi biểu diễn dành riêng cho lớp
-     * @throws Exception Lỗi thao tác
      */
     public List<Schedule> getByClass(Long classId) throws Exception {
         return tx.runInTransaction(em -> repo.getByClass(em, classId));

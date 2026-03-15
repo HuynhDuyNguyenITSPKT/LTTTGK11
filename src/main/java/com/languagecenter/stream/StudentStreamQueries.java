@@ -10,9 +10,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Ví dụ các query dùng Java Stream cho Student.
- * Input: List<Student>
- * Output: List<Student> / Map / statistics
+ * Các thao tác lọc và tìm kiếm cho Học sinh.
  */
 public final class StudentStreamQueries {
     private StudentStreamQueries() {}
@@ -21,6 +19,9 @@ public final class StudentStreamQueries {
         return s == null ? "" : s.toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Tìm kiếm học sinh theo tên.
+     */
     public static List<Student> searchByName(List<Student> students, String keyword) {
         String k = safeLower(keyword).trim();
 
@@ -29,6 +30,9 @@ public final class StudentStreamQueries {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Lọc học sinh theo trạng thái.
+     */
     public static List<Student> filterByStatus(List<Student> students, StudentStatus status) {
         return students.stream()
                 .filter(s -> s.getStatus() == status)

@@ -10,6 +10,9 @@ public final class ScheduleStreamQueries {
 
     private ScheduleStreamQueries(){}
 
+    /**
+     * Lọc lịch học theo ngày.
+     */
     public static List<Schedule> filterByDate(List<Schedule> data, LocalDate date){
         if(date == null) return data;
 
@@ -18,6 +21,9 @@ public final class ScheduleStreamQueries {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Lọc lịch học theo tên lớp học.
+     */
     public static List<Schedule> filterByClass(List<Schedule> data, String keyword){
         if(keyword == null || keyword.isBlank()) return data;
 

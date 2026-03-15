@@ -38,8 +38,6 @@ public final class ClassStreamQueries {
 
     /**
      * Lọc theo học phí của khóa học (Course fee)
-     * @param minFee Học phí tối thiểu
-     * @param maxFee Học phí tối đa
      */
     public static List<Class> filterByCourseFee(List<Class> classes, Double minFee, Double maxFee) {
         return classes.stream()

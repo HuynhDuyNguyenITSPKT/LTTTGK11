@@ -22,8 +22,6 @@ public class ResultService {
     /**
      * Khởi tạo ResultService bằng việc inject các dependencies.
      *
-     * @param repo Repository tương tác với bảng Result
-     * @param tx   Công cụ quản lý giao dịch
      */
     public ResultService(ResultRepository repo, TransactionManager tx) {
         this.repo = repo;
@@ -33,8 +31,6 @@ public class ResultService {
     /**
      * Lấy toàn bộ danh sách kết quả học tập từ database.
      *
-     * @return Danh sách các kết quả
-     * @throws Exception Lỗi mạng
      */
     public List<Result> getAll() throws Exception {
         return tx.runInTransaction(repo::findAll);
@@ -43,9 +39,6 @@ public class ResultService {
     /**
      * Lấy danh sách kết quả học tập của một học viên cụ thể.
      *
-     * @param studentId ID học viên 
-     * @return Danh sách các kết quả thuộc về học sinh
-     * @throws Exception Trả về lỗi khi quá trình truy vấn thất bại
      */
     public List<Result> getByStudent(Long studentId) throws Exception {
         return tx.runInTransaction(em -> repo.findByStudentId(em, studentId));
@@ -54,9 +47,6 @@ public class ResultService {
     /**
      * Lấy danh sách bảng điểm của một lớp học.
      *
-     * @param classId ID lớp học
-     * @return Danh sách điểm của nhóm học sinh trong lớp
-     * @throws Exception Các lỗi đọc dữ liệu từ repo
      */
     public List<Result> getByClass(Long classId) throws Exception {
         return tx.runInTransaction(em -> repo.findByClassId(em, classId));
@@ -66,8 +56,6 @@ public class ResultService {
      * Khởi tạo bản ghi điểm học tập mới.
      * Hệ thống sẽ tự động bắt ràng buộc về tính duy nhất của một tài khoản trên cùng lớp học.
      *
-     * @param result Bản ghi điểm của sinh viên đó
-     * @throws Exception Lỗi về việc bảng điểm đã tồn tại hoặc lỗi thao tác DB.
      */
     public void create(Result result) throws Exception {
         tx.runInTransaction(em -> {
@@ -87,8 +75,6 @@ public class ResultService {
     /**
      * Cập nhật điểm cho sinh viên vào kho dữ liệu.
      *
-     * @param result Bản điểm bị thay đổi của đối tượng học sinh
-     * @throws Exception Trả ra khi không tìm thấy record
      */
     public void update(Result result) throws Exception {
         tx.runInTransaction(em -> {
@@ -100,8 +86,6 @@ public class ResultService {
     /**
      * Xóa danh mục kết quả của sinh viên trong một khoá học.
      *
-     * @param id Khóa chính của bảng
-     * @throws Exception Các lỗi phụ thuộc dữ liệu khoá
      */
     public void delete(Long id) throws Exception {
         tx.runInTransaction(em -> {
