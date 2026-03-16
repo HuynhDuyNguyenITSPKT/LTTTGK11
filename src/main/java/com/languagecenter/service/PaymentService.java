@@ -71,7 +71,7 @@ public class PaymentService {
      * Thực hiện thanh toán mới và thay đổi tự động trạng thái hóa đơn.
      * Nếu tiền thừa, hệ thống sẽ thực hiện ngăn chặn thao tác.
      *
-     */
+     */ 
     public void create(Payment payment) throws Exception {
         tx.runInTransaction(em -> {
             if (payment.getInvoice() != null && payment.getEnrollment() == null) {
