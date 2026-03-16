@@ -25,6 +25,8 @@ public class PaymentPanel extends JPanel {
     private List<Payment> allData;
 
     private final JTextField txtStudentName = new JTextField(12);
+    private final JTextField txtInvoiceId = new JTextField(8);
+    private final JTextField txtReferenceCode = new JTextField(10);
     private final JComboBox<PaymentStatus> cboStatus = new JComboBox<>();
     private final JComboBox<PaymentMethod> cboPaymentMethod = new JComboBox<>();
 
@@ -63,6 +65,12 @@ public class PaymentPanel extends JPanel {
 
         toolbar.add(new JLabel(" Student:"));
         toolbar.add(txtStudentName);
+
+        toolbar.add(new JLabel(" Inv ID:"));
+        toolbar.add(txtInvoiceId);
+
+        toolbar.add(new JLabel(" Ref:"));
+        toolbar.add(txtReferenceCode);
 
         toolbar.add(new JLabel(" Status:"));
         cboStatus.addItem(null);
@@ -140,7 +148,18 @@ public class PaymentPanel extends JPanel {
         List<Payment> result = allData;
 
         if (!txtStudentName.getText().isBlank()) {
-            result = PaymentStreamQueries.filterByStudentName(result, txtStudentName.getText());
+            result = PaymentStreamQueries.filterByStudentName(result, txtStudentName.getText().trim());
+        }
+
+        if (!txtInvoiceId.getText().isBlank()) {
+            try {
+                Long invId = Long.parseLong(txtInvoiceId.getText().trim());
+                result = PaymentStreamQueries.filterByInvoiceId(result, invId);
+            } catch (NumberFormatException ignored) {}
+        }
+
+        if (!txtReferenceCode.getText().isBlank()) {
+            result = PaymentStreamQueries.filterByReferenceCode(result, txtReferenceCode.getText().trim());
         }
 
         if (cboStatus.getSelectedItem() != null) {

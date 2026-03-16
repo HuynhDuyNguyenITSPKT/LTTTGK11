@@ -15,6 +15,7 @@ import java.util.List;
 public class TeacherPanel extends JPanel {
     private final TeacherService teacherService;
     private final JTextField txtSearch = new JTextField();
+    private final JTextField txtSpecialty = new JTextField();
 
     // Khôi phục ComboBox trạng thái
     private final JComboBox<TeacherStatus> cboStatus = new JComboBox<>(TeacherStatus.values());
@@ -53,10 +54,14 @@ public class TeacherPanel extends JPanel {
         txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search name...");
         txtSearch.setPreferredSize(new Dimension(250, 38));
 
+        txtSpecialty.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search specialty...");
+        txtSpecialty.setPreferredSize(new Dimension(200, 38));
+
         cboStatus.setPreferredSize(new Dimension(150, 38));
 
         filterPanel.add(new JLabel("Status:"));
         filterPanel.add(cboStatus);
+        filterPanel.add(txtSpecialty);
         filterPanel.add(txtSearch);
 
         gbc.gridx = 1; gbc.weightx = 0; gbc.anchor = GridBagConstraints.EAST;
@@ -110,6 +115,7 @@ public class TeacherPanel extends JPanel {
 
         // Search khi nhấn Enter hoặc đổi Trạng thái
         txtSearch.addActionListener(e -> reload());
+        txtSpecialty.addActionListener(e -> reload());
         cboStatus.addActionListener(e -> reload());
     }
 
@@ -124,6 +130,7 @@ public class TeacherPanel extends JPanel {
     public void reload() {
         try {
             String keyword = txtSearch.getText().trim();
+            String specialty = txtSpecialty.getText().trim();
             TeacherStatus status = (TeacherStatus) cboStatus.getSelectedItem();
 
             List<Teacher> list = teacherService.getAll();
@@ -131,6 +138,11 @@ public class TeacherPanel extends JPanel {
             // Lọc theo tên
             if (!keyword.isEmpty()) {
                 list = TeacherStreamQueries.searchByName(list, keyword);
+            }
+
+            // Lọc theo chuyên môn
+            if (!specialty.isEmpty()) {
+                list = TeacherStreamQueries.filterBySpecialty(list, specialty);
             }
 
             // Lọc theo trạng thái

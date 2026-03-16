@@ -123,13 +123,4 @@ public class PaymentStreamQueries {
                                 .contains(referenceCode.toLowerCase()))
                 .collect(Collectors.toList());
     }
-
-    /**
-     * Tính tổng số tiền thanh toán
-     */
-    public static Double getTotalAmount(List<Payment> data) {
-        return data.stream()
-                .mapToDouble(Payment::getAmount)
-                .sum();
-    }
 }
